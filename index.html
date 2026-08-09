@@ -1245,15 +1245,56 @@ function renderizarListaCasas(){
   todasAsCasas.forEach(c=>{
     const div = document.createElement("div");
     div.className = "item-reserva";
-    div.innerHTML = `
-      <div class="dia cal-day" style="cursor:default;background:var(--soft);">${c.numero}</div>
-      <div class="info">
-        <p class="t1">${c.apelido || ("Casa " + c.numero)}${c.papel === "sindico" ? " · síndico" : ""}</p>
-        <p class="t2">${c.nomeResponsavel || "sem responsável cadastrado"}</p>
-      </div>`;
+
+    const infoWrap = document.createElement("div");
+    infoWrap.className = "dia cal-day";
+    infoWrap.style.cssText = "cursor:default;background:var(--soft);";
+    infoWrap.textContent = c.numero;
+
+    const info = document.createElement("div");
+    info.className = "info";
+    info.innerHTML = `
+      <p class="t1">${c.apelido || ("Casa " + c.numero)}${c.papel === "sindico" ? " · síndico" : ""}</p>
+      <p class="t2">${c.nomeResponsavel || "sem responsável cadastrado"}</p>`;
+
+    div.appendChild(infoWrap);
+    div.appendChild(info);
+
+    // botão de promover/rebaixar papel (só aparece na lista de admin)
+    const btn = document.createElement("button");
+    btn.className = "icon-btn";
+    btn.style.marginLeft = "auto";
+    btn.title = c.papel === "sindico" ? "tornar morador" : "tornar síndico";
+    btn.innerHTML = c.papel === "sindico"
+      ? `<i class="ti ti-arrow-down"></i>`
+      : `<i class="ti ti-arrow-up"></i>`;
+    btn.onclick = ()=> alternarPapelCasa(c.id, c.papel);
+    div.appendChild(btn);
+
     el.appendChild(div);
   });
 }
+
+window.alternarPapelCasa = async function(casaId, papelAtual){
+  const novoPapel = papelAtual === "sindico" ? "morador" : "sindico";
+  const casa = todasAsCasas.find(c=> c.id === casaId);
+  const rotulo = novoPapel === "sindico" ? "síndico" : "morador";
+  if(!confirm(`Tornar a Casa ${casa ? casa.numero : ""} "${rotulo}"?`)) return;
+  try{
+    await updateDoc(doc(db, "Condominios", TENANT_ID, "casas", casaId), { papel: novoPapel });
+    if(casa) casa.papel = novoPapel;
+    if(casaId === casaAtualId){
+      ehSindico = novoPapel === "sindico";
+      casaAtual.papel = novoPapel;
+      document.getElementById("tab-aprovacoes").style.display = (ehSindico || ehDev) ? "block" : "none";
+      document.getElementById("drawer-casa").textContent = `Casa ${casaAtual.numero}` + (ehSindico ? " · síndico" : "") + (ehDev ? " · desenvolvedor" : "");
+    }
+    showToast(`Casa agora é ${rotulo}.`);
+    renderizarListaCasas();
+  }catch(e){
+    showToast("Não foi possível alterar. Tente novamente.");
+  }
+};
 
 window.cadastrarNovaCasa = async function(){
   const numero = document.getElementById("nc-numero").value.trim();
