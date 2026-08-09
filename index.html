@@ -465,7 +465,7 @@
     <h3>Casas cadastradas</h3>
     <div id="lista-casas"></div>
     <div style="height:14px;"></div>
-    <p class="sub" style="margin:0 0 10px;">cadastrar nova casa (senha inicial padrão: 1234)</p>
+    <p class="sub" style="margin:0 0 10px;">cadastrar nova casa (senha inicial padrão: 123456)</p>
     <div class="field"><label>Número da casa</label><input type="text" id="nc-numero" placeholder="ex: 16" inputmode="numeric"></div>
     <div class="field"><label>Papel</label>
       <select id="nc-papel" onchange="onMudarPapelNovaCasa()"><option value="morador">morador</option><option value="sindico">síndico</option></select>
@@ -518,7 +518,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026080004";
+const VERSAO_APP = "2026080005";
 
 /* ===================================================================== */
 
@@ -1371,7 +1371,7 @@ window.cadastrarNovaCasa = async function(){
   }
   const emailLogin = emailVirtualDaCasa(numero);
   try{
-    const cred = await createUserWithEmailAndPassword(auth, emailLogin, "1234");
+    const cred = await createUserWithEmailAndPassword(auth, emailLogin, "123456");
     await setDoc(doc(db, "Condominios", TENANT_ID, "casas", cred.user.uid), {
       numero, papel, apelido: "", nomeResponsavel: "", telefone: "",
       emailContato: emailContato,
@@ -1380,14 +1380,20 @@ window.cadastrarNovaCasa = async function(){
     if(papel === "sindico"){
       await setDoc(doc(db, "Condominios", TENANT_ID), { emailSindico: emailContato }, { merge:true });
     }
-    showToast(`Casa ${numero} cadastrada com senha padrão 1234.`);
+    showToast(`Casa ${numero} cadastrada com senha padrão 123456.`);
     document.getElementById("nc-numero").value = "";
     document.getElementById("nc-email").value = "";
     // recarrega lista (sem trocar a sessão logada, pois createUser troca o usuário atual do SDK)
     showToast("Atenção: a criação de uma nova casa troca a sessão ativa. Faça login novamente como síndico/dev.");
     await signOut(auth);
   }catch(e){
-    showToast("Não foi possível cadastrar. O número já existe?");
+    if(e.code === "auth/email-already-in-use"){
+      showToast(`A Casa ${numero} já está cadastrada.`);
+    }else if(e.code === "auth/weak-password"){
+      showToast("Senha padrão rejeitada pelo Firebase (fraca). Avise o desenvolvedor.");
+    }else{
+      showToast("Não foi possível cadastrar: " + (e.code || e.message || "erro desconhecido"));
+    }
   }
 };
 
