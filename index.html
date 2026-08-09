@@ -163,6 +163,46 @@
   .empty i{ font-size:30px; margin-bottom:8px; display:block; color:var(--muted-2); }
   .empty p{ font-size:13px; margin:0; }
 
+  /* ===================== TELA INICIAL (HOME) ===================== */
+  #screen-home{ padding:0 16px 90px; }
+  .home-banner{ margin-top:14px; background:linear-gradient(135deg, var(--soft), var(--accent-light)); border-radius:16px; padding:20px; }
+  .home-banner .tag{ font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:#8A6B47; margin:0 0 6px; }
+  .home-banner h2{ font-family:'Fraunces', serif; font-weight:500; font-size:17px; margin:0 0 6px; color:var(--deep); }
+  .home-banner p{ font-size:13px; margin:0; color:#6B5540; line-height:1.4; }
+  .home-btn{ width:100%; border-radius:16px; border:none; padding:22px 18px; text-align:left; display:flex; align-items:center; gap:14px; margin-top:14px; }
+  .home-btn .ic{ width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex:none; }
+  .home-btn .tx h3{ margin:0 0 3px; font-family:'Fraunces', serif; font-weight:500; font-size:15px; }
+  .home-btn .tx p{ margin:0; font-size:12px; }
+  .home-btn.primary{ background:var(--accent); }
+  .home-btn.primary .ic{ background:rgba(255,255,255,.2); }
+  .home-btn.primary .ic i{ color:#fff; font-size:20px; }
+  .home-btn.primary .tx h3{ color:#fff; }
+  .home-btn.primary .tx p{ color:rgba(255,255,255,.85); }
+  .home-btn.disabled{ background:var(--soft); cursor:default; }
+  .home-btn.disabled .ic{ background:rgba(184,118,63,.14); }
+  .home-btn.disabled .ic i{ color:var(--muted); font-size:20px; }
+  .home-btn.disabled .tx h3{ color:var(--muted); }
+  .home-btn.disabled .tx p{ color:var(--muted-2); }
+  .home-banner-btn{ margin-top:12px; background:#fff; color:var(--accent); border:none; border-radius:10px; padding:9px 16px; font-size:13px; font-weight:500; }
+  .home-banner.aviso-condo{ background:var(--soft); margin-top:12px; }
+  .home-banner.aviso-condo .tag{ color:var(--muted); }
+  .home-banner.aviso-condo h2{ font-size:15px; }
+  .home-banner.aviso-condo p{ color:var(--muted); }
+
+  #home-status-banner{ position:relative; overflow:hidden; }
+  #home-status-banner .periodo-icon{ position:absolute; top:-18px; right:-14px; font-size:110px; opacity:.16; color:#fff; }
+  .periodo-manha{ background:linear-gradient(135deg, #F3C979, #D9A876); }
+  .periodo-tarde{ background:linear-gradient(135deg, #E0954F, #B8763F); }
+  .periodo-noite{ background:linear-gradient(135deg, #4A3B6B, #2E2440); }
+  .periodo-noite .tag, .periodo-noite h2{ color:#fff; }
+  .periodo-noite p{ color:rgba(255,255,255,.78); }
+  .periodo-noite .home-banner-btn{ color:#2E2440; }
+  .periodo-manha .tag, .periodo-tarde .tag{ color:rgba(59,47,38,.65); }
+  .periodo-manha h2, .periodo-tarde h2{ color:var(--deep); }
+  .periodo-manha p, .periodo-tarde p{ color:#6B5540; }
+  .back-row{ display:flex; align-items:center; gap:8px; padding:14px 16px 0; color:var(--muted); font-size:13px; cursor:pointer; }
+  .back-row i{ font-size:16px; }
+
   /* ===================== MODAL ===================== */
   .modal-wrap{ position:fixed; inset:0; z-index:60; display:none; align-items:flex-end; justify-content:center; background:rgba(59,47,38,.45); }
   .modal-wrap.show{ display:flex; }
@@ -231,7 +271,7 @@
   <div class="phone">
 
     <div class="topbar">
-      <div class="brand">
+      <div class="brand" onclick="voltarInicio()" style="cursor:pointer;">
         <div class="avatar" id="topbar-avatar">
           <i class="ti ti-home" style="font-size:14px;color:var(--accent);"></i>
         </div>
@@ -240,14 +280,45 @@
       <div class="burger" onclick="abrirMenu()"><i class="ti ti-menu-2"></i></div>
     </div>
 
-    <div class="tabs" id="tabs-nav">
+    <div class="tabs" id="tabs-nav" style="display:none;">
       <div class="tab active" data-tab="agenda" onclick="mudarTab('agenda')">agenda</div>
       <div class="tab" data-tab="reservas" onclick="mudarTab('reservas')">reservas</div>
       <div class="tab" data-tab="aprovacoes" id="tab-aprovacoes" style="display:none;" onclick="mudarTab('aprovacoes')">aprovações</div>
     </div>
 
+    <!-- ===== TELA INICIAL (HOME) ===== -->
+    <div class="screen active" id="screen-home">
+      <div class="home-banner" id="home-status-banner">
+        <i class="ti periodo-icon" id="home-status-icon"></i>
+        <p class="tag" id="home-status-tag">bem-vindo(a)</p>
+        <h2 id="home-status-titulo">—</h2>
+        <p id="home-status-texto">—</p>
+        <button class="home-banner-btn" id="home-status-btn" style="display:none;" onclick="abrirModal('modal-perfil')">completar cadastro</button>
+      </div>
+
+      <div class="home-banner aviso-condo" id="home-aviso-condo" style="display:none;">
+        <p class="tag">aviso</p>
+        <h2 id="home-banner-titulo">—</h2>
+        <p id="home-banner-texto">—</p>
+      </div>
+
+      <button class="home-btn primary" onclick="abrirReservaSalao()">
+        <div class="ic"><i class="ti ti-calendar-event"></i></div>
+        <div class="tx"><h3>Reserva do Salão</h3><p>ver agenda, pedir e acompanhar reservas</p></div>
+      </button>
+
+      <button class="home-btn disabled" disabled>
+        <div class="ic"><i class="ti ti-tools"></i></div>
+        <div class="tx"><h3>Em construção</h3><p>novidades em breve</p></div>
+      </button>
+    </div>
+
+    <div class="back-row" id="back-row" style="display:none;" onclick="voltarInicio()">
+      <i class="ti ti-arrow-left"></i> início
+    </div>
+
     <!-- ===== TELA AGENDA ===== -->
-    <div class="screen active" id="screen-agenda">
+    <div class="screen" id="screen-agenda">
       <div class="cal-head">
         <button onclick="mudarMes(-1)"><i class="ti ti-chevron-left"></i></button>
         <span class="mes" id="cal-mes-label">—</span>
@@ -361,6 +432,8 @@
     <div class="field"><label>Nome do condomínio</label><input type="text" id="cd-nome"></div>
     <div class="field"><label>Subtítulo</label><input type="text" id="cd-subtitulo"></div>
     <div class="field"><label>E-mail do síndico (recebe notificações)</label><input type="text" id="cd-email-sindico"></div>
+    <div class="field"><label>Título do aviso na tela inicial</label><input type="text" id="cd-aviso-titulo" placeholder="ex: Bem-vindo(a)!"></div>
+    <div class="field"><label>Texto do aviso na tela inicial</label><textarea id="cd-aviso-texto" rows="3" placeholder="ex: Manutenção da piscina dia 15."></textarea></div>
     <button class="btn btn-primary" onclick="salvarCondominio()">salvar alterações</button>
     <div class="lock-note"><i class="ti ti-lock"></i><span>visível apenas para síndico e desenvolvedor</span></div>
   </div>
@@ -625,6 +698,12 @@ async function iniciarApp(){
   if(condominioData.fotoBase64){
     document.getElementById("topbar-avatar").innerHTML = `<img src="${condominioData.fotoBase64}">`;
   }
+  if(condominioData.avisoTitulo) document.getElementById("home-banner-titulo").textContent = condominioData.avisoTitulo;
+  if(condominioData.avisoTexto) document.getElementById("home-banner-texto").textContent = condominioData.avisoTexto;
+  if(condominioData.avisoTitulo || condominioData.avisoTexto){
+    document.getElementById("home-aviso-condo").style.display = "block";
+  }
+  renderizarBannerStatus();
 
   document.getElementById("drawer-nome").textContent = casaAtual.nomeResponsavel || `Casa ${casaAtual.numero}`;
   document.getElementById("drawer-casa").textContent = `Casa ${casaAtual.numero}` + (ehSindico ? " · síndico" : "") + (ehDev ? " · desenvolvedor" : "");
@@ -661,6 +740,59 @@ window.mudarTab = function(nome){
   if(nome === "reservas") renderizarMinhasReservas();
   if(nome === "aprovacoes") renderizarAprovacoes();
 };
+
+window.abrirReservaSalao = function(){
+  document.getElementById("tabs-nav").style.display = "flex";
+  document.getElementById("back-row").style.display = "flex";
+  mudarTab("agenda");
+};
+
+window.voltarInicio = function(){
+  document.getElementById("tabs-nav").style.display = "none";
+  document.getElementById("back-row").style.display = "none";
+  document.querySelectorAll(".screen").forEach(s=> s.classList.remove("active"));
+  document.getElementById("screen-home").classList.add("active");
+};
+
+function cadastroEstaCompleto(){
+  return !!(casaAtual.nomeResponsavel && casaAtual.nomeResponsavel.trim()) &&
+         !!(casaAtual.telefone && casaAtual.telefone.trim());
+}
+
+function periodoDoDia(){
+  const h = new Date().getHours();
+  if(h >= 5 && h < 12)  return { nome:"manha", saudacao:"Bom dia",  icone:"ti-sun" };
+  if(h >= 12 && h < 18) return { nome:"tarde", saudacao:"Boa tarde", icone:"ti-sun-2" };
+  return { nome:"noite", saudacao:"Boa noite", icone:"ti-moon-stars" };
+}
+
+function renderizarBannerStatus(){
+  const banner = document.getElementById("home-status-banner");
+  const icone = document.getElementById("home-status-icon");
+  const tag = document.getElementById("home-status-tag");
+  const titulo = document.getElementById("home-status-titulo");
+  const texto = document.getElementById("home-status-texto");
+  const btn = document.getElementById("home-status-btn");
+
+  const periodo = periodoDoDia();
+  banner.classList.remove("periodo-manha", "periodo-tarde", "periodo-noite");
+  banner.classList.add("periodo-" + periodo.nome);
+  icone.className = "ti periodo-icon " + periodo.icone;
+
+  if(cadastroEstaCompleto()){
+    const primeiroNome = casaAtual.nomeResponsavel.trim().split(" ")[0];
+    tag.textContent = periodo.saudacao.toLowerCase();
+    titulo.textContent = `${periodo.saudacao}, ${primeiroNome}!`;
+    texto.textContent = `Casa ${casaAtual.numero} — acompanhe aqui a agenda do salão de festas.`;
+    btn.style.display = "none";
+  }else{
+    tag.textContent = periodo.saudacao.toLowerCase() + " · cadastro pendente";
+    titulo.textContent = "Você ainda não completou seu cadastro";
+    texto.textContent = "Adicione seu nome e telefone para facilitar o contato do síndico.";
+    btn.style.display = "inline-block";
+  }
+}
+window.renderizarBannerStatus = renderizarBannerStatus;
 
 /* =====================================================================
    CALENDÁRIO
@@ -1020,6 +1152,7 @@ window.salvarPerfil = async function(){
     await updateDoc(doc(db, "Condominios", TENANT_ID, "casas", casaAtualId), { apelido, nomeResponsavel: nome, telefone });
     casaAtual.apelido = apelido; casaAtual.nomeResponsavel = nome; casaAtual.telefone = telefone;
     document.getElementById("drawer-nome").textContent = nome || `Casa ${casaAtual.numero}`;
+    renderizarBannerStatus();
     showToast("Cadastro atualizado.");
     fecharModal("modal-perfil");
   }catch(e){
@@ -1053,6 +1186,8 @@ window.abrirModal = function(id){
     document.getElementById("cd-nome").value = condominioData.nome || "";
     document.getElementById("cd-subtitulo").value = condominioData.subtitulo || "";
     document.getElementById("cd-email-sindico").value = condominioData.emailSindico || "";
+    document.getElementById("cd-aviso-titulo").value = condominioData.avisoTitulo || "";
+    document.getElementById("cd-aviso-texto").value = condominioData.avisoTexto || "";
     if(condominioData.fotoBase64){
       document.getElementById("cd-foto-preview").src = condominioData.fotoBase64;
       document.getElementById("cd-foto-preview").style.display = "block";
@@ -1080,12 +1215,16 @@ window.salvarCondominio = async function(){
   const nome = document.getElementById("cd-nome").value.trim();
   const subtitulo = document.getElementById("cd-subtitulo").value.trim();
   const emailSindico = document.getElementById("cd-email-sindico").value.trim();
-  const dados = { nome, subtitulo, emailSindico };
+  const avisoTitulo = document.getElementById("cd-aviso-titulo").value.trim();
+  const avisoTexto = document.getElementById("cd-aviso-texto").value.trim();
+  const dados = { nome, subtitulo, emailSindico, avisoTitulo, avisoTexto };
   if(condominioData._novaFoto) dados.fotoBase64 = condominioData._novaFoto;
   try{
     await setDoc(doc(db, "Condominios", TENANT_ID), dados, { merge:true });
     Object.assign(condominioData, dados);
     document.getElementById("topbar-nome").textContent = nome;
+    if(avisoTitulo) document.getElementById("home-banner-titulo").textContent = avisoTitulo;
+    if(avisoTexto) document.getElementById("home-banner-texto").textContent = avisoTexto;
     if(dados.fotoBase64) document.getElementById("topbar-avatar").innerHTML = `<img src="${dados.fotoBase64}">`;
     showToast("Configurações salvas.");
     fecharModal("modal-condominio");
