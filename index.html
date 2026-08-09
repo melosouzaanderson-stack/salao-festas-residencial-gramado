@@ -174,7 +174,9 @@
   .home-btn .ic{ width:48px; height:48px; border-radius:14px; display:flex; align-items:center; justify-content:center; flex:none; }
   .home-btn .tx h3{ margin:0 0 3px; font-family:'Fraunces', serif; font-weight:500; font-size:14px; }
   .home-btn .tx p{ margin:0; font-size:11px; }
-  .home-btn.primary{ background:var(--accent); }
+  .home-btn.primary{ background:var(--accent); position:relative; overflow:hidden; }
+  .home-btn-watermark{ position:absolute; inset:0; background-size:cover; background-position:center; opacity:.16; z-index:0; }
+  .home-btn.primary .ic, .home-btn.primary .tx{ position:relative; z-index:1; }
   .home-btn.primary .ic{ background:rgba(255,255,255,.2); }
   .home-btn.primary .ic i{ color:#fff; font-size:22px; }
   .home-btn.primary .tx h3{ color:#fff; }
@@ -305,6 +307,7 @@
 
       <div class="home-btn-row">
         <button class="home-btn primary" onclick="abrirReservaSalao()">
+          <div class="home-btn-watermark" id="home-btn-watermark-salao"></div>
           <div class="ic"><i class="ti ti-calendar-event"></i></div>
           <div class="tx"><h3>Reserva do Salão</h3><p>ver agenda e pedir reserva</p></div>
         </button>
@@ -437,6 +440,19 @@
     <div class="field"><label>E-mail do síndico (recebe notificações)</label><input type="text" id="cd-email-sindico"></div>
     <div class="field"><label>Título do aviso na tela inicial</label><input type="text" id="cd-aviso-titulo" placeholder="ex: Bem-vindo(a)!"></div>
     <div class="field"><label>Texto do aviso na tela inicial</label><textarea id="cd-aviso-texto" rows="3" placeholder="ex: Manutenção da piscina dia 15."></textarea></div>
+
+    <div class="field">
+      <label>Foto do salão (marca d'água no botão "Reserva do Salão")</label>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:64px;height:64px;border-radius:10px;background:var(--soft);display:flex;align-items:center;justify-content:center;overflow:hidden;flex:none;cursor:pointer;" onclick="document.getElementById('cd-foto-salao-input').click()">
+          <img id="cd-foto-salao-preview" style="display:none;width:100%;height:100%;object-fit:cover;">
+          <i class="ti ti-photo" id="cd-foto-salao-icone" style="font-size:22px;color:var(--muted);"></i>
+        </div>
+        <button class="btn btn-ghost btn-sm" style="width:auto;padding:0 14px;" onclick="document.getElementById('cd-foto-salao-input').click()">escolher foto</button>
+      </div>
+      <input type="file" id="cd-foto-salao-input" accept="image/*" style="display:none;" onchange="onFotoSalaoSelecionada(this)">
+    </div>
+
     <button class="btn btn-primary" onclick="salvarCondominio()">salvar alterações</button>
     <div class="lock-note"><i class="ti ti-lock"></i><span>visível apenas para síndico e desenvolvedor</span></div>
   </div>
@@ -452,7 +468,11 @@
     <p class="sub" style="margin:0 0 10px;">cadastrar nova casa (senha inicial padrão: 1234)</p>
     <div class="field"><label>Número da casa</label><input type="text" id="nc-numero" placeholder="ex: 16" inputmode="numeric"></div>
     <div class="field"><label>Papel</label>
-      <select id="nc-papel"><option value="morador">morador</option><option value="sindico">síndico</option></select>
+      <select id="nc-papel" onchange="onMudarPapelNovaCasa()"><option value="morador">morador</option><option value="sindico">síndico</option></select>
+    </div>
+    <div class="field" id="nc-campo-email">
+      <label id="nc-email-label">E-mail de contato (opcional)</label>
+      <input type="email" id="nc-email" placeholder="email@exemplo.com">
     </div>
     <button class="btn btn-primary" onclick="cadastrarNovaCasa()">cadastrar casa</button>
   </div>
@@ -494,11 +514,11 @@ const EMAIL_DESENVOLVEDOR = "souza.iatech@gmail.com";
 
 // EmailJS — preencha com as chaves da sua conta em https://www.emailjs.com
 // (Serviço gratuito: cria os 3 valores abaixo no painel deles, sem custo.)
-const EMAILJS_PUBLIC_KEY  = "COLE_AQUI_SUA_PUBLIC_KEY";
-const EMAILJS_SERVICE_ID  = "COLE_AQUI_SEU_SERVICE_ID";
-const EMAILJS_TEMPLATE_ID = "COLE_AQUI_SEU_TEMPLATE_ID";
+const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
+const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
+const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026080001";
+const VERSAO_APP = "2026080004";
 
 /* ===================================================================== */
 
@@ -700,6 +720,9 @@ async function iniciarApp(){
   document.getElementById("topbar-nome").textContent = condominioData.nome || "Condomínio";
   if(condominioData.fotoBase64){
     document.getElementById("topbar-avatar").innerHTML = `<img src="${condominioData.fotoBase64}">`;
+  }
+  if(condominioData.fotoSalao){
+    document.getElementById("home-btn-watermark-salao").style.backgroundImage = `url(${condominioData.fotoSalao})`;
   }
   if(condominioData.avisoTitulo) document.getElementById("home-banner-titulo").textContent = condominioData.avisoTitulo;
   if(condominioData.avisoTexto) document.getElementById("home-banner-texto").textContent = condominioData.avisoTexto;
@@ -1196,6 +1219,11 @@ window.abrirModal = function(id){
       document.getElementById("cd-foto-preview").style.display = "block";
       document.getElementById("cd-foto-icone").style.display = "none";
     }
+    if(condominioData.fotoSalao){
+      document.getElementById("cd-foto-salao-preview").src = condominioData.fotoSalao;
+      document.getElementById("cd-foto-salao-preview").style.display = "block";
+      document.getElementById("cd-foto-salao-icone").style.display = "none";
+    }
   }
   if(id === "modal-casas") renderizarListaCasas();
   document.getElementById(id).classList.add("show");
@@ -1214,6 +1242,19 @@ window.onFotoCondominioSelecionada = function(input){
   reader.readAsDataURL(file);
 };
 
+window.onFotoSalaoSelecionada = function(input){
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    condominioData._novaFotoSalao = reader.result;
+    document.getElementById("cd-foto-salao-preview").src = reader.result;
+    document.getElementById("cd-foto-salao-preview").style.display = "block";
+    document.getElementById("cd-foto-salao-icone").style.display = "none";
+  };
+  reader.readAsDataURL(file);
+};
+
 window.salvarCondominio = async function(){
   const nome = document.getElementById("cd-nome").value.trim();
   const subtitulo = document.getElementById("cd-subtitulo").value.trim();
@@ -1222,6 +1263,7 @@ window.salvarCondominio = async function(){
   const avisoTexto = document.getElementById("cd-aviso-texto").value.trim();
   const dados = { nome, subtitulo, emailSindico, avisoTitulo, avisoTexto };
   if(condominioData._novaFoto) dados.fotoBase64 = condominioData._novaFoto;
+  if(condominioData._novaFotoSalao) dados.fotoSalao = condominioData._novaFotoSalao;
   try{
     await setDoc(doc(db, "Condominios", TENANT_ID), dados, { merge:true });
     Object.assign(condominioData, dados);
@@ -1229,6 +1271,7 @@ window.salvarCondominio = async function(){
     if(avisoTitulo) document.getElementById("home-banner-titulo").textContent = avisoTitulo;
     if(avisoTexto) document.getElementById("home-banner-texto").textContent = avisoTexto;
     if(dados.fotoBase64) document.getElementById("topbar-avatar").innerHTML = `<img src="${dados.fotoBase64}">`;
+    if(dados.fotoSalao) document.getElementById("home-btn-watermark-salao").style.backgroundImage = `url(${dados.fotoSalao})`;
     showToast("Configurações salvas.");
     fecharModal("modal-condominio");
   }catch(e){
@@ -1279,10 +1322,24 @@ window.alternarPapelCasa = async function(casaId, papelAtual){
   const novoPapel = papelAtual === "sindico" ? "morador" : "sindico";
   const casa = todasAsCasas.find(c=> c.id === casaId);
   const rotulo = novoPapel === "sindico" ? "síndico" : "morador";
-  if(!confirm(`Tornar a Casa ${casa ? casa.numero : ""} "${rotulo}"?`)) return;
+
+  let emailContato = casa ? casa.emailContato : "";
+  if(novoPapel === "sindico"){
+    emailContato = (prompt(`E-mail do síndico da Casa ${casa ? casa.numero : ""} (obrigatório, recebe as notificações de reserva):`, emailContato || "") || "").trim();
+    if(!emailContato){ showToast("E-mail obrigatório — operação cancelada."); return; }
+  }else{
+    if(!confirm(`Tornar a Casa ${casa ? casa.numero : ""} "${rotulo}"?`)) return;
+  }
+
   try{
-    await updateDoc(doc(db, "Condominios", TENANT_ID, "casas", casaId), { papel: novoPapel });
-    if(casa) casa.papel = novoPapel;
+    const dados = { papel: novoPapel };
+    if(novoPapel === "sindico") dados.emailContato = emailContato;
+    await updateDoc(doc(db, "Condominios", TENANT_ID, "casas", casaId), dados);
+    if(novoPapel === "sindico"){
+      await setDoc(doc(db, "Condominios", TENANT_ID), { emailSindico: emailContato }, { merge:true });
+      condominioData.emailSindico = emailContato;
+    }
+    if(casa){ casa.papel = novoPapel; if(novoPapel === "sindico") casa.emailContato = emailContato; }
     if(casaId === casaAtualId){
       ehSindico = novoPapel === "sindico";
       casaAtual.papel = novoPapel;
@@ -1296,19 +1353,36 @@ window.alternarPapelCasa = async function(casaId, papelAtual){
   }
 };
 
+window.onMudarPapelNovaCasa = function(){
+  const papel = document.getElementById("nc-papel").value;
+  document.getElementById("nc-email-label").textContent = (papel === "sindico")
+    ? "E-mail do síndico (obrigatório — recebe as notificações)"
+    : "E-mail de contato (opcional)";
+};
+
 window.cadastrarNovaCasa = async function(){
   const numero = document.getElementById("nc-numero").value.trim();
   const papel = document.getElementById("nc-papel").value;
+  const emailContato = document.getElementById("nc-email").value.trim();
   if(!numero){ showToast("Informe o número da casa."); return; }
-  const email = emailVirtualDaCasa(numero);
+  if(papel === "sindico" && !emailContato){
+    showToast("Informe o e-mail do síndico — é obrigatório para as notificações.");
+    return;
+  }
+  const emailLogin = emailVirtualDaCasa(numero);
   try{
-    const cred = await createUserWithEmailAndPassword(auth, email, "1234");
+    const cred = await createUserWithEmailAndPassword(auth, emailLogin, "1234");
     await setDoc(doc(db, "Condominios", TENANT_ID, "casas", cred.user.uid), {
       numero, papel, apelido: "", nomeResponsavel: "", telefone: "",
+      emailContato: emailContato,
       senhaTrocada: false, uid: cred.user.uid, criadoEm: serverTimestamp()
     });
+    if(papel === "sindico"){
+      await setDoc(doc(db, "Condominios", TENANT_ID), { emailSindico: emailContato }, { merge:true });
+    }
     showToast(`Casa ${numero} cadastrada com senha padrão 1234.`);
     document.getElementById("nc-numero").value = "";
+    document.getElementById("nc-email").value = "";
     // recarrega lista (sem trocar a sessão logada, pois createUser troca o usuário atual do SDK)
     showToast("Atenção: a criação de uma nova casa troca a sessão ativa. Faça login novamente como síndico/dev.");
     await signOut(auth);
