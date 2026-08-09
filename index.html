@@ -518,7 +518,7 @@ window.confirmarTrocaSenhaInicial = async function(){
   if(nova !== nova2){ msg.textContent = "As senhas não coincidem."; msg.className="login-msg err"; return; }
   try{
     await updatePassword(auth.currentUser, nova);
-    await updateDoc(doc(db, "condominios", TENANT_ID, "casas", casaAtualId), { senhaTrocada: true });
+    await updateDoc(doc(db, "Condominios", TENANT_ID, "casas", casaAtualId), { senhaTrocada: true });
     casaAtual.senhaTrocada = true;
     showToast("Senha atualizada!");
     document.getElementById("bloco-trocar-senha").style.display = "none";
@@ -540,7 +540,7 @@ window.fazerLogout = async function(){
    ===================================================================== */
 async function carregarDadosCondominioParaLogin(){
   try{
-    const snap = await getDoc(doc(db, "condominios", TENANT_ID));
+    const snap = await getDoc(doc(db, "Condominios", TENANT_ID));
     if(snap.exists()){
       const d = snap.data();
       if(d.nome) document.getElementById("login-nome-condominio").textContent = d.nome;
@@ -575,7 +575,7 @@ onAuthStateChanged(auth, async (user) => {
   ehDev = (user.email || "").toLowerCase() === EMAIL_DESENVOLVEDOR.toLowerCase();
 
   // localizar o doc da casa pelo email virtual (ou, para o dev, pelo campo uid/email salvo)
-  const casasSnap = await getDocs(collection(db, "condominios", TENANT_ID, "casas"));
+  const casasSnap = await getDocs(collection(db, "Condominios", TENANT_ID, "casas"));
   let achou = null, achouId = null;
   casasSnap.forEach(d=>{
     const v = d.data();
@@ -611,7 +611,7 @@ onAuthStateChanged(auth, async (user) => {
 async function iniciarApp(){
   document.getElementById("app-shell").style.display = "block";
 
-  const condSnap = await getDoc(doc(db, "condominios", TENANT_ID));
+  const condSnap = await getDoc(doc(db, "Condominios", TENANT_ID));
   condominioData = condSnap.exists() ? condSnap.data() : {};
 
   document.getElementById("topbar-nome").textContent = condominioData.nome || "Condomínio";
@@ -633,7 +633,7 @@ async function iniciarApp(){
   }
 
   if(ehSindico || ehDev){
-    const casasSnap = await getDocs(collection(db, "condominios", TENANT_ID, "casas"));
+    const casasSnap = await getDocs(collection(db, "Condominios", TENANT_ID, "casas"));
     todasAsCasas = [];
     casasSnap.forEach(d=> todasAsCasas.push({ id:d.id, ...d.data() }));
     todasAsCasas.sort((a,b)=> (a.numero+"").localeCompare(b.numero+"", "pt-BR", {numeric:true}));
@@ -671,7 +671,7 @@ async function carregarReservasDoMes(){
   const inicio = isoDeData(y, m, 1);
   const fim = isoDeData(y, m, new Date(y, m+1, 0).getDate());
   const q = query(
-    collection(db, "condominios", TENANT_ID, "reservas"),
+    collection(db, "Condominios", TENANT_ID, "reservas"),
     where("data", ">=", inicio),
     where("data", "<=", fim)
   );
@@ -829,7 +829,7 @@ window.confirmarPedidoReserva = async function(){
 
   const reservaId = `${diaSelecionadoISO}`;
   try{
-    await setDoc(doc(db, "condominios", TENANT_ID, "reservas", reservaId), {
+    await setDoc(doc(db, "Condominios", TENANT_ID, "reservas", reservaId), {
       data: diaSelecionadoISO,
       casaId: casaIdEscolhida,
       casaNumero: casaNumeroEscolhida,
@@ -866,21 +866,21 @@ async function notificarSindicoNovoPedido(dataIso, casaNumero){
    APROVAÇÃO / CANCELAMENTO (síndico / dev)
    ===================================================================== */
 async function aprovarReserva(id){
-  await updateDoc(doc(db, "condominios", TENANT_ID, "reservas", id), { status: "confirmada" });
+  await updateDoc(doc(db, "Condominios", TENANT_ID, "reservas", id), { status: "confirmada" });
   fecharModal("modal-detalhe-dia");
   showToast("Reserva aprovada.");
   await carregarReservasDoMes();
   renderizarTudo();
 }
 async function recusarReserva(id){
-  await updateDoc(doc(db, "condominios", TENANT_ID, "reservas", id), { status: "recusada" });
+  await updateDoc(doc(db, "Condominios", TENANT_ID, "reservas", id), { status: "recusada" });
   fecharModal("modal-detalhe-dia");
   showToast("Reserva recusada.");
   await carregarReservasDoMes();
   renderizarTudo();
 }
 async function cancelarReserva(id){
-  await updateDoc(doc(db, "condominios", TENANT_ID, "reservas", id), { status: "recusada" });
+  await updateDoc(doc(db, "Condominios", TENANT_ID, "reservas", id), { status: "recusada" });
   fecharModal("modal-detalhe-dia");
   showToast("Reserva cancelada.");
   await carregarReservasDoMes();
@@ -892,7 +892,7 @@ window.cancelarReserva = cancelarReserva;
 
 function escutarPendentesEmTempoReal(){
   if(!(ehSindico || ehDev)) return;
-  const q = query(collection(db, "condominios", TENANT_ID, "reservas"), where("status","==","pendente"));
+  const q = query(collection(db, "Condominios", TENANT_ID, "reservas"), where("status","==","pendente"));
   onSnapshot(q, (snap)=>{
     const badge = document.getElementById("tab-aprovacoes");
     const n = snap.size;
@@ -1010,7 +1010,7 @@ window.salvarPerfil = async function(){
   const nome = document.getElementById("pf-nome").value.trim();
   const telefone = document.getElementById("pf-telefone").value.trim();
   try{
-    await updateDoc(doc(db, "condominios", TENANT_ID, "casas", casaAtualId), { apelido, nomeResponsavel: nome, telefone });
+    await updateDoc(doc(db, "Condominios", TENANT_ID, "casas", casaAtualId), { apelido, nomeResponsavel: nome, telefone });
     casaAtual.apelido = apelido; casaAtual.nomeResponsavel = nome; casaAtual.telefone = telefone;
     document.getElementById("drawer-nome").textContent = nome || `Casa ${casaAtual.numero}`;
     showToast("Cadastro atualizado.");
@@ -1076,7 +1076,7 @@ window.salvarCondominio = async function(){
   const dados = { nome, subtitulo, emailSindico };
   if(condominioData._novaFoto) dados.fotoBase64 = condominioData._novaFoto;
   try{
-    await setDoc(doc(db, "condominios", TENANT_ID), dados, { merge:true });
+    await setDoc(doc(db, "Condominios", TENANT_ID), dados, { merge:true });
     Object.assign(condominioData, dados);
     document.getElementById("topbar-nome").textContent = nome;
     if(dados.fotoBase64) document.getElementById("topbar-avatar").innerHTML = `<img src="${dados.fotoBase64}">`;
@@ -1113,7 +1113,7 @@ window.cadastrarNovaCasa = async function(){
   const email = emailVirtualDaCasa(numero);
   try{
     const cred = await createUserWithEmailAndPassword(auth, email, "1234");
-    await setDoc(doc(db, "condominios", TENANT_ID, "casas", cred.user.uid), {
+    await setDoc(doc(db, "Condominios", TENANT_ID, "casas", cred.user.uid), {
       numero, papel, apelido: "", nomeResponsavel: "", telefone: "",
       senhaTrocada: false, uid: cred.user.uid, criadoEm: serverTimestamp()
     });
