@@ -597,7 +597,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026080016";
+const VERSAO_APP = "2026080017";
 
 /* ===================================================================== */
 
@@ -980,7 +980,7 @@ function abrirDetalheDia(iso, reserva){
   const hojeIso = isoDeData(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
   const passado = iso < hojeIso;
 
-  if(!reserva){
+  if(!reserva || reserva.status === "recusada"){
     if(passado){
       conteudo.innerHTML = `<p class="sub" style="margin:0;">Data já passou.</p>`;
     }else{
