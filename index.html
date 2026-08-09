@@ -148,7 +148,8 @@
   .legenda .sw{ width:10px; height:10px; border-radius:3px; display:inline-block; }
 
   .lista-titulo{ font-size:12px; color:var(--muted); margin:18px 0 8px; }
-  .item-reserva{ display:flex; align-items:center; gap:10px; padding:10px 0; border-top:1px solid var(--line); }
+  .item-reserva{ display:flex; align-items:center; gap:10px; padding:10px 0; border-top:1px solid var(--line); transition:opacity .22s ease; }
+  .item-reserva.removendo{ opacity:0; pointer-events:none; }
   .item-reserva .dia{ width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:12px; flex:none; }
   .item-reserva .info p{ margin:0; }
   .item-reserva .info .t1{ font-size:13px; color:var(--deep); }
@@ -174,13 +175,13 @@
   .home-btn .ic{ width:48px; height:48px; border-radius:14px; display:flex; align-items:center; justify-content:center; flex:none; }
   .home-btn .tx h3{ margin:0 0 3px; font-family:'Fraunces', serif; font-weight:500; font-size:14px; }
   .home-btn .tx p{ margin:0; font-size:11px; }
-  .home-btn.primary{ background:var(--accent); position:relative; overflow:hidden; }
+  .home-btn.primary{ background:linear-gradient(135deg, #F2B84B, #D9762E); position:relative; overflow:hidden; }
   .home-btn-watermark{ position:absolute; inset:0; background-size:cover; background-position:center; opacity:.16; z-index:0; }
   .home-btn.primary .ic, .home-btn.primary .tx{ position:relative; z-index:1; }
-  .home-btn.primary .ic{ background:rgba(255,255,255,.2); }
-  .home-btn.primary .ic i{ color:#fff; font-size:22px; }
-  .home-btn.primary .tx h3{ color:#fff; }
-  .home-btn.primary .tx p{ color:rgba(255,255,255,.85); }
+  .home-btn.primary .ic{ background:rgba(59,36,8,.14); }
+  .home-btn.primary .ic i{ color:#3B2408; font-size:22px; }
+  .home-btn.primary .tx h3{ color:#3B2408; }
+  .home-btn.primary .tx p{ color:#6B4A1E; }
   .home-btn.disabled{ background:var(--soft); cursor:default; }
   .home-btn.disabled .ic{ background:rgba(184,118,63,.14); }
   .home-btn.disabled .ic i{ color:var(--muted); font-size:22px; }
@@ -199,7 +200,7 @@
   #home-status-banner{ position:relative; overflow:hidden; }
   #home-status-banner .periodo-icon{ position:absolute; top:-18px; right:-14px; font-size:110px; opacity:.16; color:#fff; }
   .periodo-manha{ background:linear-gradient(135deg, #F3C979, #D9A876); }
-  .periodo-tarde{ background:linear-gradient(135deg, #E0954F, #B8763F); }
+  .periodo-tarde{ background:linear-gradient(135deg, #F2B84B, #D9762E); }
   .periodo-noite{ background:linear-gradient(135deg, #4A3B6B, #2E2440); }
   .periodo-noite .tag, .periodo-noite h2{ color:#fff; }
   .periodo-noite p{ color:rgba(255,255,255,.78); }
@@ -539,7 +540,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026080012";
+const VERSAO_APP = "2026080014";
 
 /* ===================================================================== */
 
@@ -821,7 +822,7 @@ function cadastroEstaCompleto(){
 function periodoDoDia(){
   const h = new Date().getHours();
   if(h >= 5 && h < 12)  return { nome:"manha", saudacao:"Bom dia",  icone:"ti-sun" };
-  if(h >= 12 && h < 18) return { nome:"tarde", saudacao:"Boa tarde", icone:"ti-sun-2" };
+  if(h >= 12 && h < 18) return { nome:"tarde", saudacao:"Boa tarde", icone:"ti-confetti" };
   return { nome:"noite", saudacao:"Boa noite", icone:"ti-moon-stars" };
 }
 
@@ -1063,29 +1064,56 @@ async function notificarSindicoNovoPedido(dataIso, casaNumero){
 /* =====================================================================
    APROVAÇÃO / CANCELAMENTO (síndico / dev)
    ===================================================================== */
+let pendentesGlobais = [];
+
+function desaparecerLinhas(id){
+  document.querySelectorAll(`[data-reserva-id="${id}"]`).forEach(el=> el.classList.add("removendo"));
+}
+
+function atualizarStatusLocal(id, novoStatus){
+  const r = reservasDoMes.find(r=> r.id === id);
+  if(r) r.status = novoStatus;
+  pendentesGlobais = pendentesGlobais.filter(r=> r.id !== id);
+}
+
 async function aprovarReserva(id){
-  await updateDoc(doc(db, "Condominios", TENANT_ID, "reservas", id), { status: "confirmada" });
+  desaparecerLinhas(id);
   fecharModal("modal-detalhe-dia");
   showToast("Reserva aprovada.");
-  await carregarReservasDoMes();
-  renderizarTudo();
-  renderizarAprovacoes();
+  try{
+    await updateDoc(doc(db, "Condominios", TENANT_ID, "reservas", id), { status: "confirmada" });
+    atualizarStatusLocal(id, "confirmada");
+    setTimeout(()=>{ renderizarTudo(); renderizarMinhasReservas(); renderListaPendentesElementos(); renderListaTodasElementos(); }, 230);
+  }catch(e){
+    showToast("Não foi possível aprovar. Tente novamente.");
+    document.querySelectorAll(`[data-reserva-id="${id}"]`).forEach(el=> el.classList.remove("removendo"));
+  }
 }
 async function recusarReserva(id){
-  await updateDoc(doc(db, "Condominios", TENANT_ID, "reservas", id), { status: "recusada" });
+  desaparecerLinhas(id);
   fecharModal("modal-detalhe-dia");
   showToast("Reserva recusada.");
-  await carregarReservasDoMes();
-  renderizarTudo();
-  renderizarAprovacoes();
+  try{
+    await updateDoc(doc(db, "Condominios", TENANT_ID, "reservas", id), { status: "recusada" });
+    atualizarStatusLocal(id, "recusada");
+    setTimeout(()=>{ renderizarTudo(); renderizarMinhasReservas(); renderListaPendentesElementos(); renderListaTodasElementos(); }, 230);
+  }catch(e){
+    showToast("Não foi possível recusar. Tente novamente.");
+    document.querySelectorAll(`[data-reserva-id="${id}"]`).forEach(el=> el.classList.remove("removendo"));
+  }
 }
 async function cancelarReserva(id){
-  await updateDoc(doc(db, "Condominios", TENANT_ID, "reservas", id), { status: "recusada" });
+  desaparecerLinhas(id);
   fecharModal("modal-detalhe-dia");
   showToast("Reserva cancelada.");
-  await carregarReservasDoMes();
-  renderizarTudo();
-  renderizarAprovacoes();
+  try{
+    await updateDoc(doc(db, "Condominios", TENANT_ID, "reservas", id), { status: "recusada" });
+    atualizarStatusLocal(id, "recusada");
+    setTimeout(()=>{ renderizarTudo(); renderizarMinhasReservas(); renderListaPendentesElementos(); renderListaTodasElementos(); }, 230);
+  }catch(e){
+    showToast("Não foi possível cancelar. Tente novamente.");
+    document.querySelectorAll(`[data-reserva-id="${id}"]`).forEach(el=> el.classList.remove("removendo"));
+  }
 }
 window.aprovarReserva = aprovarReserva;
 window.recusarReserva = recusarReserva;
@@ -1179,31 +1207,22 @@ function renderizarMinhasReservas(){
   minhas.forEach(r=> el.appendChild(itemReservaEl(r, true)));
 }
 
-async function renderizarAprovacoes(){
-  if(!(ehSindico || ehDev)) return;
-
+function renderListaPendentesElementos(){
   const elP = document.getElementById("lista-pendentes");
-  elP.innerHTML = `<div class="empty"><p>Carregando…</p></div>`;
-  try{
-    const q = query(collection(db, "Condominios", TENANT_ID, "reservas"), where("status", "==", "pendente"));
-    const snap = await getDocs(q);
-    const pendentes = [];
-    snap.forEach(d=> pendentes.push({ id:d.id, ...d.data() }));
-    pendentes.sort((a,b)=> a.data.localeCompare(b.data));
-
-    elP.innerHTML = "";
-    if(pendentes.length === 0){
-      elP.innerHTML = `<div class="empty"><i class="ti ti-check"></i><p>Nenhum pedido pendente.</p></div>`;
-    }else{
-      pendentes.forEach(r=> elP.appendChild(itemReservaEl(r, true, true)));
-    }
-  }catch(e){
-    elP.innerHTML = `<div class="empty"><p>Não foi possível carregar os pendentes.</p></div>`;
-    console.error("Erro ao carregar pendentes:", e);
+  if(!elP) return;
+  elP.innerHTML = "";
+  const pendentesOrdenados = [...pendentesGlobais].sort((a,b)=> a.data.localeCompare(b.data));
+  if(pendentesOrdenados.length === 0){
+    elP.innerHTML = `<div class="empty"><i class="ti ti-check"></i><p>Nenhum pedido pendente.</p></div>`;
+  }else{
+    pendentesOrdenados.forEach(r=> elP.appendChild(itemReservaEl(r, true, true)));
   }
+}
 
-  const todas = reservasDoMes.filter(r=> r.status !== "pendente").sort((a,b)=> a.data.localeCompare(b.data));
+function renderListaTodasElementos(){
   const elT = document.getElementById("lista-todas");
+  if(!elT) return;
+  const todas = reservasDoMes.filter(r=> r.status !== "pendente").sort((a,b)=> a.data.localeCompare(b.data));
   elT.innerHTML = "";
   if(todas.length === 0){
     elT.innerHTML = `<div class="empty"><i class="ti ti-calendar-off"></i><p>Sem outras reservas neste mês.</p></div>`;
@@ -1212,9 +1231,29 @@ async function renderizarAprovacoes(){
   }
 }
 
+async function renderizarAprovacoes(){
+  if(!(ehSindico || ehDev)) return;
+
+  const elP = document.getElementById("lista-pendentes");
+  elP.innerHTML = `<div class="empty"><p>Carregando…</p></div>`;
+  try{
+    const q = query(collection(db, "Condominios", TENANT_ID, "reservas"), where("status", "==", "pendente"));
+    const snap = await getDocs(q);
+    pendentesGlobais = [];
+    snap.forEach(d=> pendentesGlobais.push({ id:d.id, ...d.data() }));
+    renderListaPendentesElementos();
+  }catch(e){
+    elP.innerHTML = `<div class="empty"><p>Não foi possível carregar os pendentes.</p></div>`;
+    console.error("Erro ao carregar pendentes:", e);
+  }
+
+  renderListaTodasElementos();
+}
+
 function itemReservaEl(r, mostrarCasa=false, comAcoes=false){
   const wrap = document.createElement("div");
   wrap.className = "item-reserva";
+  wrap.dataset.reservaId = r.id;
   wrap.style.cursor = "pointer";
 
   const corClasse = r.status === "pendente" ? "pendente" : (r.casaId === casaAtualId ? "minha" : "reservado");
