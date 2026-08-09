@@ -395,6 +395,20 @@
 </div>
 
 <!-- ===================== MODAL: NOVA RESERVA ===================== -->
+<!-- ===================== MODAL: RESERVA É PARA VOCÊ? (síndico/dev) ===================== -->
+<div class="modal-wrap" id="modal-para-quem">
+  <div class="modal">
+    <p class="sub" id="pq-data-label" style="margin:0 0 4px;">—</p>
+    <h3>Essa reserva é para você?</h3>
+    <button class="btn btn-primary" style="justify-content:flex-start;gap:12px;padding:0 16px;height:52px;margin-bottom:10px;" onclick="escolherParaQuem('mim')">
+      <i class="ti ti-user" style="font-size:20px;"></i> <span id="pq-texto-mim">Sim, é para mim</span>
+    </button>
+    <button class="btn" style="justify-content:flex-start;gap:12px;padding:0 16px;height:52px;background:var(--soft);color:var(--deep);" onclick="escolherParaQuem('outro')">
+      <i class="ti ti-users" style="font-size:20px;"></i> Não, é para outro morador
+    </button>
+  </div>
+</div>
+
 <div class="modal-wrap" id="modal-nova-reserva">
   <div class="modal">
     <button class="close-x" onclick="fecharModal('modal-nova-reserva')"><i class="ti ti-x"></i></button>
@@ -583,7 +597,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026080015";
+const VERSAO_APP = "2026080016";
 
 /* ===================================================================== */
 
@@ -974,7 +988,11 @@ function abrirDetalheDia(iso, reserva){
       const btn = document.createElement("button");
       btn.className = "btn btn-primary";
       btn.textContent = "Pedir esse dia";
-      btn.onclick = ()=>{ fecharModal("modal-detalhe-dia"); abrirNovaReserva(iso); };
+      btn.onclick = ()=>{
+        fecharModal("modal-detalhe-dia");
+        if(ehSindico || ehDev) abrirPopupParaQuem(iso);
+        else abrirNovaReserva(iso);
+      };
       conteudo.appendChild(btn);
     }
   }else{
@@ -1035,14 +1053,15 @@ function escaparHtml(s){
 /* =====================================================================
    NOVA RESERVA
    ===================================================================== */
-function abrirNovaReserva(iso){
+function abrirNovaReserva(iso, paraQuem){
   diaSelecionadoISO = iso;
   document.getElementById("nr-data-label").textContent = formatarDataBR(iso);
   document.getElementById("nr-obs").value = "";
 
   const campoCasa = document.getElementById("nr-campo-casa");
   const select = document.getElementById("nr-casa-select");
-  if(ehSindico || ehDev){
+
+  if((ehSindico || ehDev) && paraQuem === "outro"){
     campoCasa.style.display = "block";
     select.innerHTML = "";
     todasAsCasas.forEach(c=>{
@@ -1052,6 +1071,7 @@ function abrirNovaReserva(iso){
       if(c.id === casaAtualId) opt.selected = true;
       select.appendChild(opt);
     });
+    select.focus();
   }else{
     campoCasa.style.display = "none";
   }
@@ -1059,11 +1079,25 @@ function abrirNovaReserva(iso){
 }
 window.abrirNovaReserva = abrirNovaReserva;
 
+function abrirPopupParaQuem(iso){
+  diaSelecionadoISO = iso;
+  document.getElementById("pq-data-label").textContent = formatarDataBR(iso);
+  document.getElementById("pq-texto-mim").textContent = `Sim, é para mim (Casa ${casaAtual.numero})`;
+  document.getElementById("modal-para-quem").classList.add("show");
+}
+window.abrirPopupParaQuem = abrirPopupParaQuem;
+
+window.escolherParaQuem = function(opcao){
+  fecharModal("modal-para-quem");
+  abrirNovaReserva(diaSelecionadoISO, opcao === "outro" ? "outro" : "mim");
+};
+
 window.confirmarPedidoReserva = async function(){
   const obs = document.getElementById("nr-obs").value.trim();
   let casaIdEscolhida = casaAtualId;
   let casaNumeroEscolhida = casaAtual.numero;
-  if(ehSindico || ehDev){
+  const campoCasaVisivel = document.getElementById("nr-campo-casa").style.display === "block";
+  if((ehSindico || ehDev) && campoCasaVisivel){
     const select = document.getElementById("nr-casa-select");
     casaIdEscolhida = select.value;
     const c = todasAsCasas.find(c=>c.id===casaIdEscolhida);
