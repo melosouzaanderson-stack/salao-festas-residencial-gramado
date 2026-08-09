@@ -539,7 +539,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026080011";
+const VERSAO_APP = "2026080012";
 
 /* ===================================================================== */
 
@@ -1069,6 +1069,7 @@ async function aprovarReserva(id){
   showToast("Reserva aprovada.");
   await carregarReservasDoMes();
   renderizarTudo();
+  renderizarAprovacoes();
 }
 async function recusarReserva(id){
   await updateDoc(doc(db, "Condominios", TENANT_ID, "reservas", id), { status: "recusada" });
@@ -1076,6 +1077,7 @@ async function recusarReserva(id){
   showToast("Reserva recusada.");
   await carregarReservasDoMes();
   renderizarTudo();
+  renderizarAprovacoes();
 }
 async function cancelarReserva(id){
   await updateDoc(doc(db, "Condominios", TENANT_ID, "reservas", id), { status: "recusada" });
@@ -1083,6 +1085,7 @@ async function cancelarReserva(id){
   showToast("Reserva cancelada.");
   await carregarReservasDoMes();
   renderizarTudo();
+  renderizarAprovacoes();
 }
 window.aprovarReserva = aprovarReserva;
 window.recusarReserva = recusarReserva;
@@ -1176,19 +1179,30 @@ function renderizarMinhasReservas(){
   minhas.forEach(r=> el.appendChild(itemReservaEl(r, true)));
 }
 
-function renderizarAprovacoes(){
+async function renderizarAprovacoes(){
   if(!(ehSindico || ehDev)) return;
-  const pendentes = reservasDoMes.filter(r=> r.status === "pendente").sort((a,b)=> a.data.localeCompare(b.data));
-  const todas = reservasDoMes.filter(r=> r.status !== "pendente").sort((a,b)=> a.data.localeCompare(b.data));
 
   const elP = document.getElementById("lista-pendentes");
-  elP.innerHTML = "";
-  if(pendentes.length === 0){
-    elP.innerHTML = `<div class="empty"><i class="ti ti-check"></i><p>Nenhum pedido pendente.</p></div>`;
-  }else{
-    pendentes.forEach(r=> elP.appendChild(itemReservaEl(r, true, true)));
+  elP.innerHTML = `<div class="empty"><p>Carregando…</p></div>`;
+  try{
+    const q = query(collection(db, "Condominios", TENANT_ID, "reservas"), where("status", "==", "pendente"));
+    const snap = await getDocs(q);
+    const pendentes = [];
+    snap.forEach(d=> pendentes.push({ id:d.id, ...d.data() }));
+    pendentes.sort((a,b)=> a.data.localeCompare(b.data));
+
+    elP.innerHTML = "";
+    if(pendentes.length === 0){
+      elP.innerHTML = `<div class="empty"><i class="ti ti-check"></i><p>Nenhum pedido pendente.</p></div>`;
+    }else{
+      pendentes.forEach(r=> elP.appendChild(itemReservaEl(r, true, true)));
+    }
+  }catch(e){
+    elP.innerHTML = `<div class="empty"><p>Não foi possível carregar os pendentes.</p></div>`;
+    console.error("Erro ao carregar pendentes:", e);
   }
 
+  const todas = reservasDoMes.filter(r=> r.status !== "pendente").sort((a,b)=> a.data.localeCompare(b.data));
   const elT = document.getElementById("lista-todas");
   elT.innerHTML = "";
   if(todas.length === 0){
