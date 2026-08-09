@@ -29,7 +29,7 @@
     --accent:#B8763F;
     --accent-light:#D9A876;
     --soft:#F0E4D4;
-    --bg:#FBF7F1;
+    --bg:#FFFFFF;
     --paper:#FFFFFF;
     --ink:#3B2F26;
     --muted:#9C8974;
@@ -102,7 +102,7 @@
   .login-msg.ok{ color:var(--green-ink); }
 
   /* ===================== TOPBAR / DRAWER ===================== */
-  .topbar{ position:sticky; top:0; z-index:30; display:flex; align-items:center; justify-content:space-between; padding:14px 18px; background:rgba(251,247,241,0.94); backdrop-filter:blur(6px); border-bottom:1px solid var(--line); }
+  .topbar{ position:sticky; top:0; z-index:30; display:flex; align-items:center; justify-content:space-between; padding:14px 18px; background:rgba(255,255,255,0.94); backdrop-filter:blur(6px); border-bottom:1px solid var(--line); }
   .topbar .brand{ display:flex; align-items:center; gap:9px; overflow:hidden; }
   .topbar .brand .avatar{ width:28px; height:28px; border-radius:8px; background:var(--soft); display:flex; align-items:center; justify-content:center; overflow:hidden; flex:none; }
   .topbar .brand .avatar img{ width:100%; height:100%; object-fit:cover; }
@@ -384,7 +384,7 @@
 
 <div class="toast" id="toast"></div>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.44.0/iconfont/tabler-icons.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.44.0/tabler-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -457,6 +457,13 @@ function showToast(msg){
 }
 function abrirModal(id){ fecharDrawer(); document.getElementById(id).classList.add("show"); }
 function fecharModal(id){ document.getElementById(id).classList.remove("show"); }
+
+// Fecha qualquer modal ao tocar fora dele (na área escura de fundo)
+document.querySelectorAll(".modal-wrap").forEach(overlay=>{
+  overlay.addEventListener("click", (e)=>{
+    if(e.target === overlay) overlay.classList.remove("show");
+  });
+});
 function abrirMenu(){ document.getElementById("overlay").classList.add("show"); document.getElementById("drawer").classList.add("show"); }
 function fecharDrawer(){ document.getElementById("overlay").classList.remove("show"); document.getElementById("drawer").classList.remove("show"); }
 function fecharTudo(){
