@@ -187,6 +187,10 @@
   .home-btn.disabled .tx h3{ color:var(--muted); }
   .home-btn.disabled .tx p{ color:var(--muted-2); }
   .home-banner-btn{ margin-top:12px; background:#fff; color:var(--accent); border:none; border-radius:10px; padding:9px 16px; font-size:13px; font-weight:500; }
+  .home-status-pendentes{ margin-top:12px; background:rgba(255,255,255,.22); border-radius:10px; padding:10px 14px; font-size:13px; font-weight:500; display:flex; align-items:center; gap:8px; cursor:pointer; }
+  .home-status-pendentes i{ font-size:16px; flex:none; }
+  .periodo-noite .home-status-pendentes{ background:rgba(255,255,255,.14); color:#fff; }
+  .periodo-manha .home-status-pendentes, .periodo-tarde .home-status-pendentes{ color:var(--deep); }
   .home-banner.aviso-condo{ background:var(--soft); margin-top:12px; }
   .home-banner.aviso-condo .tag{ color:var(--muted); }
   .home-banner.aviso-condo h2{ font-size:15px; }
@@ -296,6 +300,12 @@
         <p class="tag" id="home-status-tag">bem-vindo(a)</p>
         <h2 id="home-status-titulo">—</h2>
         <p id="home-status-texto">—</p>
+        <div class="home-status-pendentes" id="home-status-pendentes" style="display:none;" onclick="abrirAprovacoesDireto()">
+          <i class="ti ti-bell"></i> <span id="home-status-pendentes-texto"></span>
+        </div>
+        <div class="home-status-pendentes" id="home-status-proxima-reserva" style="display:none;" onclick="abrirReservaSalao()">
+          <i class="ti ti-confetti"></i> <span id="home-status-proxima-reserva-texto"></span>
+        </div>
         <button class="home-banner-btn" id="home-status-btn" style="display:none;" onclick="abrirModal('modal-perfil')">Completar cadastro</button>
       </div>
 
@@ -454,6 +464,16 @@
       <input type="file" id="cd-foto-salao-input" accept="image/*" style="display:none;" onchange="onFotoSalaoSelecionada(this)">
     </div>
 
+    <div class="field">
+      <label>Assunto do e-mail de lembrete de preparação (uso futuro)</label>
+      <input type="text" id="cd-lembrete-assunto" placeholder="ex: Reserva se aproxima — prepare o salão">
+    </div>
+    <div class="field">
+      <label>Texto do e-mail de lembrete de preparação (uso futuro)</label>
+      <textarea id="cd-lembrete-texto" rows="4" placeholder="ex: Confira os itens de higiene e reforce a limpeza do salão antes do evento."></textarea>
+      <p style="font-size:11px;color:var(--muted);margin:6px 0 0;">Esse texto já fica salvo, pronto para quando o envio automático desse lembrete for implementado.</p>
+    </div>
+
     <button class="btn btn-primary" onclick="salvarCondominio()">Salvar alterações</button>
     <div class="lock-note"><i class="ti ti-lock"></i><span>Visível apenas para síndico e desenvolvedor</span></div>
   </div>
@@ -519,7 +539,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026080008";
+const VERSAO_APP = "2026080011";
 
 /* ===================================================================== */
 
@@ -760,6 +780,7 @@ async function iniciarApp(){
   await carregarReservasDoMes();
   renderizarTudo();
   escutarPendentesEmTempoReal();
+  if(ehSindico || ehDev) verificarReservaProxima();
 }
 
 /* =====================================================================
@@ -777,6 +798,12 @@ window.abrirReservaSalao = function(){
   document.getElementById("tabs-nav").style.display = "flex";
   document.getElementById("back-row").style.display = "flex";
   mudarTab("agenda");
+};
+
+window.abrirAprovacoesDireto = function(){
+  document.getElementById("tabs-nav").style.display = "flex";
+  document.getElementById("back-row").style.display = "flex";
+  mudarTab("aprovacoes");
 };
 
 window.voltarInicio = function(){
@@ -1068,7 +1095,52 @@ function escutarPendentesEmTempoReal(){
     const badge = document.getElementById("tab-aprovacoes");
     const n = snap.size;
     badge.textContent = n > 0 ? `Aprovações (${n})` : "Aprovações";
+
+    const bloco = document.getElementById("home-status-pendentes");
+    const texto = document.getElementById("home-status-pendentes-texto");
+    if(n > 0){
+      texto.textContent = n === 1 ? "Você tem 1 aprovação pendente" : `Você tem ${n} aprovações pendentes`;
+      bloco.style.display = "flex";
+    }else{
+      bloco.style.display = "none";
+    }
   });
+}
+
+// Dias de antecedência para avisar o síndico sobre uma reserva confirmada chegando
+const DIAS_AVISO_RESERVA_PROXIMA = 3;
+
+async function verificarReservaProxima(){
+  const hoje = new Date();
+  const hojeIso = isoDeData(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+  const limite = new Date(hoje);
+  limite.setDate(limite.getDate() + DIAS_AVISO_RESERVA_PROXIMA);
+  const limiteIso = isoDeData(limite.getFullYear(), limite.getMonth(), limite.getDate());
+
+  try{
+    const q = query(
+      collection(db, "Condominios", TENANT_ID, "reservas"),
+      where("status", "==", "confirmada"),
+      where("data", ">=", hojeIso),
+      where("data", "<=", limiteIso)
+    );
+    const snap = await getDocs(q);
+    if(snap.empty) return;
+
+    let maisProxima = null;
+    snap.forEach(d=>{
+      const r = d.data();
+      if(!maisProxima || r.data < maisProxima.data) maisProxima = r;
+    });
+
+    const diasFaltando = Math.round((new Date(maisProxima.data + "T00:00:00") - new Date(hojeIso + "T00:00:00")) / 86400000);
+    const quando = diasFaltando === 0 ? "hoje" : diasFaltando === 1 ? "amanhã" : `em ${diasFaltando} dias`;
+
+    const bloco = document.getElementById("home-status-proxima-reserva");
+    const texto = document.getElementById("home-status-proxima-reserva-texto");
+    texto.textContent = `Reserva confirmada ${quando} — Casa ${maisProxima.casaNumero}. Prepare o salão!`;
+    bloco.style.display = "flex";
+  }catch(e){ console.error("Erro ao verificar reserva próxima:", e); }
 }
 
 /* =====================================================================
@@ -1238,6 +1310,8 @@ window.abrirModal = function(id){
     document.getElementById("cd-email-sindico").value = condominioData.emailSindico || "";
     document.getElementById("cd-aviso-titulo").value = condominioData.avisoTitulo || "";
     document.getElementById("cd-aviso-texto").value = condominioData.avisoTexto || "";
+    document.getElementById("cd-lembrete-assunto").value = condominioData.lembreteEmailAssunto || "";
+    document.getElementById("cd-lembrete-texto").value = condominioData.lembreteEmailTexto || "";
     if(condominioData.fotoBase64){
       document.getElementById("cd-foto-preview").src = condominioData.fotoBase64;
       document.getElementById("cd-foto-preview").style.display = "block";
@@ -1285,7 +1359,9 @@ window.salvarCondominio = async function(){
   const emailSindico = document.getElementById("cd-email-sindico").value.trim();
   const avisoTitulo = document.getElementById("cd-aviso-titulo").value.trim();
   const avisoTexto = document.getElementById("cd-aviso-texto").value.trim();
-  const dados = { nome, subtitulo, emailSindico, avisoTitulo, avisoTexto };
+  const lembreteEmailAssunto = document.getElementById("cd-lembrete-assunto").value.trim();
+  const lembreteEmailTexto = document.getElementById("cd-lembrete-texto").value.trim();
+  const dados = { nome, subtitulo, emailSindico, avisoTitulo, avisoTexto, lembreteEmailAssunto, lembreteEmailTexto };
   if(condominioData._novaFoto) dados.fotoBase64 = condominioData._novaFoto;
   if(condominioData._novaFotoSalao) dados.fotoSalao = condominioData._novaFotoSalao;
   try{
