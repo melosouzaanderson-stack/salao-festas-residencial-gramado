@@ -242,27 +242,27 @@
     <div class="login-hero" id="login-hero">
       <div class="ph" id="login-hero-placeholder">
         <i class="ti ti-photo" style="font-size:26px;"></i>
-        <span style="font-size:11px;">foto do condomínio</span>
+        <span style="font-size:11px;">Foto do condomínio</span>
       </div>
       <img id="login-hero-img" style="display:none;">
     </div>
     <div class="login-body">
       <p class="login-title" id="login-nome-condominio">Salão de Festas</p>
-      <p class="login-sub" id="login-subtitulo">agenda do condomínio</p>
+      <p class="login-sub" id="login-subtitulo">Agenda do condomínio</p>
       <p class="login-msg" id="login-msg"></p>
 
       <div id="bloco-entrar">
         <div class="field"><label>Casa</label><input type="text" id="in-casa" placeholder="ex: 07" inputmode="numeric"></div>
         <div class="field"><label>Senha</label><input type="password" id="in-senha" placeholder="••••"></div>
-        <span class="login-link" onclick="abrirEsqueciSenha()">esqueci minha senha</span>
-        <button class="btn btn-primary" onclick="fazerLogin()">entrar</button>
+        <span class="login-link" onclick="abrirEsqueciSenha()">Esqueci minha senha</span>
+        <button class="btn btn-primary" onclick="fazerLogin()">Entrar</button>
       </div>
 
       <div id="bloco-trocar-senha" style="display:none;">
         <p class="sub" style="margin:-6px 0 14px; font-size:12px; color:var(--muted);">Primeiro acesso — defina uma nova senha para continuar.</p>
         <div class="field"><label>Nova senha</label><input type="password" id="in-nova-senha" placeholder="mínimo 6 caracteres"></div>
         <div class="field"><label>Confirmar nova senha</label><input type="password" id="in-nova-senha-2" placeholder="repita a senha"></div>
-        <button class="btn btn-primary" onclick="confirmarTrocaSenhaInicial()">salvar e entrar</button>
+        <button class="btn btn-primary" onclick="confirmarTrocaSenhaInicial()">Salvar e entrar</button>
       </div>
     </div>
     <div class="login-version" id="login-versao">v0000000000</div>
@@ -284,9 +284,9 @@
     </div>
 
     <div class="tabs" id="tabs-nav" style="display:none;">
-      <div class="tab active" data-tab="agenda" onclick="mudarTab('agenda')">agenda</div>
-      <div class="tab" data-tab="reservas" onclick="mudarTab('reservas')">reservas</div>
-      <div class="tab" data-tab="aprovacoes" id="tab-aprovacoes" style="display:none;" onclick="mudarTab('aprovacoes')">aprovações</div>
+      <div class="tab active" data-tab="agenda" onclick="mudarTab('agenda')">Agenda</div>
+      <div class="tab" data-tab="reservas" onclick="mudarTab('reservas')">Reservas</div>
+      <div class="tab" data-tab="aprovacoes" id="tab-aprovacoes" style="display:none;" onclick="mudarTab('aprovacoes')">Aprovações</div>
     </div>
 
     <!-- ===== TELA INICIAL (HOME) ===== -->
@@ -296,7 +296,7 @@
         <p class="tag" id="home-status-tag">bem-vindo(a)</p>
         <h2 id="home-status-titulo">—</h2>
         <p id="home-status-texto">—</p>
-        <button class="home-banner-btn" id="home-status-btn" style="display:none;" onclick="abrirModal('modal-perfil')">completar cadastro</button>
+        <button class="home-banner-btn" id="home-status-btn" style="display:none;" onclick="abrirModal('modal-perfil')">Completar cadastro</button>
       </div>
 
       <div class="home-banner aviso-condo" id="home-aviso-condo" style="display:none;">
@@ -309,18 +309,18 @@
         <button class="home-btn primary" onclick="abrirReservaSalao()">
           <div class="home-btn-watermark" id="home-btn-watermark-salao"></div>
           <div class="ic"><i class="ti ti-calendar-event"></i></div>
-          <div class="tx"><h3>Reserva do Salão</h3><p>ver agenda e pedir reserva</p></div>
+          <div class="tx"><h3>Reserva do Salão</h3><p>Ver agenda e pedir reserva</p></div>
         </button>
 
         <button class="home-btn disabled" disabled>
           <div class="ic"><i class="ti ti-tools"></i></div>
-          <div class="tx"><h3>Em construção</h3><p>novidades em breve</p></div>
+          <div class="tx"><h3>Em construção</h3><p>Novidades em breve</p></div>
         </button>
       </div>
     </div>
 
     <div class="back-row" id="back-row" style="display:none;" onclick="voltarInicio()">
-      <i class="ti ti-arrow-left"></i> início
+      <i class="ti ti-arrow-left"></i> Início
     </div>
 
     <!-- ===== TELA AGENDA ===== -->
@@ -333,26 +333,26 @@
       <div class="cal-grid-dow"><span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span></div>
       <div class="cal-grid" id="cal-grid"></div>
       <div class="legenda">
-        <div class="it"><span class="sw" style="background:var(--soft);"></span>livre</div>
-        <div class="it"><span class="sw" style="background:var(--amber);"></span>pendente</div>
-        <div class="it"><span class="sw" style="background:var(--red);"></span>reservado</div>
-        <div class="it"><span class="sw" style="background:var(--green);"></span>sua reserva</div>
+        <div class="it"><span class="sw" style="background:var(--soft);"></span>Livre</div>
+        <div class="it"><span class="sw" style="background:var(--amber);"></span>Pendente</div>
+        <div class="it"><span class="sw" style="background:var(--red);"></span>Reservado</div>
+        <div class="it"><span class="sw" style="background:var(--green);"></span>Sua reserva</div>
       </div>
-      <p class="lista-titulo">próximas reservas</p>
+      <p class="lista-titulo">Próximas reservas</p>
       <div id="lista-proximas"></div>
     </div>
 
     <!-- ===== TELA MINHAS RESERVAS ===== -->
     <div class="screen" id="screen-reservas">
-      <p class="lista-titulo" style="margin-top:16px;">minhas reservas</p>
+      <p class="lista-titulo" style="margin-top:16px;">Minhas reservas</p>
       <div id="lista-minhas"></div>
     </div>
 
     <!-- ===== TELA APROVAÇÕES (síndico/dev) ===== -->
     <div class="screen" id="screen-aprovacoes">
-      <p class="lista-titulo" style="margin-top:16px;">pedidos pendentes</p>
+      <p class="lista-titulo" style="margin-top:16px;">Pedidos pendentes</p>
       <div id="lista-pendentes"></div>
-      <p class="lista-titulo">todas as reservas do mês</p>
+      <p class="lista-titulo">Todas as reservas do mês</p>
       <div id="lista-todas"></div>
     </div>
 
@@ -367,10 +367,10 @@
     <p class="nome" id="drawer-nome">—</p>
     <p class="casa" id="drawer-casa">—</p>
   </div>
-  <div class="drawer-item" onclick="abrirModal('modal-perfil')"><i class="ti ti-user"></i> meu cadastro</div>
-  <div class="drawer-item" id="menu-config-condominio" style="display:none;" onclick="abrirModal('modal-condominio')"><i class="ti ti-building"></i> condomínio</div>
-  <div class="drawer-item" id="menu-casas" style="display:none;" onclick="abrirModal('modal-casas')"><i class="ti ti-users"></i> casas cadastradas</div>
-  <div class="drawer-item danger" onclick="fazerLogout()"><i class="ti ti-logout"></i> sair</div>
+  <div class="drawer-item" onclick="abrirModal('modal-perfil')"><i class="ti ti-user"></i> Meu cadastro</div>
+  <div class="drawer-item" id="menu-config-condominio" style="display:none;" onclick="abrirModal('modal-condominio')"><i class="ti ti-building"></i> Condomínio</div>
+  <div class="drawer-item" id="menu-casas" style="display:none;" onclick="abrirModal('modal-casas')"><i class="ti ti-users"></i> Casas cadastradas</div>
+  <div class="drawer-item danger" onclick="fazerLogout()"><i class="ti ti-logout"></i> Sair</div>
   <p style="font-size:10px; opacity:.5; margin-top:24px;" id="drawer-versao">v0000000000</p>
 </div>
 
@@ -385,7 +385,7 @@
       <select id="nr-casa-select"></select>
     </div>
     <div class="field"><label>Observação (opcional)</label><textarea id="nr-obs" rows="3" placeholder="ex: aniversário de 10 anos"></textarea></div>
-    <button class="btn btn-primary" onclick="confirmarPedidoReserva()">enviar pedido</button>
+    <button class="btn btn-primary" onclick="confirmarPedidoReserva()">Enviar pedido</button>
   </div>
 </div>
 
@@ -406,9 +406,9 @@
     <div class="field"><label>Apelido da casa</label><input type="text" id="pf-apelido" placeholder="ex: Casa da Família Silva"></div>
     <div class="field"><label>Nome do responsável</label><input type="text" id="pf-nome"></div>
     <div class="field"><label>Telefone / WhatsApp</label><input type="text" id="pf-telefone" placeholder="(00) 00000-0000"></div>
-    <button class="btn btn-primary" onclick="salvarPerfil()">salvar dados</button>
+    <button class="btn btn-primary" onclick="salvarPerfil()">Salvar dados</button>
     <div style="height:10px;"></div>
-    <button class="btn btn-ghost" onclick="abrirModal('modal-trocar-senha')">trocar senha</button>
+    <button class="btn btn-ghost" onclick="abrirModal('modal-trocar-senha')">Trocar senha</button>
   </div>
 </div>
 
@@ -420,7 +420,7 @@
     <div class="field"><label>Senha atual</label><input type="password" id="ts-atual"></div>
     <div class="field"><label>Nova senha</label><input type="password" id="ts-nova" placeholder="mínimo 6 caracteres"></div>
     <div class="field"><label>Confirmar nova senha</label><input type="password" id="ts-nova-2"></div>
-    <button class="btn btn-primary" onclick="salvarTrocaSenha()">salvar nova senha</button>
+    <button class="btn btn-primary" onclick="salvarTrocaSenha()">Salvar nova senha</button>
   </div>
 </div>
 
@@ -448,13 +448,13 @@
           <img id="cd-foto-salao-preview" style="display:none;width:100%;height:100%;object-fit:cover;">
           <i class="ti ti-photo" id="cd-foto-salao-icone" style="font-size:22px;color:var(--muted);"></i>
         </div>
-        <button class="btn btn-ghost btn-sm" style="width:auto;padding:0 14px;" onclick="document.getElementById('cd-foto-salao-input').click()">escolher foto</button>
+        <button class="btn btn-ghost btn-sm" style="width:auto;padding:0 14px;" onclick="document.getElementById('cd-foto-salao-input').click()">Escolher foto</button>
       </div>
       <input type="file" id="cd-foto-salao-input" accept="image/*" style="display:none;" onchange="onFotoSalaoSelecionada(this)">
     </div>
 
-    <button class="btn btn-primary" onclick="salvarCondominio()">salvar alterações</button>
-    <div class="lock-note"><i class="ti ti-lock"></i><span>visível apenas para síndico e desenvolvedor</span></div>
+    <button class="btn btn-primary" onclick="salvarCondominio()">Salvar alterações</button>
+    <div class="lock-note"><i class="ti ti-lock"></i><span>Visível apenas para síndico e desenvolvedor</span></div>
   </div>
 </div>
 
@@ -465,16 +465,16 @@
     <h3>Casas cadastradas</h3>
     <div id="lista-casas"></div>
     <div style="height:14px;"></div>
-    <p class="sub" style="margin:0 0 10px;">cadastrar nova casa (senha inicial padrão: 123456)</p>
+    <p class="sub" style="margin:0 0 10px;">Cadastrar nova casa (senha inicial padrão: 123456)</p>
     <div class="field"><label>Número da casa</label><input type="text" id="nc-numero" placeholder="ex: 16" inputmode="numeric"></div>
     <div class="field"><label>Papel</label>
-      <select id="nc-papel" onchange="onMudarPapelNovaCasa()"><option value="morador">morador</option><option value="sindico">síndico</option></select>
+      <select id="nc-papel" onchange="onMudarPapelNovaCasa()"><option value="morador">Morador</option><option value="sindico">Síndico</option></select>
     </div>
     <div class="field" id="nc-campo-email">
       <label id="nc-email-label">E-mail de contato (opcional)</label>
       <input type="email" id="nc-email" placeholder="email@exemplo.com">
     </div>
-    <button class="btn btn-primary" onclick="cadastrarNovaCasa()">cadastrar casa</button>
+    <button class="btn btn-primary" onclick="cadastrarNovaCasa()">Cadastrar casa</button>
   </div>
 </div>
 
@@ -518,7 +518,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026080005";
+const VERSAO_APP = "2026080006";
 
 /* ===================================================================== */
 
@@ -895,7 +895,7 @@ function abrirDetalheDia(iso, reserva){
       conteudo.innerHTML = `<p class="sub" style="margin:0 0 16px;">Esse dia está livre para reserva do salão.</p>`;
       const btn = document.createElement("button");
       btn.className = "btn btn-primary";
-      btn.textContent = "pedir esse dia";
+      btn.textContent = "Pedir esse dia";
       btn.onclick = ()=>{ fecharModal("modal-detalhe-dia"); abrirNovaReserva(iso); };
       conteudo.appendChild(btn);
     }
@@ -919,17 +919,17 @@ function abrirDetalheDia(iso, reserva){
       if(reserva.status === "pendente"){
         const okBtn = document.createElement("button");
         okBtn.className = "btn btn-primary btn-sm";
-        okBtn.textContent = "aprovar";
+        okBtn.textContent = "Aprovar";
         okBtn.onclick = ()=> aprovarReserva(reserva.id);
         const noBtn = document.createElement("button");
         noBtn.className = "btn btn-danger btn-sm";
-        noBtn.textContent = "recusar";
+        noBtn.textContent = "Recusar";
         noBtn.onclick = ()=> recusarReserva(reserva.id);
         wrap.appendChild(okBtn); wrap.appendChild(noBtn);
       }else{
         const cancelBtn = document.createElement("button");
         cancelBtn.className = "btn btn-ghost btn-sm";
-        cancelBtn.textContent = "cancelar reserva";
+        cancelBtn.textContent = "Cancelar reserva";
         cancelBtn.onclick = ()=> cancelarReserva(reserva.id);
         wrap.appendChild(cancelBtn);
       }
@@ -938,7 +938,7 @@ function abrirDetalheDia(iso, reserva){
       const cancelBtn = document.createElement("button");
       cancelBtn.className = "btn btn-ghost btn-sm";
       cancelBtn.style.marginTop = "14px";
-      cancelBtn.textContent = "cancelar meu pedido";
+      cancelBtn.textContent = "Cancelar meu pedido";
       cancelBtn.onclick = ()=> cancelarReserva(reserva.id);
       conteudo.appendChild(cancelBtn);
     }
@@ -948,7 +948,7 @@ function abrirDetalheDia(iso, reserva){
 window.abrirDetalheDia = abrirDetalheDia;
 
 function legendaStatus(s){
-  return s === "pendente" ? "aguardando aprovação" : s === "confirmada" ? "confirmada" : "recusada";
+  return s === "pendente" ? "Aguardando aprovação" : s === "confirmada" ? "Confirmada" : "Recusada";
 }
 function escaparHtml(s){
   const d = document.createElement("div"); d.textContent = s; return d.innerHTML;
@@ -1061,7 +1061,7 @@ function escutarPendentesEmTempoReal(){
   onSnapshot(q, (snap)=>{
     const badge = document.getElementById("tab-aprovacoes");
     const n = snap.size;
-    badge.textContent = n > 0 ? `aprovações (${n})` : "aprovações";
+    badge.textContent = n > 0 ? `Aprovações (${n})` : "Aprovações";
   });
 }
 
@@ -1137,11 +1137,11 @@ function itemReservaEl(r, mostrarCasa=false, comAcoes=false){
   t1.className = "t1";
   const vejoQuem = ehSindico || ehDev || r.casaId === casaAtualId;
   if(r.casaId === casaAtualId){
-    t1.textContent = "sua reserva";
+    t1.textContent = "Sua reserva";
   }else if(vejoQuem && mostrarCasa){
     t1.textContent = `Casa ${r.casaNumero}`;
   }else{
-    t1.textContent = "salão reservado";
+    t1.textContent = "Salão reservado";
   }
   const t2 = document.createElement("p");
   t2.className = "t2";
@@ -1307,7 +1307,7 @@ function renderizarListaCasas(){
     const btn = document.createElement("button");
     btn.className = "icon-btn";
     btn.style.marginLeft = "auto";
-    btn.title = c.papel === "sindico" ? "tornar morador" : "tornar síndico";
+    btn.title = c.papel === "sindico" ? "Tornar morador" : "Tornar síndico";
     btn.innerHTML = c.papel === "sindico"
       ? `<i class="ti ti-arrow-down"></i>`
       : `<i class="ti ti-arrow-up"></i>`;
