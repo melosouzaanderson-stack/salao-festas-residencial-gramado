@@ -406,6 +406,7 @@
     <div class="field"><label>Apelido da casa</label><input type="text" id="pf-apelido" placeholder="ex: Casa da Família Silva"></div>
     <div class="field"><label>Nome do responsável</label><input type="text" id="pf-nome"></div>
     <div class="field"><label>Telefone / WhatsApp</label><input type="text" id="pf-telefone" placeholder="(00) 00000-0000"></div>
+    <div class="field"><label id="pf-email-label">E-mail de contato (opcional)</label><input type="email" id="pf-email" placeholder="email@exemplo.com"></div>
     <button class="btn btn-primary" onclick="salvarPerfil()">Salvar dados</button>
     <div style="height:10px;"></div>
     <button class="btn btn-ghost" onclick="abrirModal('modal-trocar-senha')">Trocar senha</button>
@@ -518,13 +519,18 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026080006";
+const VERSAO_APP = "2026080008";
 
 /* ===================================================================== */
 
 const fbApp = initializeApp(firebaseConfig);
 const db = getFirestore(fbApp);
 const auth = getAuth(fbApp);
+
+// App secundário (mesmo projeto) só para criar o login de casas novas,
+// sem derrubar a sessão do síndico/dev que está cadastrando.
+const fbAppSecundario = initializeApp(firebaseConfig, "secundario");
+const authSecundario = getAuth(fbAppSecundario);
 
 if (window.emailjs && EMAILJS_PUBLIC_KEY.indexOf("COLE_AQUI") === -1) {
   window.emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
@@ -1174,9 +1180,18 @@ window.salvarPerfil = async function(){
   const apelido = document.getElementById("pf-apelido").value.trim();
   const nome = document.getElementById("pf-nome").value.trim();
   const telefone = document.getElementById("pf-telefone").value.trim();
+  const emailContato = document.getElementById("pf-email").value.trim();
+  if(ehSindico && !emailContato){
+    showToast("Como síndico, seu e-mail é obrigatório — é ele que recebe as notificações.");
+    return;
+  }
   try{
-    await updateDoc(doc(db, "Condominios", TENANT_ID, "casas", casaAtualId), { apelido, nomeResponsavel: nome, telefone });
-    casaAtual.apelido = apelido; casaAtual.nomeResponsavel = nome; casaAtual.telefone = telefone;
+    await updateDoc(doc(db, "Condominios", TENANT_ID, "casas", casaAtualId), { apelido, nomeResponsavel: nome, telefone, emailContato });
+    casaAtual.apelido = apelido; casaAtual.nomeResponsavel = nome; casaAtual.telefone = telefone; casaAtual.emailContato = emailContato;
+    if(ehSindico){
+      await setDoc(doc(db, "Condominios", TENANT_ID), { emailSindico: emailContato }, { merge:true });
+      condominioData.emailSindico = emailContato;
+    }
     document.getElementById("drawer-nome").textContent = nome || `Casa ${casaAtual.numero}`;
     renderizarBannerStatus();
     showToast("Cadastro atualizado.");
@@ -1208,6 +1223,15 @@ window.salvarTrocaSenha = async function(){
    ===================================================================== */
 window.abrirModal = function(id){
   fecharDrawer();
+  if(id === "modal-perfil"){
+    document.getElementById("pf-apelido").value = casaAtual.apelido || "";
+    document.getElementById("pf-nome").value = casaAtual.nomeResponsavel || "";
+    document.getElementById("pf-telefone").value = casaAtual.telefone || "";
+    document.getElementById("pf-email").value = casaAtual.emailContato || "";
+    document.getElementById("pf-email-label").textContent = ehSindico
+      ? "E-mail de contato (obrigatório — recebe as notificações)"
+      : "E-mail de contato (opcional)";
+  }
   if(id === "modal-condominio"){
     document.getElementById("cd-nome").value = condominioData.nome || "";
     document.getElementById("cd-subtitulo").value = condominioData.subtitulo || "";
@@ -1371,21 +1395,26 @@ window.cadastrarNovaCasa = async function(){
   }
   const emailLogin = emailVirtualDaCasa(numero);
   try{
-    const cred = await createUserWithEmailAndPassword(auth, emailLogin, "123456");
-    await setDoc(doc(db, "Condominios", TENANT_ID, "casas", cred.user.uid), {
+    // Cria o login na sessão SECUNDÁRIA, sem afetar sua sessão de síndico/dev.
+    const cred = await createUserWithEmailAndPassword(authSecundario, emailLogin, "123456");
+    const novoUid = cred.user.uid;
+    await signOut(authSecundario); // encerra a sessão secundária imediatamente
+
+    // A gravação no Firestore acontece com VOCÊ ainda autenticado (sessão principal intacta).
+    await setDoc(doc(db, "Condominios", TENANT_ID, "casas", novoUid), {
       numero, papel, apelido: "", nomeResponsavel: "", telefone: "",
       emailContato: emailContato,
-      senhaTrocada: false, uid: cred.user.uid, criadoEm: serverTimestamp()
+      senhaTrocada: false, uid: novoUid, criadoEm: serverTimestamp()
     });
     if(papel === "sindico"){
       await setDoc(doc(db, "Condominios", TENANT_ID), { emailSindico: emailContato }, { merge:true });
     }
+    todasAsCasas.push({ id: novoUid, numero, papel, apelido:"", nomeResponsavel:"", telefone:"", emailContato });
+    todasAsCasas.sort((a,b)=> (a.numero+"").localeCompare(b.numero+"", "pt-BR", {numeric:true}));
+    renderizarListaCasas();
     showToast(`Casa ${numero} cadastrada com senha padrão 123456.`);
     document.getElementById("nc-numero").value = "";
     document.getElementById("nc-email").value = "";
-    // recarrega lista (sem trocar a sessão logada, pois createUser troca o usuário atual do SDK)
-    showToast("Atenção: a criação de uma nova casa troca a sessão ativa. Faça login novamente como síndico/dev.");
-    await signOut(auth);
   }catch(e){
     if(e.code === "auth/email-already-in-use"){
       showToast(`A Casa ${numero} já está cadastrada.`);
