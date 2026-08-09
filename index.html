@@ -230,6 +230,14 @@
   .status-badge.recusada{ background:var(--red); color:var(--red-ink); }
 
   .lock-note{ margin:14px 0 0; padding:10px 12px; background:var(--soft); border-radius:10px; display:flex; align-items:center; gap:8px; }
+
+  .rel-filtros{ display:flex; gap:6px; margin-top:6px; }
+  .rel-filtro-btn{ flex:1; background:var(--soft); border:none; border-radius:10px; padding:9px 6px; font-size:12px; color:var(--muted); cursor:pointer; }
+  .rel-filtro-btn.active{ background:var(--accent); color:#fff; font-weight:500; }
+  .rel-tabela{ width:100%; border-collapse:collapse; font-size:13px; }
+  .rel-tabela th{ text-align:left; font-size:11px; color:var(--muted); font-weight:500; padding:8px 6px; border-bottom:1px solid var(--line); }
+  .rel-tabela td{ padding:8px 6px; border-bottom:1px solid var(--line); color:var(--ink); }
+  .rel-tabela tr:last-child td{ border-bottom:none; }
   .lock-note i{ font-size:14px; color:var(--accent); }
   .lock-note span{ font-size:11px; color:#8A6B47; }
 
@@ -381,6 +389,7 @@
   <div class="drawer-item" onclick="abrirModal('modal-perfil')"><i class="ti ti-user"></i> Meu cadastro</div>
   <div class="drawer-item" id="menu-config-condominio" style="display:none;" onclick="abrirModal('modal-condominio')"><i class="ti ti-building"></i> Condomínio</div>
   <div class="drawer-item" id="menu-casas" style="display:none;" onclick="abrirModal('modal-casas')"><i class="ti ti-users"></i> Casas cadastradas</div>
+  <div class="drawer-item" id="menu-relatorio" style="display:none;" onclick="abrirModal('modal-relatorio')"><i class="ti ti-report"></i> Relatório</div>
   <div class="drawer-item danger" onclick="fazerLogout()"><i class="ti ti-logout"></i> Sair</div>
   <p style="font-size:10px; opacity:.5; margin-top:24px;" id="drawer-versao">v0000000000</p>
 </div>
@@ -500,6 +509,40 @@
   </div>
 </div>
 
+<!-- ===================== MODAL: RELATÓRIO DE USO (síndico / dev) ===================== -->
+<div class="modal-wrap" id="modal-relatorio">
+  <div class="modal">
+    <button class="close-x" onclick="fecharModal('modal-relatorio')"><i class="ti ti-x"></i></button>
+    <h3>Relatório de uso do salão</h3>
+
+    <div class="rel-filtros">
+      <button class="rel-filtro-btn active" id="rel-btn-mes-anterior" onclick="definirPeriodoRelatorio('mes-anterior')">Mês anterior</button>
+      <button class="rel-filtro-btn" id="rel-btn-mes-atual" onclick="definirPeriodoRelatorio('mes-atual')">Mês atual</button>
+      <button class="rel-filtro-btn" id="rel-btn-personalizado" onclick="definirPeriodoRelatorio('personalizado')">Personalizado</button>
+    </div>
+
+    <div id="rel-campos-personalizado" style="display:none;margin-top:12px;">
+      <div style="display:flex;gap:10px;">
+        <div class="field" style="flex:1;"><label>De</label><input type="date" id="rel-data-inicio"></div>
+        <div class="field" style="flex:1;"><label>Até</label><input type="date" id="rel-data-fim"></div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="aplicarPeriodoPersonalizado()">Aplicar</button>
+    </div>
+
+    <p class="sub" id="rel-periodo-label" style="margin:14px 0 4px;">—</p>
+    <p class="sub" id="rel-total-label" style="margin:0 0 10px;">—</p>
+
+    <div id="rel-tabela-wrap">
+      <table class="rel-tabela">
+        <thead>
+          <tr><th>Casa</th><th>Nome</th><th>Data</th></tr>
+        </thead>
+        <tbody id="rel-tabela-corpo"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.44.0/tabler-icons.min.css">
@@ -540,7 +583,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026080014";
+const VERSAO_APP = "2026080015";
 
 /* ===================================================================== */
 
@@ -769,6 +812,7 @@ async function iniciarApp(){
     document.getElementById("tab-aprovacoes").style.display = "block";
     document.getElementById("menu-config-condominio").style.display = "flex";
     document.getElementById("menu-casas").style.display = "flex";
+    document.getElementById("menu-relatorio").style.display = "flex";
   }
 
   if(ehSindico || ehDev){
@@ -1377,6 +1421,7 @@ window.abrirModal = function(id){
     }
   }
   if(id === "modal-casas") renderizarListaCasas();
+  if(id === "modal-relatorio") definirPeriodoRelatorio("mes-anterior");
   document.getElementById(id).classList.add("show");
 };
 
@@ -1554,6 +1599,95 @@ window.cadastrarNovaCasa = async function(){
     }
   }
 };
+
+/* =====================================================================
+   RELATÓRIO DE USO DO SALÃO (síndico / dev)
+   ===================================================================== */
+function mesNomeCurto(m){
+  return ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"][m];
+}
+
+window.definirPeriodoRelatorio = function(tipo){
+  document.querySelectorAll(".rel-filtro-btn").forEach(b=> b.classList.remove("active"));
+  document.getElementById("rel-campos-personalizado").style.display = "none";
+
+  const hoje = new Date();
+  let inicio, fim, rotulo;
+
+  if(tipo === "mes-atual"){
+    document.getElementById("rel-btn-mes-atual").classList.add("active");
+    inicio = isoDeData(hoje.getFullYear(), hoje.getMonth(), 1);
+    fim = isoDeData(hoje.getFullYear(), hoje.getMonth(), new Date(hoje.getFullYear(), hoje.getMonth()+1, 0).getDate());
+    rotulo = `${mesNomeCurto(hoje.getMonth())}/${hoje.getFullYear()}`;
+  }else if(tipo === "personalizado"){
+    document.getElementById("rel-btn-personalizado").classList.add("active");
+    document.getElementById("rel-campos-personalizado").style.display = "block";
+    const inicioInput = document.getElementById("rel-data-inicio").value;
+    const fimInput = document.getElementById("rel-data-fim").value;
+    if(!inicioInput || !fimInput){
+      document.getElementById("rel-periodo-label").textContent = "Escolha as duas datas e toque em Aplicar.";
+      document.getElementById("rel-total-label").textContent = "";
+      document.getElementById("rel-tabela-corpo").innerHTML = "";
+      return;
+    }
+    inicio = inicioInput; fim = fimInput;
+    rotulo = `${formatarDataBR(inicio)} a ${formatarDataBR(fim)}`;
+  }else{
+    document.getElementById("rel-btn-mes-anterior").classList.add("active");
+    const mesAnterior = new Date(hoje.getFullYear(), hoje.getMonth()-1, 1);
+    inicio = isoDeData(mesAnterior.getFullYear(), mesAnterior.getMonth(), 1);
+    fim = isoDeData(mesAnterior.getFullYear(), mesAnterior.getMonth(), new Date(mesAnterior.getFullYear(), mesAnterior.getMonth()+1, 0).getDate());
+    rotulo = `${mesNomeCurto(mesAnterior.getMonth())}/${mesAnterior.getFullYear()}`;
+  }
+
+  document.getElementById("rel-periodo-label").textContent = `Período: ${rotulo}`;
+  carregarRelatorio(inicio, fim);
+};
+
+window.aplicarPeriodoPersonalizado = function(){
+  definirPeriodoRelatorio("personalizado");
+};
+
+async function carregarRelatorio(inicioISO, fimISO){
+  const corpo = document.getElementById("rel-tabela-corpo");
+  const totalLabel = document.getElementById("rel-total-label");
+  corpo.innerHTML = `<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:16px 0;">Carregando…</td></tr>`;
+  totalLabel.textContent = "";
+
+  try{
+    const q = query(
+      collection(db, "Condominios", TENANT_ID, "reservas"),
+      where("status", "==", "confirmada"),
+      where("data", ">=", inicioISO),
+      where("data", "<=", fimISO)
+    );
+    const snap = await getDocs(q);
+    const linhas = [];
+    snap.forEach(d=>{
+      const r = d.data();
+      const casa = todasAsCasas.find(c=> c.id === r.casaId);
+      linhas.push({
+        casa: r.casaNumero || (casa ? casa.numero : "—"),
+        nome: (casa && (casa.nomeResponsavel || casa.apelido)) || "—",
+        data: r.data
+      });
+    });
+    linhas.sort((a,b)=> a.data.localeCompare(b.data));
+
+    totalLabel.textContent = linhas.length === 1 ? "1 reserva no período" : `${linhas.length} reservas no período`;
+
+    if(linhas.length === 0){
+      corpo.innerHTML = `<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:16px 0;">Nenhuma reserva no período.</td></tr>`;
+      return;
+    }
+    corpo.innerHTML = linhas.map(l=>
+      `<tr><td>Casa ${l.casa}</td><td>${escaparHtml(l.nome)}</td><td>${formatarDataBR(l.data)}</td></tr>`
+    ).join("");
+  }catch(e){
+    corpo.innerHTML = `<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:16px 0;">Não foi possível carregar o relatório.</td></tr>`;
+    console.error("Erro ao carregar relatório:", e);
+  }
+}
 
 /* inicia o carregamento do condomínio para a tela de login */
 carregarDadosCondominioParaLogin();
