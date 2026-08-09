@@ -1,0 +1,1134 @@
+<!--
+  App Salão de Festas - Condomínio
+  Regra de versionamento (mesmo padrão do App Massagens)
+  Formato: AAAADDNNNN
+  AAAA = ano
+  DD   = dia do calendário (dia do mês)
+  NNNN = versão sequencial dentro daquele dia (reinicia em 0001 a cada novo dia)
+  Exemplo: 2026080001 -> segunda versão do mesmo dia -> 2026080002
+
+  ARQUITETURA MULTITENANT
+  Cada condomínio é um "tenant" dentro do mesmo projeto Firebase do App Massagens.
+  O TENANT_ID abaixo identifica QUAL condomínio esta cópia do arquivo representa.
+  Para publicar o app em outro condomínio, basta duplicar este arquivo e trocar o TENANT_ID.
+
+  ANTES DE PUBLICAR, revise o arquivo firestore.rules.txt (entregue junto) e
+  publique essas regras no Firebase Console > Firestore Database > Regras.
+-->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Salão de Festas — Condomínio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --deep:#3B2F26;
+    --accent:#B8763F;
+    --accent-light:#D9A876;
+    --soft:#F0E4D4;
+    --bg:#FBF7F1;
+    --paper:#FFFFFF;
+    --ink:#3B2F26;
+    --muted:#9C8974;
+    --muted-2:#B4A692;
+    --line:#E8DCC8;
+    --amber:#FAC775; --amber-ink:#633806;
+    --red:#F09595; --red-ink:#791F1F;
+    --green:#C0DD97; --green-ink:#27500A;
+    --radius:16px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Work Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .phone{ max-width:460px; margin:0 auto; min-height:100vh; background:var(--bg); position:relative; }
+
+  input, textarea, select{
+    font-size:16px;
+    font-family:'Work Sans', sans-serif;
+    appearance:none;
+    -webkit-appearance:none;
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:#fff;
+    color:var(--ink);
+    padding:10px 12px;
+    width:100%;
+  }
+  button{ font-family:'Work Sans', sans-serif; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+
+  .btn{
+    width:100%; height:44px; border-radius:10px; border:none;
+    font-size:15px; font-weight:500; display:flex; align-items:center; justify-content:center; gap:8px;
+  }
+  .btn-primary{ background:var(--accent); color:#fff; }
+  .btn-ghost{ background:#fff; color:var(--accent); border:1px solid var(--accent); }
+  .btn-danger{ background:var(--red); color:var(--red-ink); }
+  .btn-sm{ height:36px; font-size:13px; }
+
+  .field label{ font-size:12px; color:var(--muted); display:block; margin-bottom:4px; }
+  .field{ margin-bottom:14px; }
+
+  .card{ background:var(--paper); border-radius:14px; padding:16px; border:1px solid var(--line); }
+  .toast{
+    position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(100px);
+    background:var(--deep); color:#fff; padding:12px 18px; border-radius:10px; font-size:13px;
+    max-width:80%; text-align:center; z-index:999; transition:transform .25s ease; box-shadow:0 6px 20px rgba(0,0,0,.15);
+  }
+  .toast.show{ transform:translateX(-50%) translateY(0); }
+
+  /* ===================== LOGIN ===================== */
+  #tela-login{ display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px; }
+  .login-box{ width:100%; max-width:360px; background:var(--paper); border-radius:20px; overflow:hidden; border:1px solid var(--line); }
+  .login-hero{ height:160px; background:var(--soft); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; overflow:hidden; }
+  .login-hero img{ width:100%; height:100%; object-fit:cover; }
+  .login-hero .ph{ display:flex; flex-direction:column; align-items:center; gap:6px; color:var(--muted); }
+  .login-body{ padding:24px 24px 8px; }
+  .login-title{ font-family:'Fraunces', serif; font-size:19px; font-weight:500; text-align:center; margin:0 0 4px; color:var(--deep); }
+  .login-sub{ font-size:13px; color:var(--muted); text-align:center; margin:0 0 20px; }
+  .login-link{ font-size:12px; color:var(--accent); text-align:right; display:block; margin:6px 0 18px; cursor:pointer; }
+  .login-version{ text-align:center; padding:14px; font-size:10px; color:var(--muted-2); }
+  .login-toggle{ text-align:center; font-size:13px; color:var(--muted); padding:0 0 20px; cursor:pointer; }
+  .login-toggle b{ color:var(--accent); font-weight:500; }
+  .login-msg{ font-size:12px; text-align:center; margin:0 0 12px; min-height:16px; }
+  .login-msg.err{ color:#A32D2D; }
+  .login-msg.ok{ color:var(--green-ink); }
+
+  /* ===================== TOPBAR / DRAWER ===================== */
+  .topbar{ position:sticky; top:0; z-index:30; display:flex; align-items:center; justify-content:space-between; padding:14px 18px; background:rgba(251,247,241,0.94); backdrop-filter:blur(6px); border-bottom:1px solid var(--line); }
+  .topbar .brand{ display:flex; align-items:center; gap:9px; overflow:hidden; }
+  .topbar .brand .avatar{ width:28px; height:28px; border-radius:8px; background:var(--soft); display:flex; align-items:center; justify-content:center; overflow:hidden; flex:none; }
+  .topbar .brand .avatar img{ width:100%; height:100%; object-fit:cover; }
+  .topbar .brand span{ font-family:'Fraunces', serif; font-weight:500; font-size:14px; color:var(--deep); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .burger{ width:38px; height:38px; border-radius:10px; background:var(--paper); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; cursor:pointer; flex:none; }
+  .burger i{ font-size:18px; color:var(--accent); }
+
+  .overlay{ position:fixed; inset:0; background:rgba(59,47,38,.4); z-index:40; display:none; }
+  .overlay.show{ display:block; }
+  .drawer{ position:fixed; top:0; right:0; height:100%; width:82%; max-width:320px; background:var(--deep); color:#fff; z-index:50; transform:translateX(100%); transition:transform .25s ease; padding:22px 18px; overflow-y:auto; }
+  .drawer.show{ transform:translateX(0); }
+  .drawer .close-btn{ width:34px; height:34px; border-radius:10px; background:rgba(255,255,255,.12); border:none; color:#fff; font-size:16px; margin-bottom:18px; }
+  .drawer .who{ margin-bottom:18px; }
+  .drawer .who .nome{ font-family:'Fraunces', serif; font-size:16px; }
+  .drawer .who .casa{ font-size:12px; opacity:.7; }
+  .drawer-item{ display:flex; align-items:center; gap:12px; padding:12px 4px; border-top:1px solid rgba(255,255,255,.12); cursor:pointer; font-size:14px; }
+  .drawer-item i{ font-size:18px; opacity:.85; }
+  .drawer-item.danger{ color:#F0997B; }
+  .badge-pill{ margin-left:auto; background:var(--accent); color:#fff; font-size:11px; padding:2px 8px; border-radius:20px; }
+
+  /* ===================== TABS ===================== */
+  .tabs{ display:flex; padding:0 16px; gap:6px; margin-bottom:6px; }
+  .tab{ flex:1; text-align:center; padding:10px 4px; font-size:13px; border-radius:10px; color:var(--muted); cursor:pointer; }
+  .tab.active{ background:var(--soft); color:var(--deep); font-weight:500; }
+  .screen{ display:none; padding:0 16px 90px; }
+  .screen.active{ display:block; }
+
+  /* ===================== CALENDAR ===================== */
+  .cal-head{ display:flex; align-items:center; justify-content:space-between; margin:14px 0 10px; }
+  .cal-head button{ background:none; border:none; color:var(--muted); font-size:18px; padding:4px 8px; }
+  .cal-head .mes{ font-family:'Fraunces', serif; font-size:16px; color:var(--deep); }
+  .cal-grid-dow{ display:grid; grid-template-columns:repeat(7,1fr); gap:5px; margin-bottom:5px; }
+  .cal-grid-dow span{ text-align:center; font-size:10px; color:var(--muted-2); }
+  .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:5px; }
+  .cal-day{ aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:8px; font-size:13px; background:var(--soft); color:var(--deep); cursor:pointer; border:none; position:relative; }
+  .cal-day.pendente{ background:var(--amber); color:var(--amber-ink); }
+  .cal-day.reservado{ background:var(--red); color:var(--red-ink); }
+  .cal-day.minha{ background:var(--green); color:var(--green-ink); }
+  .cal-day.hoje{ box-shadow:inset 0 0 0 2px var(--accent); }
+  .cal-day:disabled{ opacity:0; visibility:hidden; cursor:default; }
+  .legenda{ display:flex; flex-wrap:wrap; gap:10px; margin:16px 0; padding-top:12px; border-top:1px solid var(--line); }
+  .legenda .it{ display:flex; align-items:center; gap:5px; font-size:11px; color:var(--muted); }
+  .legenda .sw{ width:10px; height:10px; border-radius:3px; display:inline-block; }
+
+  .lista-titulo{ font-size:12px; color:var(--muted); margin:18px 0 8px; }
+  .item-reserva{ display:flex; align-items:center; gap:10px; padding:10px 0; border-top:1px solid var(--line); }
+  .item-reserva .dia{ width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:12px; flex:none; }
+  .item-reserva .info p{ margin:0; }
+  .item-reserva .info .t1{ font-size:13px; color:var(--deep); }
+  .item-reserva .info .t2{ font-size:11px; color:var(--muted); }
+  .item-reserva .acoes{ margin-left:auto; display:flex; gap:6px; }
+  .icon-btn{ width:32px; height:32px; border-radius:8px; border:1px solid var(--line); background:#fff; display:flex; align-items:center; justify-content:center; }
+  .icon-btn i{ font-size:15px; color:var(--muted); }
+  .icon-btn.ok{ border-color:var(--green-ink); } .icon-btn.ok i{ color:var(--green-ink); }
+  .icon-btn.no{ border-color:var(--red-ink); } .icon-btn.no i{ color:var(--red-ink); }
+
+  .empty{ text-align:center; padding:36px 10px; color:var(--muted); }
+  .empty i{ font-size:30px; margin-bottom:8px; display:block; color:var(--muted-2); }
+  .empty p{ font-size:13px; margin:0; }
+
+  /* ===================== MODAL ===================== */
+  .modal-wrap{ position:fixed; inset:0; z-index:60; display:none; align-items:flex-end; justify-content:center; background:rgba(59,47,38,.45); }
+  .modal-wrap.show{ display:flex; }
+  .modal{ width:100%; max-width:460px; background:var(--paper); border-radius:20px 20px 0 0; padding:22px 20px 26px; max-height:88vh; overflow-y:auto; }
+  .modal h3{ font-family:'Fraunces', serif; font-weight:500; font-size:17px; margin:0 0 16px; color:var(--deep); }
+  .modal .sub{ font-size:12px; color:var(--muted); margin:-10px 0 16px; }
+  .modal .close-x{ float:right; background:none; border:none; font-size:18px; color:var(--muted); }
+
+  .avatar-edit{ width:88px; height:88px; border-radius:50%; background:var(--soft); display:flex; align-items:center; justify-content:center; overflow:hidden; margin:0 auto 18px; position:relative; }
+  .avatar-edit img{ width:100%; height:100%; object-fit:cover; }
+  .avatar-edit .cam{ position:absolute; bottom:0; right:0; width:28px; height:28px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; border:2px solid var(--paper); }
+  .avatar-edit .cam i{ font-size:13px; color:#fff; }
+
+  .status-badge{ font-size:11px; padding:4px 10px; border-radius:20px; display:inline-block; }
+  .status-badge.pendente{ background:var(--amber); color:var(--amber-ink); }
+  .status-badge.confirmada{ background:var(--green); color:var(--green-ink); }
+  .status-badge.recusada{ background:var(--red); color:var(--red-ink); }
+
+  .lock-note{ margin:14px 0 0; padding:10px 12px; background:var(--soft); border-radius:10px; display:flex; align-items:center; gap:8px; }
+  .lock-note i{ font-size:14px; color:var(--accent); }
+  .lock-note span{ font-size:11px; color:#8A6B47; }
+
+  #app-shell{ display:none; }
+  .gate-loading{ min-height:100vh; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:13px; }
+</style>
+</head>
+<body>
+
+<div class="gate-loading" id="tela-carregando">carregando…</div>
+
+<!-- ===================== TELA DE LOGIN ===================== -->
+<div id="tela-login" style="display:none;">
+  <div class="login-box">
+    <div class="login-hero" id="login-hero">
+      <div class="ph" id="login-hero-placeholder">
+        <i class="ti ti-photo" style="font-size:26px;"></i>
+        <span style="font-size:11px;">foto do condomínio</span>
+      </div>
+      <img id="login-hero-img" style="display:none;">
+    </div>
+    <div class="login-body">
+      <p class="login-title" id="login-nome-condominio">Salão de Festas</p>
+      <p class="login-sub" id="login-subtitulo">agenda do condomínio</p>
+      <p class="login-msg" id="login-msg"></p>
+
+      <div id="bloco-entrar">
+        <div class="field"><label>Casa</label><input type="text" id="in-casa" placeholder="ex: 07" inputmode="numeric"></div>
+        <div class="field"><label>Senha</label><input type="password" id="in-senha" placeholder="••••"></div>
+        <span class="login-link" onclick="abrirEsqueciSenha()">esqueci minha senha</span>
+        <button class="btn btn-primary" onclick="fazerLogin()">entrar</button>
+      </div>
+
+      <div id="bloco-trocar-senha" style="display:none;">
+        <p class="sub" style="margin:-6px 0 14px; font-size:12px; color:var(--muted);">Primeiro acesso — defina uma nova senha para continuar.</p>
+        <div class="field"><label>Nova senha</label><input type="password" id="in-nova-senha" placeholder="mínimo 6 caracteres"></div>
+        <div class="field"><label>Confirmar nova senha</label><input type="password" id="in-nova-senha-2" placeholder="repita a senha"></div>
+        <button class="btn btn-primary" onclick="confirmarTrocaSenhaInicial()">salvar e entrar</button>
+      </div>
+    </div>
+    <div class="login-version" id="login-versao">v0000000000</div>
+  </div>
+</div>
+
+<!-- ===================== APP ===================== -->
+<div id="app-shell">
+  <div class="phone">
+
+    <div class="topbar">
+      <div class="brand">
+        <div class="avatar" id="topbar-avatar">
+          <i class="ti ti-home" style="font-size:14px;color:var(--accent);"></i>
+        </div>
+        <span id="topbar-nome">Condomínio</span>
+      </div>
+      <div class="burger" onclick="abrirMenu()"><i class="ti ti-menu-2"></i></div>
+    </div>
+
+    <div class="tabs" id="tabs-nav">
+      <div class="tab active" data-tab="agenda" onclick="mudarTab('agenda')">agenda</div>
+      <div class="tab" data-tab="reservas" onclick="mudarTab('reservas')">reservas</div>
+      <div class="tab" data-tab="aprovacoes" id="tab-aprovacoes" style="display:none;" onclick="mudarTab('aprovacoes')">aprovações</div>
+    </div>
+
+    <!-- ===== TELA AGENDA ===== -->
+    <div class="screen active" id="screen-agenda">
+      <div class="cal-head">
+        <button onclick="mudarMes(-1)"><i class="ti ti-chevron-left"></i></button>
+        <span class="mes" id="cal-mes-label">—</span>
+        <button onclick="mudarMes(1)"><i class="ti ti-chevron-right"></i></button>
+      </div>
+      <div class="cal-grid-dow"><span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span></div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="legenda">
+        <div class="it"><span class="sw" style="background:var(--soft);"></span>livre</div>
+        <div class="it"><span class="sw" style="background:var(--amber);"></span>pendente</div>
+        <div class="it"><span class="sw" style="background:var(--red);"></span>reservado</div>
+        <div class="it"><span class="sw" style="background:var(--green);"></span>sua reserva</div>
+      </div>
+      <p class="lista-titulo">próximas reservas</p>
+      <div id="lista-proximas"></div>
+    </div>
+
+    <!-- ===== TELA MINHAS RESERVAS ===== -->
+    <div class="screen" id="screen-reservas">
+      <p class="lista-titulo" style="margin-top:16px;">minhas reservas</p>
+      <div id="lista-minhas"></div>
+    </div>
+
+    <!-- ===== TELA APROVAÇÕES (síndico/dev) ===== -->
+    <div class="screen" id="screen-aprovacoes">
+      <p class="lista-titulo" style="margin-top:16px;">pedidos pendentes</p>
+      <div id="lista-pendentes"></div>
+      <p class="lista-titulo">todas as reservas do mês</p>
+      <div id="lista-todas"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===================== MENU LATERAL ===================== -->
+<div class="overlay" id="overlay" onclick="fecharTudo()"></div>
+<div class="drawer" id="drawer">
+  <button class="close-btn" onclick="fecharTudo()"><i class="ti ti-x"></i></button>
+  <div class="who">
+    <p class="nome" id="drawer-nome">—</p>
+    <p class="casa" id="drawer-casa">—</p>
+  </div>
+  <div class="drawer-item" onclick="abrirModal('modal-perfil')"><i class="ti ti-user"></i> meu cadastro</div>
+  <div class="drawer-item" id="menu-config-condominio" style="display:none;" onclick="abrirModal('modal-condominio')"><i class="ti ti-building"></i> condomínio</div>
+  <div class="drawer-item" id="menu-casas" style="display:none;" onclick="abrirModal('modal-casas')"><i class="ti ti-users"></i> casas cadastradas</div>
+  <div class="drawer-item danger" onclick="fazerLogout()"><i class="ti ti-logout"></i> sair</div>
+  <p style="font-size:10px; opacity:.5; margin-top:24px;" id="drawer-versao">v0000000000</p>
+</div>
+
+<!-- ===================== MODAL: NOVA RESERVA ===================== -->
+<div class="modal-wrap" id="modal-nova-reserva">
+  <div class="modal">
+    <button class="close-x" onclick="fecharModal('modal-nova-reserva')"><i class="ti ti-x"></i></button>
+    <h3>Pedir reserva</h3>
+    <p class="sub" id="nr-data-label">—</p>
+    <div class="field" id="nr-campo-casa" style="display:none;">
+      <label>Reservar em nome de</label>
+      <select id="nr-casa-select"></select>
+    </div>
+    <div class="field"><label>Observação (opcional)</label><textarea id="nr-obs" rows="3" placeholder="ex: aniversário de 10 anos"></textarea></div>
+    <button class="btn btn-primary" onclick="confirmarPedidoReserva()">enviar pedido</button>
+  </div>
+</div>
+
+<!-- ===================== MODAL: DETALHE DO DIA ===================== -->
+<div class="modal-wrap" id="modal-detalhe-dia">
+  <div class="modal">
+    <button class="close-x" onclick="fecharModal('modal-detalhe-dia')"><i class="ti ti-x"></i></button>
+    <h3 id="dd-titulo">Dia</h3>
+    <div id="dd-conteudo"></div>
+  </div>
+</div>
+
+<!-- ===================== MODAL: MEU CADASTRO ===================== -->
+<div class="modal-wrap" id="modal-perfil">
+  <div class="modal">
+    <button class="close-x" onclick="fecharModal('modal-perfil')"><i class="ti ti-x"></i></button>
+    <h3>Meu cadastro</h3>
+    <div class="field"><label>Apelido da casa</label><input type="text" id="pf-apelido" placeholder="ex: Casa da Família Silva"></div>
+    <div class="field"><label>Nome do responsável</label><input type="text" id="pf-nome"></div>
+    <div class="field"><label>Telefone / WhatsApp</label><input type="text" id="pf-telefone" placeholder="(00) 00000-0000"></div>
+    <button class="btn btn-primary" onclick="salvarPerfil()">salvar dados</button>
+    <div style="height:10px;"></div>
+    <button class="btn btn-ghost" onclick="abrirModal('modal-trocar-senha')">trocar senha</button>
+  </div>
+</div>
+
+<!-- ===================== MODAL: TROCAR SENHA ===================== -->
+<div class="modal-wrap" id="modal-trocar-senha">
+  <div class="modal">
+    <button class="close-x" onclick="fecharModal('modal-trocar-senha')"><i class="ti ti-x"></i></button>
+    <h3>Trocar senha</h3>
+    <div class="field"><label>Senha atual</label><input type="password" id="ts-atual"></div>
+    <div class="field"><label>Nova senha</label><input type="password" id="ts-nova" placeholder="mínimo 6 caracteres"></div>
+    <div class="field"><label>Confirmar nova senha</label><input type="password" id="ts-nova-2"></div>
+    <button class="btn btn-primary" onclick="salvarTrocaSenha()">salvar nova senha</button>
+  </div>
+</div>
+
+<!-- ===================== MODAL: CONFIGURAÇÕES DO CONDOMÍNIO (admin) ===================== -->
+<div class="modal-wrap" id="modal-condominio">
+  <div class="modal">
+    <button class="close-x" onclick="fecharModal('modal-condominio')"><i class="ti ti-x"></i></button>
+    <h3>Configurações do condomínio</h3>
+    <div class="avatar-edit" onclick="document.getElementById('cd-foto-input').click()">
+      <img id="cd-foto-preview" style="display:none;">
+      <i class="ti ti-building" id="cd-foto-icone" style="font-size:30px;color:var(--muted);"></i>
+      <div class="cam"><i class="ti ti-camera"></i></div>
+    </div>
+    <input type="file" id="cd-foto-input" accept="image/*" style="display:none;" onchange="onFotoCondominioSelecionada(this)">
+    <div class="field"><label>Nome do condomínio</label><input type="text" id="cd-nome"></div>
+    <div class="field"><label>Subtítulo</label><input type="text" id="cd-subtitulo"></div>
+    <div class="field"><label>E-mail do síndico (recebe notificações)</label><input type="text" id="cd-email-sindico"></div>
+    <button class="btn btn-primary" onclick="salvarCondominio()">salvar alterações</button>
+    <div class="lock-note"><i class="ti ti-lock"></i><span>visível apenas para síndico e desenvolvedor</span></div>
+  </div>
+</div>
+
+<!-- ===================== MODAL: CASAS CADASTRADAS (admin) ===================== -->
+<div class="modal-wrap" id="modal-casas">
+  <div class="modal">
+    <button class="close-x" onclick="fecharModal('modal-casas')"><i class="ti ti-x"></i></button>
+    <h3>Casas cadastradas</h3>
+    <div id="lista-casas"></div>
+    <div style="height:14px;"></div>
+    <p class="sub" style="margin:0 0 10px;">cadastrar nova casa (senha inicial padrão: 1234)</p>
+    <div class="field"><label>Número da casa</label><input type="text" id="nc-numero" placeholder="ex: 16" inputmode="numeric"></div>
+    <div class="field"><label>Papel</label>
+      <select id="nc-papel"><option value="morador">morador</option><option value="sindico">síndico</option></select>
+    </div>
+    <button class="btn btn-primary" onclick="cadastrarNovaCasa()">cadastrar casa</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.44.0/iconfont/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, query, where,
+  orderBy, onSnapshot, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {
+  getAuth, signInWithEmailAndPassword, updatePassword, createUserWithEmailAndPassword,
+  sendPasswordResetEmail, signOut, onAuthStateChanged, EmailAuthProvider, reauthenticateWithCredential
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+/* =====================================================================
+   CONFIGURAÇÃO — mesmo projeto Firebase do App Massagens (multitenant)
+   ===================================================================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyBQRDIM6mHtsssWv4F_eTVfEhmpHMeUGV8",
+  authDomain: "app-massagens-447e5.firebaseapp.com",
+  projectId: "app-massagens-447e5",
+  storageBucket: "app-massagens-447e5.firebasestorage.app",
+  messagingSenderId: "892386095601",
+  appId: "1:892386095601:web:509dfbf92b9de90471d450"
+};
+
+// Identificador deste condomínio dentro do projeto Firebase compartilhado.
+// Para publicar em outro condomínio, duplique o arquivo e troque só esta linha.
+const TENANT_ID = "residencial-jardins";
+
+// E-mail com acesso de desenvolvedor (irrestrito), igual ao App Massagens.
+const EMAIL_DESENVOLVEDOR = "souza.iatech@gmail.com";
+
+// EmailJS — preencha com as chaves da sua conta em https://www.emailjs.com
+// (Serviço gratuito: cria os 3 valores abaixo no painel deles, sem custo.)
+const EMAILJS_PUBLIC_KEY  = "COLE_AQUI_SUA_PUBLIC_KEY";
+const EMAILJS_SERVICE_ID  = "COLE_AQUI_SEU_SERVICE_ID";
+const EMAILJS_TEMPLATE_ID = "COLE_AQUI_SEU_TEMPLATE_ID";
+
+const VERSAO_APP = "2026080001";
+
+/* ===================================================================== */
+
+const fbApp = initializeApp(firebaseConfig);
+const db = getFirestore(fbApp);
+const auth = getAuth(fbApp);
+
+if (window.emailjs && EMAILJS_PUBLIC_KEY.indexOf("COLE_AQUI") === -1) {
+  window.emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+}
+
+document.getElementById("login-versao").textContent = "v" + VERSAO_APP;
+document.getElementById("drawer-versao").textContent = "v" + VERSAO_APP;
+
+/* ---------- estado global ---------- */
+let condominioData = null;
+let casaAtual = null;       // documento da casa logada
+let casaAtualId = null;
+let ehSindico = false;
+let ehDev = false;
+let mesVisivel = new Date();
+let reservasDoMes = [];
+let todasAsCasas = [];
+let diaSelecionadoISO = null;
+
+/* ---------- utilidades ---------- */
+function showToast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"), 2600);
+}
+function abrirModal(id){ fecharDrawer(); document.getElementById(id).classList.add("show"); }
+function fecharModal(id){ document.getElementById(id).classList.remove("show"); }
+function abrirMenu(){ document.getElementById("overlay").classList.add("show"); document.getElementById("drawer").classList.add("show"); }
+function fecharDrawer(){ document.getElementById("overlay").classList.remove("show"); document.getElementById("drawer").classList.remove("show"); }
+function fecharTudo(){
+  fecharDrawer();
+  document.querySelectorAll(".modal-wrap").forEach(m=>m.classList.remove("show"));
+}
+function isoDeData(y,m,d){ return `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`; }
+function formatarDataBR(iso){
+  const [y,m,d] = iso.split("-");
+  return `${d}/${m}/${y}`;
+}
+window.abrirModal = abrirModal;
+window.fecharModal = fecharModal;
+window.abrirMenu = abrirMenu;
+window.fecharTudo = fecharTudo;
+
+/* =====================================================================
+   LOGIN
+   ===================================================================== */
+function emailVirtualDaCasa(numero){
+  return `casa${String(numero).trim().padStart(2,"0")}@${TENANT_ID}.condominio.app`;
+}
+
+window.fazerLogin = async function(){
+  const casa = document.getElementById("in-casa").value.trim();
+  const senha = document.getElementById("in-senha").value;
+  const msg = document.getElementById("login-msg");
+  msg.textContent = ""; msg.className = "login-msg";
+  if(!casa || !senha){ msg.textContent = "Preencha casa e senha."; msg.classList.add("err"); return; }
+  try{
+    await signInWithEmailAndPassword(auth, emailVirtualDaCasa(casa), senha);
+    // onAuthStateChanged cuida do resto
+  }catch(e){
+    msg.textContent = "Casa ou senha inválidas.";
+    msg.classList.add("err");
+  }
+};
+
+window.abrirEsqueciSenha = async function(){
+  const casa = document.getElementById("in-casa").value.trim();
+  const msg = document.getElementById("login-msg");
+  if(!casa){ msg.textContent = "Digite o número da casa primeiro."; msg.className="login-msg err"; return; }
+  try{
+    await sendPasswordResetEmail(auth, emailVirtualDaCasa(casa));
+    msg.textContent = "Se essa casa tiver e-mail de recuperação configurado, você receberá instruções. Caso contrário, peça ao síndico para redefinir sua senha padrão.";
+    msg.className = "login-msg ok";
+  }catch(e){
+    msg.textContent = "Não foi possível iniciar a recuperação. Fale com o síndico.";
+    msg.className = "login-msg err";
+  }
+};
+
+let uidPendenteTrocaSenha = null;
+window.confirmarTrocaSenhaInicial = async function(){
+  const nova = document.getElementById("in-nova-senha").value;
+  const nova2 = document.getElementById("in-nova-senha-2").value;
+  const msg = document.getElementById("login-msg");
+  if(nova.length < 6){ msg.textContent = "A senha precisa ter pelo menos 6 caracteres."; msg.className="login-msg err"; return; }
+  if(nova !== nova2){ msg.textContent = "As senhas não coincidem."; msg.className="login-msg err"; return; }
+  try{
+    await updatePassword(auth.currentUser, nova);
+    await updateDoc(doc(db, "condominios", TENANT_ID, "casas", casaAtualId), { senhaTrocada: true });
+    casaAtual.senhaTrocada = true;
+    showToast("Senha atualizada!");
+    document.getElementById("bloco-trocar-senha").style.display = "none";
+    document.getElementById("bloco-entrar").style.display = "block";
+    iniciarApp();
+  }catch(e){
+    msg.textContent = "Não foi possível salvar a nova senha. Faça login novamente e tente de novo.";
+    msg.className = "login-msg err";
+  }
+};
+
+window.fazerLogout = async function(){
+  await signOut(auth);
+  location.reload();
+};
+
+/* =====================================================================
+   CARREGAMENTO DO CONDOMÍNIO (antes do login, para a logo/nome aparecerem)
+   ===================================================================== */
+async function carregarDadosCondominioParaLogin(){
+  try{
+    const snap = await getDoc(doc(db, "condominios", TENANT_ID));
+    if(snap.exists()){
+      const d = snap.data();
+      if(d.nome) document.getElementById("login-nome-condominio").textContent = d.nome;
+      if(d.subtitulo) document.getElementById("login-subtitulo").textContent = d.subtitulo;
+      if(d.fotoBase64){
+        document.getElementById("login-hero-placeholder").style.display = "none";
+        const img = document.getElementById("login-hero-img");
+        img.src = d.fotoBase64;
+        img.style.display = "block";
+      }
+    }
+  }catch(e){ /* segue com os valores padrão */ }
+  document.getElementById("tela-carregando").style.display = "none";
+  document.getElementById("tela-login").style.display = "flex";
+}
+
+/* =====================================================================
+   ESTADO DE AUTENTICAÇÃO
+   ===================================================================== */
+onAuthStateChanged(auth, async (user) => {
+  if(!user){
+    casaAtual = null; casaAtualId = null;
+    document.getElementById("app-shell").style.display = "none";
+    if(document.getElementById("tela-carregando").style.display !== "none" || document.getElementById("tela-login").style.display === "none"){
+      // primeira carga ou logout
+    }
+    document.getElementById("tela-carregando").style.display = "none";
+    document.getElementById("tela-login").style.display = "flex";
+    return;
+  }
+
+  ehDev = (user.email || "").toLowerCase() === EMAIL_DESENVOLVEDOR.toLowerCase();
+
+  // localizar o doc da casa pelo email virtual (ou, para o dev, pelo campo uid/email salvo)
+  const casasSnap = await getDocs(collection(db, "condominios", TENANT_ID, "casas"));
+  let achou = null, achouId = null;
+  casasSnap.forEach(d=>{
+    const v = d.data();
+    if(v.uid === user.uid){ achou = v; achouId = d.id; }
+  });
+
+  if(!achou){
+    showToast("Cadastro da casa não encontrado. Fale com o síndico.");
+    await signOut(auth);
+    return;
+  }
+
+  casaAtual = achou;
+  casaAtualId = achouId;
+  ehSindico = casaAtual.papel === "sindico";
+
+  if(!casaAtual.senhaTrocada){
+    document.getElementById("tela-carregando").style.display = "none";
+    document.getElementById("tela-login").style.display = "flex";
+    document.getElementById("bloco-entrar").style.display = "none";
+    document.getElementById("bloco-trocar-senha").style.display = "block";
+    return;
+  }
+
+  document.getElementById("tela-login").style.display = "none";
+  document.getElementById("tela-carregando").style.display = "none";
+  await iniciarApp();
+});
+
+/* =====================================================================
+   INICIALIZAÇÃO DO APP (pós-login)
+   ===================================================================== */
+async function iniciarApp(){
+  document.getElementById("app-shell").style.display = "block";
+
+  const condSnap = await getDoc(doc(db, "condominios", TENANT_ID));
+  condominioData = condSnap.exists() ? condSnap.data() : {};
+
+  document.getElementById("topbar-nome").textContent = condominioData.nome || "Condomínio";
+  if(condominioData.fotoBase64){
+    document.getElementById("topbar-avatar").innerHTML = `<img src="${condominioData.fotoBase64}">`;
+  }
+
+  document.getElementById("drawer-nome").textContent = casaAtual.nomeResponsavel || `Casa ${casaAtual.numero}`;
+  document.getElementById("drawer-casa").textContent = `Casa ${casaAtual.numero}` + (ehSindico ? " · síndico" : "") + (ehDev ? " · desenvolvedor" : "");
+
+  document.getElementById("pf-apelido").value = casaAtual.apelido || "";
+  document.getElementById("pf-nome").value = casaAtual.nomeResponsavel || "";
+  document.getElementById("pf-telefone").value = casaAtual.telefone || "";
+
+  if(ehSindico || ehDev){
+    document.getElementById("tab-aprovacoes").style.display = "block";
+    document.getElementById("menu-config-condominio").style.display = "flex";
+    document.getElementById("menu-casas").style.display = "flex";
+  }
+
+  if(ehSindico || ehDev){
+    const casasSnap = await getDocs(collection(db, "condominios", TENANT_ID, "casas"));
+    todasAsCasas = [];
+    casasSnap.forEach(d=> todasAsCasas.push({ id:d.id, ...d.data() }));
+    todasAsCasas.sort((a,b)=> (a.numero+"").localeCompare(b.numero+"", "pt-BR", {numeric:true}));
+  }
+
+  await carregarReservasDoMes();
+  renderizarTudo();
+  escutarPendentesEmTempoReal();
+}
+
+/* =====================================================================
+   NAVEGAÇÃO ENTRE ABAS
+   ===================================================================== */
+window.mudarTab = function(nome){
+  document.querySelectorAll(".tab").forEach(t=> t.classList.toggle("active", t.dataset.tab === nome));
+  document.querySelectorAll(".screen").forEach(s=> s.classList.remove("active"));
+  document.getElementById("screen-" + nome).classList.add("active");
+  if(nome === "reservas") renderizarMinhasReservas();
+  if(nome === "aprovacoes") renderizarAprovacoes();
+};
+
+/* =====================================================================
+   CALENDÁRIO
+   ===================================================================== */
+window.mudarMes = async function(delta){
+  mesVisivel.setMonth(mesVisivel.getMonth() + delta);
+  await carregarReservasDoMes();
+  renderizarCalendario();
+  renderizarProximasReservas();
+};
+
+async function carregarReservasDoMes(){
+  const y = mesVisivel.getFullYear();
+  const m = mesVisivel.getMonth();
+  const inicio = isoDeData(y, m, 1);
+  const fim = isoDeData(y, m, new Date(y, m+1, 0).getDate());
+  const q = query(
+    collection(db, "condominios", TENANT_ID, "reservas"),
+    where("data", ">=", inicio),
+    where("data", "<=", fim)
+  );
+  const snap = await getDocs(q);
+  reservasDoMes = [];
+  snap.forEach(d=> reservasDoMes.push({ id:d.id, ...d.data() }));
+}
+
+function renderizarCalendario(){
+  const y = mesVisivel.getFullYear();
+  const m = mesVisivel.getMonth();
+  const nomesMes = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+  document.getElementById("cal-mes-label").textContent = `${nomesMes[m]} ${y}`;
+
+  const primeiroDiaSemana = new Date(y, m, 1).getDay();
+  const totalDias = new Date(y, m+1, 0).getDate();
+  const hojeIso = isoDeData(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+
+  const grid = document.getElementById("cal-grid");
+  grid.innerHTML = "";
+  for(let i=0;i<primeiroDiaSemana;i++){
+    const b = document.createElement("button");
+    b.disabled = true;
+    grid.appendChild(b);
+  }
+  for(let dia=1; dia<=totalDias; dia++){
+    const iso = isoDeData(y,m,dia);
+    const reserva = reservasDoMes.find(r=> r.data === iso);
+    const b = document.createElement("button");
+    b.className = "cal-day";
+    b.textContent = dia;
+    if(iso === hojeIso) b.classList.add("hoje");
+    if(reserva){
+      if(reserva.status === "pendente") b.classList.add("pendente");
+      else if(reserva.status === "confirmada" && reserva.casaId === casaAtualId) b.classList.add("minha");
+      else if(reserva.status === "confirmada") b.classList.add("reservado");
+    }
+    b.onclick = ()=> abrirDetalheDia(iso, reserva);
+    grid.appendChild(b);
+  }
+}
+
+function abrirDetalheDia(iso, reserva){
+  diaSelecionadoISO = iso;
+  const titulo = document.getElementById("dd-titulo");
+  const conteudo = document.getElementById("dd-conteudo");
+  titulo.textContent = formatarDataBR(iso);
+
+  const hojeIso = isoDeData(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+  const passado = iso < hojeIso;
+
+  if(!reserva){
+    if(passado){
+      conteudo.innerHTML = `<p class="sub" style="margin:0;">Data já passou.</p>`;
+    }else{
+      conteudo.innerHTML = `<p class="sub" style="margin:0 0 16px;">Esse dia está livre para reserva do salão.</p>`;
+      const btn = document.createElement("button");
+      btn.className = "btn btn-primary";
+      btn.textContent = "pedir esse dia";
+      btn.onclick = ()=>{ fecharModal("modal-detalhe-dia"); abrirNovaReserva(iso); };
+      conteudo.appendChild(btn);
+    }
+  }else{
+    const vejoDetalhe = ehSindico || ehDev || reserva.casaId === casaAtualId;
+    let html = `<span class="status-badge ${reserva.status}">${legendaStatus(reserva.status)}</span>`;
+    if(vejoDetalhe){
+      const casaNome = (todasAsCasas.find(c=>c.id===reserva.casaId)||{}).apelido || (todasAsCasas.find(c=>c.id===reserva.casaId)||{}).numero || "—";
+      html += `<p style="margin:14px 0 4px;font-size:13px;">Reservado por: <b>Casa ${reserva.casaNumero || ""} ${reserva.casaId===casaAtualId ? "(você)" : ""}</b></p>`;
+      if(reserva.observacao) html += `<p style="margin:0;font-size:13px;color:var(--muted);">${escaparHtml(reserva.observacao)}</p>`;
+    }else{
+      html += `<p style="margin:14px 0 0;font-size:13px;color:var(--muted);">Quem reservou fica visível só para o síndico.</p>`;
+    }
+    conteudo.innerHTML = html;
+
+    if(ehSindico || ehDev){
+      const wrap = document.createElement("div");
+      wrap.style.marginTop = "16px";
+      wrap.style.display = "flex";
+      wrap.style.gap = "8px";
+      if(reserva.status === "pendente"){
+        const okBtn = document.createElement("button");
+        okBtn.className = "btn btn-primary btn-sm";
+        okBtn.textContent = "aprovar";
+        okBtn.onclick = ()=> aprovarReserva(reserva.id);
+        const noBtn = document.createElement("button");
+        noBtn.className = "btn btn-danger btn-sm";
+        noBtn.textContent = "recusar";
+        noBtn.onclick = ()=> recusarReserva(reserva.id);
+        wrap.appendChild(okBtn); wrap.appendChild(noBtn);
+      }else{
+        const cancelBtn = document.createElement("button");
+        cancelBtn.className = "btn btn-ghost btn-sm";
+        cancelBtn.textContent = "cancelar reserva";
+        cancelBtn.onclick = ()=> cancelarReserva(reserva.id);
+        wrap.appendChild(cancelBtn);
+      }
+      conteudo.appendChild(wrap);
+    }else if(reserva.casaId === casaAtualId && reserva.status !== "recusada"){
+      const cancelBtn = document.createElement("button");
+      cancelBtn.className = "btn btn-ghost btn-sm";
+      cancelBtn.style.marginTop = "14px";
+      cancelBtn.textContent = "cancelar meu pedido";
+      cancelBtn.onclick = ()=> cancelarReserva(reserva.id);
+      conteudo.appendChild(cancelBtn);
+    }
+  }
+  document.getElementById("modal-detalhe-dia").classList.add("show");
+}
+window.abrirDetalheDia = abrirDetalheDia;
+
+function legendaStatus(s){
+  return s === "pendente" ? "aguardando aprovação" : s === "confirmada" ? "confirmada" : "recusada";
+}
+function escaparHtml(s){
+  const d = document.createElement("div"); d.textContent = s; return d.innerHTML;
+}
+
+/* =====================================================================
+   NOVA RESERVA
+   ===================================================================== */
+function abrirNovaReserva(iso){
+  diaSelecionadoISO = iso;
+  document.getElementById("nr-data-label").textContent = formatarDataBR(iso);
+  document.getElementById("nr-obs").value = "";
+
+  const campoCasa = document.getElementById("nr-campo-casa");
+  const select = document.getElementById("nr-casa-select");
+  if(ehSindico || ehDev){
+    campoCasa.style.display = "block";
+    select.innerHTML = "";
+    todasAsCasas.forEach(c=>{
+      const opt = document.createElement("option");
+      opt.value = c.id;
+      opt.textContent = `Casa ${c.numero}` + (c.apelido ? ` — ${c.apelido}` : "");
+      if(c.id === casaAtualId) opt.selected = true;
+      select.appendChild(opt);
+    });
+  }else{
+    campoCasa.style.display = "none";
+  }
+  document.getElementById("modal-nova-reserva").classList.add("show");
+}
+window.abrirNovaReserva = abrirNovaReserva;
+
+window.confirmarPedidoReserva = async function(){
+  const obs = document.getElementById("nr-obs").value.trim();
+  let casaIdEscolhida = casaAtualId;
+  let casaNumeroEscolhida = casaAtual.numero;
+  if(ehSindico || ehDev){
+    const select = document.getElementById("nr-casa-select");
+    casaIdEscolhida = select.value;
+    const c = todasAsCasas.find(c=>c.id===casaIdEscolhida);
+    casaNumeroEscolhida = c ? c.numero : casaAtual.numero;
+  }
+
+  const reservaId = `${diaSelecionadoISO}`;
+  try{
+    await setDoc(doc(db, "condominios", TENANT_ID, "reservas", reservaId), {
+      data: diaSelecionadoISO,
+      casaId: casaIdEscolhida,
+      casaNumero: casaNumeroEscolhida,
+      observacao: obs,
+      status: "pendente",
+      criadoPor: casaAtualId,
+      criadoEm: serverTimestamp()
+    });
+    fecharModal("modal-nova-reserva");
+    showToast("Pedido enviado! O síndico foi notificado.");
+    await notificarSindicoNovoPedido(diaSelecionadoISO, casaNumeroEscolhida);
+    await carregarReservasDoMes();
+    renderizarTudo();
+  }catch(e){
+    showToast("Não foi possível enviar o pedido. Tente novamente.");
+  }
+};
+
+async function notificarSindicoNovoPedido(dataIso, casaNumero){
+  if(!window.emailjs || EMAILJS_PUBLIC_KEY.indexOf("COLE_AQUI") !== -1) return;
+  const emailSindico = (condominioData && condominioData.emailSindico) || "";
+  if(!emailSindico) return;
+  try{
+    await window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      to_email: emailSindico,
+      condominio: condominioData.nome || "",
+      data_reserva: formatarDataBR(dataIso),
+      casa: casaNumero
+    });
+  }catch(e){ /* falha de e-mail não deve travar o fluxo do usuário */ }
+}
+
+/* =====================================================================
+   APROVAÇÃO / CANCELAMENTO (síndico / dev)
+   ===================================================================== */
+async function aprovarReserva(id){
+  await updateDoc(doc(db, "condominios", TENANT_ID, "reservas", id), { status: "confirmada" });
+  fecharModal("modal-detalhe-dia");
+  showToast("Reserva aprovada.");
+  await carregarReservasDoMes();
+  renderizarTudo();
+}
+async function recusarReserva(id){
+  await updateDoc(doc(db, "condominios", TENANT_ID, "reservas", id), { status: "recusada" });
+  fecharModal("modal-detalhe-dia");
+  showToast("Reserva recusada.");
+  await carregarReservasDoMes();
+  renderizarTudo();
+}
+async function cancelarReserva(id){
+  await updateDoc(doc(db, "condominios", TENANT_ID, "reservas", id), { status: "recusada" });
+  fecharModal("modal-detalhe-dia");
+  showToast("Reserva cancelada.");
+  await carregarReservasDoMes();
+  renderizarTudo();
+}
+window.aprovarReserva = aprovarReserva;
+window.recusarReserva = recusarReserva;
+window.cancelarReserva = cancelarReserva;
+
+function escutarPendentesEmTempoReal(){
+  if(!(ehSindico || ehDev)) return;
+  const q = query(collection(db, "condominios", TENANT_ID, "reservas"), where("status","==","pendente"));
+  onSnapshot(q, (snap)=>{
+    const badge = document.getElementById("tab-aprovacoes");
+    const n = snap.size;
+    badge.textContent = n > 0 ? `aprovações (${n})` : "aprovações";
+  });
+}
+
+/* =====================================================================
+   RENDERIZAÇÃO DE LISTAS
+   ===================================================================== */
+function renderizarTudo(){
+  renderizarCalendario();
+  renderizarProximasReservas();
+}
+
+function renderizarProximasReservas(){
+  const hojeIso = isoDeData(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+  const lista = reservasDoMes
+    .filter(r=> r.data >= hojeIso && r.status !== "recusada")
+    .sort((a,b)=> a.data.localeCompare(b.data));
+  const el = document.getElementById("lista-proximas");
+  el.innerHTML = "";
+  if(lista.length === 0){
+    el.innerHTML = `<div class="empty"><i class="ti ti-calendar-off"></i><p>Nenhuma reserva agendada neste mês.</p></div>`;
+    return;
+  }
+  lista.forEach(r=> el.appendChild(itemReservaEl(r)));
+}
+
+function renderizarMinhasReservas(){
+  const el = document.getElementById("lista-minhas");
+  el.innerHTML = "";
+  const minhas = reservasDoMes.filter(r=> r.casaId === casaAtualId).sort((a,b)=> a.data.localeCompare(b.data));
+  if(minhas.length === 0){
+    el.innerHTML = `<div class="empty"><i class="ti ti-calendar-plus"></i><p>Você ainda não tem reservas neste mês. Toque em um dia livre na agenda para pedir.</p></div>`;
+    return;
+  }
+  minhas.forEach(r=> el.appendChild(itemReservaEl(r, true)));
+}
+
+function renderizarAprovacoes(){
+  if(!(ehSindico || ehDev)) return;
+  const pendentes = reservasDoMes.filter(r=> r.status === "pendente").sort((a,b)=> a.data.localeCompare(b.data));
+  const todas = reservasDoMes.filter(r=> r.status !== "pendente").sort((a,b)=> a.data.localeCompare(b.data));
+
+  const elP = document.getElementById("lista-pendentes");
+  elP.innerHTML = "";
+  if(pendentes.length === 0){
+    elP.innerHTML = `<div class="empty"><i class="ti ti-check"></i><p>Nenhum pedido pendente.</p></div>`;
+  }else{
+    pendentes.forEach(r=> elP.appendChild(itemReservaEl(r, true, true)));
+  }
+
+  const elT = document.getElementById("lista-todas");
+  elT.innerHTML = "";
+  if(todas.length === 0){
+    elT.innerHTML = `<div class="empty"><i class="ti ti-calendar-off"></i><p>Sem outras reservas neste mês.</p></div>`;
+  }else{
+    todas.forEach(r=> elT.appendChild(itemReservaEl(r, true)));
+  }
+}
+
+function itemReservaEl(r, mostrarCasa=false, comAcoes=false){
+  const wrap = document.createElement("div");
+  wrap.className = "item-reserva";
+  wrap.style.cursor = "pointer";
+
+  const corClasse = r.status === "pendente" ? "pendente" : (r.casaId === casaAtualId ? "minha" : "reservado");
+  const dia = document.createElement("div");
+  dia.className = "dia cal-day " + corClasse;
+  dia.style.cursor = "default";
+  dia.textContent = r.data.split("-")[2];
+
+  const info = document.createElement("div");
+  info.className = "info";
+  const t1 = document.createElement("p");
+  t1.className = "t1";
+  const vejoQuem = ehSindico || ehDev || r.casaId === casaAtualId;
+  if(r.casaId === casaAtualId){
+    t1.textContent = "sua reserva";
+  }else if(vejoQuem && mostrarCasa){
+    t1.textContent = `Casa ${r.casaNumero}`;
+  }else{
+    t1.textContent = "salão reservado";
+  }
+  const t2 = document.createElement("p");
+  t2.className = "t2";
+  t2.textContent = formatarDataBR(r.data) + " · " + legendaStatus(r.status);
+  info.appendChild(t1); info.appendChild(t2);
+
+  wrap.appendChild(dia); wrap.appendChild(info);
+
+  if(comAcoes && r.status === "pendente" && (ehSindico || ehDev)){
+    const acoes = document.createElement("div");
+    acoes.className = "acoes";
+    const ok = document.createElement("button");
+    ok.className = "icon-btn ok"; ok.innerHTML = `<i class="ti ti-check"></i>`;
+    ok.onclick = (e)=>{ e.stopPropagation(); aprovarReserva(r.id); };
+    const no = document.createElement("button");
+    no.className = "icon-btn no"; no.innerHTML = `<i class="ti ti-x"></i>`;
+    no.onclick = (e)=>{ e.stopPropagation(); recusarReserva(r.id); };
+    acoes.appendChild(ok); acoes.appendChild(no);
+    wrap.appendChild(acoes);
+  }
+
+  wrap.onclick = ()=> abrirDetalheDia(r.data, r);
+  return wrap;
+}
+
+/* =====================================================================
+   PERFIL DO MORADOR (edição restrita ao próprio)
+   ===================================================================== */
+window.salvarPerfil = async function(){
+  const apelido = document.getElementById("pf-apelido").value.trim();
+  const nome = document.getElementById("pf-nome").value.trim();
+  const telefone = document.getElementById("pf-telefone").value.trim();
+  try{
+    await updateDoc(doc(db, "condominios", TENANT_ID, "casas", casaAtualId), { apelido, nomeResponsavel: nome, telefone });
+    casaAtual.apelido = apelido; casaAtual.nomeResponsavel = nome; casaAtual.telefone = telefone;
+    document.getElementById("drawer-nome").textContent = nome || `Casa ${casaAtual.numero}`;
+    showToast("Cadastro atualizado.");
+    fecharModal("modal-perfil");
+  }catch(e){
+    showToast("Não foi possível salvar. Tente novamente.");
+  }
+};
+
+window.salvarTrocaSenha = async function(){
+  const atual = document.getElementById("ts-atual").value;
+  const nova = document.getElementById("ts-nova").value;
+  const nova2 = document.getElementById("ts-nova-2").value;
+  if(nova.length < 6){ showToast("A nova senha precisa ter pelo menos 6 caracteres."); return; }
+  if(nova !== nova2){ showToast("As senhas não coincidem."); return; }
+  try{
+    const cred = EmailAuthProvider.credential(auth.currentUser.email, atual);
+    await reauthenticateWithCredential(auth.currentUser, cred);
+    await updatePassword(auth.currentUser, nova);
+    showToast("Senha alterada com sucesso.");
+    fecharModal("modal-trocar-senha");
+  }catch(e){
+    showToast("Senha atual incorreta.");
+  }
+};
+
+/* =====================================================================
+   CONFIGURAÇÕES DO CONDOMÍNIO (síndico / dev)
+   ===================================================================== */
+window.abrirModal = function(id){
+  fecharDrawer();
+  if(id === "modal-condominio"){
+    document.getElementById("cd-nome").value = condominioData.nome || "";
+    document.getElementById("cd-subtitulo").value = condominioData.subtitulo || "";
+    document.getElementById("cd-email-sindico").value = condominioData.emailSindico || "";
+    if(condominioData.fotoBase64){
+      document.getElementById("cd-foto-preview").src = condominioData.fotoBase64;
+      document.getElementById("cd-foto-preview").style.display = "block";
+      document.getElementById("cd-foto-icone").style.display = "none";
+    }
+  }
+  if(id === "modal-casas") renderizarListaCasas();
+  document.getElementById(id).classList.add("show");
+};
+
+window.onFotoCondominioSelecionada = function(input){
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    condominioData._novaFoto = reader.result;
+    document.getElementById("cd-foto-preview").src = reader.result;
+    document.getElementById("cd-foto-preview").style.display = "block";
+    document.getElementById("cd-foto-icone").style.display = "none";
+  };
+  reader.readAsDataURL(file);
+};
+
+window.salvarCondominio = async function(){
+  const nome = document.getElementById("cd-nome").value.trim();
+  const subtitulo = document.getElementById("cd-subtitulo").value.trim();
+  const emailSindico = document.getElementById("cd-email-sindico").value.trim();
+  const dados = { nome, subtitulo, emailSindico };
+  if(condominioData._novaFoto) dados.fotoBase64 = condominioData._novaFoto;
+  try{
+    await setDoc(doc(db, "condominios", TENANT_ID), dados, { merge:true });
+    Object.assign(condominioData, dados);
+    document.getElementById("topbar-nome").textContent = nome;
+    if(dados.fotoBase64) document.getElementById("topbar-avatar").innerHTML = `<img src="${dados.fotoBase64}">`;
+    showToast("Configurações salvas.");
+    fecharModal("modal-condominio");
+  }catch(e){
+    showToast("Não foi possível salvar. Tente novamente.");
+  }
+};
+
+/* =====================================================================
+   GESTÃO DE CASAS (síndico / dev) — cadastro inicial e novas casas
+   ===================================================================== */
+function renderizarListaCasas(){
+  const el = document.getElementById("lista-casas");
+  el.innerHTML = "";
+  todasAsCasas.forEach(c=>{
+    const div = document.createElement("div");
+    div.className = "item-reserva";
+    div.innerHTML = `
+      <div class="dia cal-day" style="cursor:default;background:var(--soft);">${c.numero}</div>
+      <div class="info">
+        <p class="t1">${c.apelido || ("Casa " + c.numero)}${c.papel === "sindico" ? " · síndico" : ""}</p>
+        <p class="t2">${c.nomeResponsavel || "sem responsável cadastrado"}</p>
+      </div>`;
+    el.appendChild(div);
+  });
+}
+
+window.cadastrarNovaCasa = async function(){
+  const numero = document.getElementById("nc-numero").value.trim();
+  const papel = document.getElementById("nc-papel").value;
+  if(!numero){ showToast("Informe o número da casa."); return; }
+  const email = emailVirtualDaCasa(numero);
+  try{
+    const cred = await createUserWithEmailAndPassword(auth, email, "1234");
+    await setDoc(doc(db, "condominios", TENANT_ID, "casas", cred.user.uid), {
+      numero, papel, apelido: "", nomeResponsavel: "", telefone: "",
+      senhaTrocada: false, uid: cred.user.uid, criadoEm: serverTimestamp()
+    });
+    showToast(`Casa ${numero} cadastrada com senha padrão 1234.`);
+    document.getElementById("nc-numero").value = "";
+    // recarrega lista (sem trocar a sessão logada, pois createUser troca o usuário atual do SDK)
+    showToast("Atenção: a criação de uma nova casa troca a sessão ativa. Faça login novamente como síndico/dev.");
+    await signOut(auth);
+  }catch(e){
+    showToast("Não foi possível cadastrar. O número já existe?");
+  }
+};
+
+/* inicia o carregamento do condomínio para a tela de login */
+carregarDadosCondominioParaLogin();
+</script>
+</body>
+</html>
