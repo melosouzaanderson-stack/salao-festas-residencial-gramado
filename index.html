@@ -169,18 +169,19 @@
   .home-banner .tag{ font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:#8A6B47; margin:0 0 6px; }
   .home-banner h2{ font-family:'Fraunces', serif; font-weight:500; font-size:17px; margin:0 0 6px; color:var(--deep); }
   .home-banner p{ font-size:13px; margin:0; color:#6B5540; line-height:1.4; }
-  .home-btn{ width:100%; border-radius:16px; border:none; padding:22px 18px; text-align:left; display:flex; align-items:center; gap:14px; margin-top:14px; }
-  .home-btn .ic{ width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex:none; }
-  .home-btn .tx h3{ margin:0 0 3px; font-family:'Fraunces', serif; font-weight:500; font-size:15px; }
-  .home-btn .tx p{ margin:0; font-size:12px; }
+  .home-btn-row{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px; }
+  .home-btn{ border-radius:16px; border:none; padding:22px 14px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:10px; aspect-ratio:1; justify-content:center; }
+  .home-btn .ic{ width:48px; height:48px; border-radius:14px; display:flex; align-items:center; justify-content:center; flex:none; }
+  .home-btn .tx h3{ margin:0 0 3px; font-family:'Fraunces', serif; font-weight:500; font-size:14px; }
+  .home-btn .tx p{ margin:0; font-size:11px; }
   .home-btn.primary{ background:var(--accent); }
   .home-btn.primary .ic{ background:rgba(255,255,255,.2); }
-  .home-btn.primary .ic i{ color:#fff; font-size:20px; }
+  .home-btn.primary .ic i{ color:#fff; font-size:22px; }
   .home-btn.primary .tx h3{ color:#fff; }
   .home-btn.primary .tx p{ color:rgba(255,255,255,.85); }
   .home-btn.disabled{ background:var(--soft); cursor:default; }
   .home-btn.disabled .ic{ background:rgba(184,118,63,.14); }
-  .home-btn.disabled .ic i{ color:var(--muted); font-size:20px; }
+  .home-btn.disabled .ic i{ color:var(--muted); font-size:22px; }
   .home-btn.disabled .tx h3{ color:var(--muted); }
   .home-btn.disabled .tx p{ color:var(--muted-2); }
   .home-banner-btn{ margin-top:12px; background:#fff; color:var(--accent); border:none; border-radius:10px; padding:9px 16px; font-size:13px; font-weight:500; }
@@ -302,15 +303,17 @@
         <p id="home-banner-texto">—</p>
       </div>
 
-      <button class="home-btn primary" onclick="abrirReservaSalao()">
-        <div class="ic"><i class="ti ti-calendar-event"></i></div>
-        <div class="tx"><h3>Reserva do Salão</h3><p>ver agenda, pedir e acompanhar reservas</p></div>
-      </button>
+      <div class="home-btn-row">
+        <button class="home-btn primary" onclick="abrirReservaSalao()">
+          <div class="ic"><i class="ti ti-calendar-event"></i></div>
+          <div class="tx"><h3>Reserva do Salão</h3><p>ver agenda e pedir reserva</p></div>
+        </button>
 
-      <button class="home-btn disabled" disabled>
-        <div class="ic"><i class="ti ti-tools"></i></div>
-        <div class="tx"><h3>Em construção</h3><p>novidades em breve</p></div>
-      </button>
+        <button class="home-btn disabled" disabled>
+          <div class="ic"><i class="ti ti-tools"></i></div>
+          <div class="tx"><h3>Em construção</h3><p>novidades em breve</p></div>
+        </button>
+      </div>
     </div>
 
     <div class="back-row" id="back-row" style="display:none;" onclick="voltarInicio()">
