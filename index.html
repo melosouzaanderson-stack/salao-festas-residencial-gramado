@@ -190,6 +190,11 @@
   .home-banner-btn{ margin-top:12px; background:#fff; color:var(--accent); border:none; border-radius:10px; padding:9px 16px; font-size:13px; font-weight:500; }
   .home-status-pendentes{ margin-top:12px; background:rgba(255,255,255,.22); border-radius:10px; padding:10px 14px; font-size:13px; font-weight:500; display:flex; align-items:center; gap:8px; cursor:pointer; }
   .home-status-pendentes i{ font-size:16px; flex:none; }
+  .home-status-pendentes.pulsante{ animation:pulsarAviso 1.8s ease-in-out infinite; }
+  @keyframes pulsarAviso{ 0%,100%{ opacity:1; } 50%{ opacity:.62; } }
+  .config-subtitulo{ font-size:13px; font-weight:500; color:var(--muted); margin:22px 0 4px; padding-top:14px; border-top:1px solid var(--line); }
+  .config-subtitulo:first-of-type{ border-top:none; padding-top:0; margin-top:16px; }
+  .var-chip{ display:inline-block; font-size:11px; padding:3px 9px; margin:0 5px 5px 0; background:var(--soft); color:var(--accent); border-radius:8px; }
   .periodo-noite .home-status-pendentes{ background:rgba(255,255,255,.14); color:#fff; }
   .periodo-manha .home-status-pendentes, .periodo-tarde .home-status-pendentes{ color:var(--deep); }
   .home-banner.aviso-condo{ background:var(--soft); margin-top:12px; }
@@ -343,8 +348,8 @@
         <div class="home-status-pendentes" id="home-status-pendentes" style="display:none;" onclick="abrirAprovacoesDireto()">
           <i class="ti ti-bell"></i> <span id="home-status-pendentes-texto"></span>
         </div>
-        <div class="home-status-pendentes" id="home-status-proxima-reserva" style="display:none;" onclick="abrirReservaSalao()">
-          <i class="ti ti-confetti"></i> <span id="home-status-proxima-reserva-texto"></span>
+        <div class="home-status-pendentes pulsante" id="home-status-proxima-reserva" style="display:none;" onclick="abrirReservaProximaDetalhe()">
+          <i class="ti ti-bell"></i> <span id="home-status-proxima-reserva-texto"></span>
         </div>
         <button class="home-banner-btn" id="home-status-btn" style="display:none;" onclick="abrirModal('modal-perfil')">Completar cadastro</button>
       </div>
@@ -529,6 +534,21 @@
       <p style="font-size:11px;color:var(--muted);margin:6px 0 0;">Esse texto já fica salvo, pronto para quando o envio automático desse lembrete for implementado.</p>
     </div>
 
+    <p class="config-subtitulo">Zelador</p>
+    <div class="field"><label>Nome</label><input type="text" id="cd-zelador-nome" placeholder="Nome completo"></div>
+    <div class="field"><label>Apelido (opcional)</label><input type="text" id="cd-zelador-apelido" placeholder="Como é chamado"></div>
+    <div class="field"><label>Whatsapp</label><input type="text" id="cd-zelador-whatsapp" placeholder="(00) 00000-0000" oninput="mascararTelefoneZelador(this)"></div>
+
+    <p class="config-subtitulo">Mensagens padrão</p>
+    <div class="field">
+      <label>Aviso ao zelador</label>
+      <textarea id="cd-msg-zelador" rows="4"></textarea>
+    </div>
+    <div style="margin:-4px 0 4px;">
+      <span class="var-chip">{dia_semana}</span><span class="var-chip">{data}</span><span class="var-chip">{morador}</span><span class="var-chip">{zelador}</span>
+    </div>
+    <p style="font-size:11px;color:var(--muted);margin:0 0 6px;">Essas variáveis são substituídas automaticamente. Em {zelador}, usamos o apelido cadastrado — se estiver vazio, usamos o nome.</p>
+
     <button class="btn btn-primary" onclick="salvarCondominio()">Salvar alterações</button>
     <div class="lock-note"><i class="ti ti-lock"></i><span>Visível apenas para síndico e desenvolvedor</span></div>
   </div>
@@ -628,7 +648,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026080018";
+const VERSAO_APP = "2026080019";
 
 /* ===================================================================== */
 
@@ -686,6 +706,43 @@ function formatarDataBR(iso){
   const [y,m,d] = iso.split("-");
   return `${d}/${m}/${y}`;
 }
+const NOMES_DIA_SEMANA = ["domingo","segunda-feira","terça-feira","quarta-feira","quinta-feira","sexta-feira","sábado"];
+function nomeDiaSemana(iso){
+  return NOMES_DIA_SEMANA[new Date(iso + "T00:00:00").getDay()];
+}
+window.mascararTelefoneZelador = function(input){
+  let v = input.value.replace(/\D/g,"").slice(0,11);
+  if(v.length > 6) v = `(${v.slice(0,2)}) ${v.slice(2,7)}-${v.slice(7)}`;
+  else if(v.length > 2) v = `(${v.slice(0,2)}) ${v.slice(2)}`;
+  else if(v.length > 0) v = `(${v}`;
+  input.value = v;
+};
+function whatsappZeladorDigits(){
+  const digitos = (condominioData.zeladorWhatsapp || "").replace(/\D/g,"");
+  if(!digitos) return "";
+  return digitos.startsWith("55") ? digitos : "55" + digitos;
+}
+function montarMensagemZelador(reserva, iso){
+  const template = condominioData.msgZeladorTexto ||
+    "Aviso que {dia_semana} dia {data} teremos um evento no salão de festas, reservado por {morador}. Por favor, {zelador}, fique atento se o salão está organizado e limpo para o evento!";
+  const casa = todasAsCasas.find(c=>c.id===reserva.casaId) || {};
+  const morador = casa.apelido || `Casa ${reserva.casaNumero || ""}`;
+  const zelador = condominioData.zeladorApelido || condominioData.zeladorNome || "zelador";
+  return template
+    .replaceAll("{dia_semana}", nomeDiaSemana(iso))
+    .replaceAll("{data}", formatarDataBR(iso))
+    .replaceAll("{morador}", morador)
+    .replaceAll("{zelador}", zelador);
+}
+window.avisarZelador = function(reserva, iso){
+  const numero = whatsappZeladorDigits();
+  if(!numero){
+    showToast("Cadastre o WhatsApp do zelador em Configurações do condomínio.");
+    return;
+  }
+  const texto = montarMensagemZelador(reserva, iso);
+  window.open(`https://wa.me/${numero}?text=${encodeURIComponent(texto)}`, "_blank");
+};
 window.abrirModal = abrirModal;
 window.fecharModal = fecharModal;
 window.abrirMenu = abrirMenu;
@@ -1057,6 +1114,13 @@ function abrirDetalheDia(iso, reserva){
         cancelBtn.textContent = "Cancelar reserva";
         cancelBtn.onclick = ()=> cancelarReserva(reserva.id);
         wrap.appendChild(cancelBtn);
+        if(reserva.status === "confirmada"){
+          const zapBtn = document.createElement("button");
+          zapBtn.className = "btn btn-ghost btn-sm";
+          zapBtn.innerHTML = `<i class="ti ti-brand-whatsapp"></i> Avisar zelador`;
+          zapBtn.onclick = ()=> avisarZelador(reserva, iso);
+          wrap.appendChild(zapBtn);
+        }
       }
       conteudo.appendChild(wrap);
     }else if(reserva.casaId === casaAtualId && reserva.status !== "recusada"){
@@ -1245,8 +1309,18 @@ function escutarPendentesEmTempoReal(){
   });
 }
 
-// Dias de antecedência para avisar o síndico sobre uma reserva confirmada chegando
+// Janela máxima de busca (cobre o caso doming/segunda, que avisa com 3 dias de antecedência)
 const DIAS_AVISO_RESERVA_PROXIMA = 3;
+let reservaBannerAtual = null; // { reserva, iso } — usada pelo clique no banner
+
+// Mesma regra dos lembretes por e-mail: sex/sáb/dom avisa na quinta; segunda avisa na sexta anterior; demais, 1 dia antes.
+function diasAntecedenciaAviso(diaSemanaIdx){
+  if(diaSemanaIdx === 5) return 1; // sexta -> quinta
+  if(diaSemanaIdx === 6) return 2; // sábado -> quinta
+  if(diaSemanaIdx === 0) return 3; // domingo -> quinta
+  if(diaSemanaIdx === 1) return 3; // segunda -> sexta anterior
+  return 1; // terça, quarta, quinta -> 1 dia antes
+}
 
 async function verificarReservaProxima(){
   const hoje = new Date();
@@ -1265,21 +1339,42 @@ async function verificarReservaProxima(){
     const snap = await getDocs(q);
     if(snap.empty) return;
 
-    let maisProxima = null;
+    const elegiveis = [];
     snap.forEach(d=>{
       const r = d.data();
-      if(!maisProxima || r.data < maisProxima.data) maisProxima = r;
+      const dataEvento = new Date(r.data + "T00:00:00");
+      const diasAntes = diasAntecedenciaAviso(dataEvento.getDay());
+      const inicioAviso = new Date(dataEvento);
+      inicioAviso.setDate(inicioAviso.getDate() - diasAntes);
+      const inicioAvisoIso = isoDeData(inicioAviso.getFullYear(), inicioAviso.getMonth(), inicioAviso.getDate());
+      if(hojeIso >= inicioAvisoIso) elegiveis.push({ reserva: r, iso: r.data });
     });
+    if(elegiveis.length === 0) return;
 
-    const diasFaltando = Math.round((new Date(maisProxima.data + "T00:00:00") - new Date(hojeIso + "T00:00:00")) / 86400000);
-    const quando = diasFaltando === 0 ? "hoje" : diasFaltando === 1 ? "amanhã" : `em ${diasFaltando} dias`;
+    elegiveis.sort((a,b)=> a.iso.localeCompare(b.iso));
+    const maisProxima = elegiveis[0];
+    const outras = elegiveis.length - 1;
 
+    const diasFaltando = Math.round((new Date(maisProxima.iso + "T00:00:00") - new Date(hojeIso + "T00:00:00")) / 86400000);
+    const quando = diasFaltando === 0 ? "hoje" : diasFaltando === 1 ? "amanhã" : nomeDiaSemana(maisProxima.iso);
+
+    reservaBannerAtual = maisProxima;
     const bloco = document.getElementById("home-status-proxima-reserva");
     const texto = document.getElementById("home-status-proxima-reserva-texto");
-    texto.textContent = `Reserva confirmada ${quando} — Casa ${maisProxima.casaNumero}. Prepare o salão!`;
+    const casaNome = (todasAsCasas.find(c=>c.id===maisProxima.reserva.casaId)||{}).apelido || `Casa ${maisProxima.reserva.casaNumero}`;
+    texto.textContent = `Terá evento no salão ${quando}, ${casaNome}. Clique aqui para ações.`
+      + (outras > 0 ? ` (+${outras} outra${outras>1?"s":""})` : "");
     bloco.style.display = "flex";
   }catch(e){ console.error("Erro ao verificar reserva próxima:", e); }
 }
+
+window.abrirReservaProximaDetalhe = function(){
+  if(!reservaBannerAtual) return;
+  mudarTab("agenda");
+  document.getElementById("tabs-nav").style.display = "flex";
+  document.getElementById("back-row").style.display = "flex";
+  abrirDetalheDia(reservaBannerAtual.iso, reservaBannerAtual.reserva);
+};
 
 /* =====================================================================
    RENDERIZAÇÃO DE LISTAS
@@ -1472,6 +1567,11 @@ window.abrirModal = function(id){
     document.getElementById("cd-aviso-texto").value = condominioData.avisoTexto || "";
     document.getElementById("cd-lembrete-assunto").value = condominioData.lembreteEmailAssunto || "";
     document.getElementById("cd-lembrete-texto").value = condominioData.lembreteEmailTexto || "";
+    document.getElementById("cd-zelador-nome").value = condominioData.zeladorNome || "";
+    document.getElementById("cd-zelador-apelido").value = condominioData.zeladorApelido || "";
+    document.getElementById("cd-zelador-whatsapp").value = condominioData.zeladorWhatsapp || "";
+    document.getElementById("cd-msg-zelador").value = condominioData.msgZeladorTexto ||
+      "Aviso que {dia_semana} dia {data} teremos um evento no salão de festas, reservado por {morador}. Por favor, {zelador}, fique atento se o salão está organizado e limpo para o evento!";
     if(condominioData.fotoBase64){
       document.getElementById("cd-foto-preview").src = condominioData.fotoBase64;
       document.getElementById("cd-foto-preview").style.display = "block";
@@ -1522,7 +1622,11 @@ window.salvarCondominio = async function(){
   const avisoTexto = document.getElementById("cd-aviso-texto").value.trim();
   const lembreteEmailAssunto = document.getElementById("cd-lembrete-assunto").value.trim();
   const lembreteEmailTexto = document.getElementById("cd-lembrete-texto").value.trim();
-  const dados = { nome, subtitulo, emailSindico, avisoTitulo, avisoTexto, lembreteEmailAssunto, lembreteEmailTexto };
+  const zeladorNome = document.getElementById("cd-zelador-nome").value.trim();
+  const zeladorApelido = document.getElementById("cd-zelador-apelido").value.trim();
+  const zeladorWhatsapp = document.getElementById("cd-zelador-whatsapp").value.trim();
+  const msgZeladorTexto = document.getElementById("cd-msg-zelador").value.trim();
+  const dados = { nome, subtitulo, emailSindico, avisoTitulo, avisoTexto, lembreteEmailAssunto, lembreteEmailTexto, zeladorNome, zeladorApelido, zeladorWhatsapp, msgZeladorTexto };
   if(condominioData._novaFoto) dados.fotoBase64 = condominioData._novaFoto;
   if(condominioData._novaFotoSalao) dados.fotoSalao = condominioData._novaFotoSalao;
   try{
