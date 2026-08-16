@@ -198,16 +198,36 @@
   .home-banner.aviso-condo p{ color:var(--muted); }
 
   #home-status-banner{ position:relative; overflow:hidden; }
-  #home-status-banner .periodo-icon{ position:absolute; top:-18px; right:-14px; font-size:110px; opacity:.16; color:#fff; }
-  .periodo-manha{ background:linear-gradient(135deg, #F3C979, #D9A876); }
+  .periodo-manha{ background:linear-gradient(135deg, #FFD9A0, #F0AF66); }
   .periodo-tarde{ background:linear-gradient(135deg, #F2B84B, #D9762E); }
-  .periodo-noite{ background:linear-gradient(135deg, #4A3B6B, #2E2440); }
+  .periodo-noite{ background:linear-gradient(135deg, #1B2A52, #0B1230); }
   .periodo-noite .tag, .periodo-noite h2{ color:#fff; }
   .periodo-noite p{ color:rgba(255,255,255,.78); }
-  .periodo-noite .home-banner-btn{ color:#2E2440; }
+  .periodo-noite .home-banner-btn{ color:#1B2A52; }
   .periodo-manha .tag, .periodo-tarde .tag{ color:rgba(59,47,38,.65); }
   .periodo-manha h2, .periodo-tarde h2{ color:var(--deep); }
   .periodo-manha p, .periodo-tarde p{ color:#6B5540; }
+
+  /* Decoração do período (sol / lua e estrelas) */
+  .periodo-decor{ position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+  .decor-sol-cheio, .decor-sol-poente, .decor-lua{ display:none; position:absolute; border-radius:50%; }
+  .periodo-manha .decor-sol-cheio{
+    display:block; top:14px; right:16px; width:46px; height:46px;
+    background:#FFF4D6; box-shadow:0 0 18px 4px rgba(255,244,214,.55);
+  }
+  .periodo-tarde .decor-sol-poente{
+    display:block; bottom:-16px; right:26px; width:52px; height:52px;
+    background:#FFE9B8; box-shadow:0 0 18px 4px rgba(255,233,184,.45);
+    clip-path:inset(0 0 50% 0);
+  }
+  .decor-horizonte{ display:none; position:absolute; left:0; right:0; bottom:22px; height:1px; background:rgba(255,233,184,.3); }
+  .periodo-tarde .decor-horizonte{ display:block; }
+  .periodo-noite .decor-lua{
+    display:block; top:16px; right:20px; width:26px; height:26px;
+    background:#EFEFF7; box-shadow:inset 8px -3px 0 0 #1B2A52, 0 0 10px 1px rgba(239,239,247,.35);
+  }
+  .decor-estrela{ display:none; position:absolute; width:2px; height:2px; border-radius:50%; background:#fff; box-shadow:0 0 3px #fff; }
+  .periodo-noite .decor-estrela{ display:block; }
   .back-row{ display:flex; align-items:center; gap:8px; padding:14px 16px 0; color:var(--muted); font-size:13px; cursor:pointer; }
   .back-row i{ font-size:16px; }
 
@@ -305,7 +325,17 @@
     <!-- ===== TELA INICIAL (HOME) ===== -->
     <div class="screen active" id="screen-home">
       <div class="home-banner" id="home-status-banner">
-        <i class="ti periodo-icon" id="home-status-icon"></i>
+        <div class="periodo-decor" aria-hidden="true">
+          <div class="decor-sol-cheio"></div>
+          <div class="decor-sol-poente"></div>
+          <div class="decor-horizonte"></div>
+          <div class="decor-lua"></div>
+          <span class="decor-estrela" style="top:14px; left:40px;"></span>
+          <span class="decor-estrela" style="top:28px; left:90px;"></span>
+          <span class="decor-estrela" style="top:16px; left:150px; width:1.5px; height:1.5px;"></span>
+          <span class="decor-estrela" style="top:44px; left:210px;"></span>
+          <span class="decor-estrela" style="top:10px; left:250px; width:1.5px; height:1.5px;"></span>
+        </div>
         <p class="tag" id="home-status-tag">bem-vindo(a)</p>
         <h2 id="home-status-titulo">—</h2>
         <p id="home-status-texto">—</p>
@@ -597,7 +627,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026080017";
+const VERSAO_APP = "2026080018";
 
 /* ===================================================================== */
 
@@ -879,14 +909,13 @@ function cadastroEstaCompleto(){
 
 function periodoDoDia(){
   const h = new Date().getHours();
-  if(h >= 5 && h < 12)  return { nome:"manha", saudacao:"Bom dia",  icone:"ti-sun" };
-  if(h >= 12 && h < 18) return { nome:"tarde", saudacao:"Boa tarde", icone:"ti-confetti" };
-  return { nome:"noite", saudacao:"Boa noite", icone:"ti-moon-stars" };
+  if(h >= 5 && h < 12)  return { nome:"manha", saudacao:"Bom dia" };
+  if(h >= 12 && h < 18) return { nome:"tarde", saudacao:"Boa tarde" };
+  return { nome:"noite", saudacao:"Boa noite" };
 }
 
 function renderizarBannerStatus(){
   const banner = document.getElementById("home-status-banner");
-  const icone = document.getElementById("home-status-icon");
   const tag = document.getElementById("home-status-tag");
   const titulo = document.getElementById("home-status-titulo");
   const texto = document.getElementById("home-status-texto");
@@ -895,7 +924,6 @@ function renderizarBannerStatus(){
   const periodo = periodoDoDia();
   banner.classList.remove("periodo-manha", "periodo-tarde", "periodo-noite");
   banner.classList.add("periodo-" + periodo.nome);
-  icone.className = "ti periodo-icon " + periodo.icone;
 
   if(cadastroEstaCompleto()){
     const primeiroNome = casaAtual.nomeResponsavel.trim().split(" ")[0];
