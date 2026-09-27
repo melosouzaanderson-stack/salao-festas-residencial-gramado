@@ -689,7 +689,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import {
   getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, query, where,
   orderBy, onSnapshot, serverTimestamp,
-  initializeFirestore, persistentLocalCache, persistentMultipleTabManager, getDocFromCache, getDocsFromCache
+  initializeFirestore, persistentLocalCache, persistentMultipleTabManager, getDocFromCache, getDocsFromCache,
+  runTransaction
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import {
   getAuth, signInWithEmailAndPassword, updatePassword, createUserWithEmailAndPassword,
@@ -722,7 +723,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026270004";
+const VERSAO_APP = "2026270005";
 
 /* ===================================================================== */
 
@@ -1209,6 +1210,14 @@ window.renderizarBannerStatus = renderizarBannerStatus;
 /* =====================================================================
    CALENDÁRIO
    ===================================================================== */
+/* A reserva que vale para o dia: confirmada tem prioridade, depois pendente; recusadas não bloqueiam */
+function reservaAtivaDoDia(iso){
+  const doDia = reservasDoMes.filter(r=> r.data === iso);
+  return doDia.find(r=> r.status === "confirmada")
+      || doDia.find(r=> r.status === "pendente")
+      || doDia[0];
+}
+
 function chaveMes(y, m){ return `${y}-${String(m+1).padStart(2,"0")}`; }
 function consultaReservasMes(y, m){
   return query(
@@ -1302,7 +1311,7 @@ function renderizarCalendario(){
   }
   for(let dia=1; dia<=totalDias; dia++){
     const iso = isoDeData(y,m,dia);
-    const reserva = reservasDoMes.find(r=> r.data === iso);
+    const reserva = reservaAtivaDoDia(iso);
     const b = document.createElement("button");
     b.className = "cal-day";
     b.textContent = dia;
@@ -1458,15 +1467,23 @@ window.confirmarPedidoReserva = async function(){
   }
 
   const reservaId = `${diaSelecionadoISO}`;
+  const refReserva = doc(db, "Condominios", TENANT_ID, "reservas", reservaId);
   try{
-    await setDoc(doc(db, "Condominios", TENANT_ID, "reservas", reservaId), {
-      data: diaSelecionadoISO,
-      casaId: casaIdEscolhida,
-      casaNumero: casaNumeroEscolhida,
-      observacao: obs,
-      status: "pendente",
-      criadoPor: casaAtualId,
-      criadoEm: serverTimestamp()
+    // Confere NO SERVIDOR, no mesmo instante da gravação, se a data continua livre
+    await runTransaction(db, async (tx)=>{
+      const atual = await tx.get(refReserva);
+      if(atual.exists() && ["pendente","confirmada"].includes(atual.data().status)){
+        throw new Error("DATA_OCUPADA");
+      }
+      tx.set(refReserva, {
+        data: diaSelecionadoISO,
+        casaId: casaIdEscolhida,
+        casaNumero: casaNumeroEscolhida,
+        observacao: obs,
+        status: "pendente",
+        criadoPor: casaAtualId,
+        criadoEm: serverTimestamp()
+      });
     });
     fecharModal("modal-nova-reserva");
     showToast("Pedido enviado! O síndico foi notificado.");
@@ -1474,6 +1491,13 @@ window.confirmarPedidoReserva = async function(){
     await carregarReservasDoMes();
     renderizarTudo();
   }catch(e){
+    if(e && e.message === "DATA_OCUPADA"){
+      fecharModal("modal-nova-reserva");
+      showToast("Essa data acabou de ser pedida por outra casa. Escolha outro dia.");
+      await carregarReservasDoMes().catch(()=>{});
+      renderizarTudo();
+      return;
+    }
     showToast("Não foi possível enviar o pedido. Tente novamente.");
   }
 };
