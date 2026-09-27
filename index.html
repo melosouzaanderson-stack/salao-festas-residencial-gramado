@@ -269,6 +269,8 @@
 
   #app-shell{ display:none; }
   .gate-loading{ min-height:100vh; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:13px; }
+  .rs-aviso{ background:#FFF6E8; border:1px solid var(--amber); color:var(--amber-ink); border-radius:12px; padding:10px 12px; font-size:12.5px; margin:0 0 14px; line-height:1.45; }
+  .icon-btn.btn-chave{ border-color:var(--accent); color:var(--accent); }
 </style>
 </head>
 <body>
@@ -574,6 +576,27 @@
   </div>
 </div>
 
+<!-- ===================== MODAL: RESETAR SENHA (síndico / dev) ===================== -->
+<div class="modal-wrap" id="modal-reset-senha">
+  <div class="modal">
+    <button class="close-x" onclick="fecharModal('modal-reset-senha')"><i class="ti ti-x"></i></button>
+    <div id="rs-etapa-confirmar">
+      <h3 id="rs-titulo">Resetar senha?</h3>
+      <p class="sub" id="rs-responsavel" style="margin:-6px 0 14px;"></p>
+      <div class="rs-aviso"><i class="ti ti-alert-triangle"></i> A senha volta para <b>123456</b>. O morador será desconectado dos aparelhos e terá que criar uma senha nova no próximo login.</div>
+      <button class="btn btn-primary" id="rs-btn-confirmar" style="width:100%;margin-bottom:8px;" onclick="confirmarResetSenha()">Resetar senha</button>
+      <button class="btn btn-ghost" style="width:100%;" onclick="fecharModal('modal-reset-senha')">Cancelar</button>
+    </div>
+    <div id="rs-etapa-feito" style="display:none;">
+      <h3><i class="ti ti-circle-check" style="color:var(--green-ink);"></i> Senha resetada</h3>
+      <p class="sub" id="rs-feito-texto" style="margin:-6px 0 14px;"></p>
+      <button class="btn btn-primary" id="rs-btn-whats" style="width:100%;margin-bottom:8px;" onclick="avisarMoradorReset()"><i class="ti ti-brand-whatsapp"></i> Avisar morador pelo WhatsApp</button>
+      <p class="sub" id="rs-sem-telefone" style="margin:0 0 12px;display:none;">Esta casa não tem telefone cadastrado. Avise o morador de outra forma.</p>
+      <button class="btn btn-ghost" style="width:100%;" onclick="fecharModal('modal-reset-senha')">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===================== MODAL: RELATÓRIO DE USO (síndico / dev) ===================== -->
 <div class="modal-wrap" id="modal-relatorio">
   <div class="modal">
@@ -641,6 +664,7 @@ const TENANT_ID = "residencial-jardins";
 
 // E-mail com acesso de desenvolvedor (irrestrito), igual ao App Massagens.
 const EMAIL_DESENVOLVEDOR = "souza.iatech@gmail.com";
+const URL_FN_RESETAR_SENHA = "https://resetar-senha-admin-892386095601.southamerica-east1.run.app";
 
 // EmailJS — preencha com as chaves da sua conta em https://www.emailjs.com
 // (Serviço gratuito: cria os 3 valores abaixo no painel deles, sem custo.)
@@ -648,7 +672,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026080019";
+const VERSAO_APP = "2026270001";
 
 /* ===================================================================== */
 
@@ -1677,6 +1701,18 @@ function renderizarListaCasas(){
       ? `<i class="ti ti-arrow-down"></i>`
       : `<i class="ti ti-arrow-up"></i>`;
     btn.onclick = ()=> alternarPapelCasa(c.id, c.papel);
+
+    // botão de resetar senha (não aparece na própria casa)
+    if(c.id !== casaAtualId){
+      const btnChave = document.createElement("button");
+      btnChave.className = "icon-btn btn-chave";
+      btnChave.style.marginLeft = "auto";
+      btnChave.title = "Resetar senha";
+      btnChave.innerHTML = `<i class="ti ti-key"></i>`;
+      btnChave.onclick = ()=> abrirResetSenha(c.id);
+      div.appendChild(btnChave);
+      btn.style.marginLeft = "0";
+    }
     div.appendChild(btn);
 
     el.appendChild(div);
@@ -1716,6 +1752,60 @@ window.alternarPapelCasa = async function(casaId, papelAtual){
   }catch(e){
     showToast("Não foi possível alterar. Tente novamente.");
   }
+};
+
+/* ---------- Resetar senha de uma casa (via Cloud Function resetar-senha-admin) ---------- */
+let casaResetId = null;
+window.abrirResetSenha = function(casaId){
+  const c = todasAsCasas.find(x=> x.id === casaId);
+  if(!c) return;
+  casaResetId = casaId;
+  document.getElementById("rs-titulo").textContent = `Resetar senha da Casa ${c.numero}?`;
+  document.getElementById("rs-responsavel").textContent = c.nomeResponsavel || c.apelido || "Sem responsável cadastrado";
+  document.getElementById("rs-etapa-confirmar").style.display = "block";
+  document.getElementById("rs-etapa-feito").style.display = "none";
+  const b = document.getElementById("rs-btn-confirmar");
+  b.disabled = false; b.textContent = "Resetar senha";
+  document.getElementById("modal-reset-senha").classList.add("show");
+};
+
+window.confirmarResetSenha = async function(){
+  const c = todasAsCasas.find(x=> x.id === casaResetId);
+  if(!c) return;
+  const b = document.getElementById("rs-btn-confirmar");
+  b.disabled = true; b.textContent = "Resetando...";
+  try{
+    const token = await auth.currentUser.getIdToken();
+    const resp = await fetch(URL_FN_RESETAR_SENHA, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify({ tenantId: TENANT_ID, casaId: c.id })
+    });
+    const dados = await resp.json().catch(()=> ({}));
+    if(!resp.ok || !dados.ok) throw new Error(dados.erro || "Não foi possível resetar a senha.");
+    c.senhaTrocada = false;
+    showToast(`Senha da Casa ${c.numero} resetada para 123456.`);
+    document.getElementById("rs-feito-texto").textContent = `A Casa ${c.numero} já pode entrar com a senha 123456 e vai criar uma senha nova no primeiro acesso.`;
+    const tel = (c.telefone || "").replace(/\D/g,"");
+    document.getElementById("rs-btn-whats").style.display = tel ? "block" : "none";
+    document.getElementById("rs-sem-telefone").style.display = tel ? "none" : "block";
+    document.getElementById("rs-etapa-confirmar").style.display = "none";
+    document.getElementById("rs-etapa-feito").style.display = "block";
+  }catch(e){
+    showToast(e.message || "Não foi possível resetar a senha.");
+    b.disabled = false; b.textContent = "Resetar senha";
+  }
+};
+
+window.avisarMoradorReset = function(){
+  const c = todasAsCasas.find(x=> x.id === casaResetId);
+  if(!c) return;
+  let tel = (c.telefone || "").replace(/\D/g,"");
+  if(!tel) return;
+  if(!tel.startsWith("55")) tel = "55" + tel;
+  const nome = c.nomeResponsavel || c.apelido || `morador(a) da Casa ${c.numero}`;
+  const texto = `Olá, ${nome}! A senha da Casa ${c.numero} no app do salão de festas foi redefinida para 123456. No próximo acesso, o app vai pedir para você criar uma senha nova.`;
+  window.open(`https://wa.me/${tel}?text=${encodeURIComponent(texto)}`, "_blank");
 };
 
 window.onMudarPapelNovaCasa = function(){
