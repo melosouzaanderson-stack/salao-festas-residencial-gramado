@@ -688,7 +688,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, query, where,
-  orderBy, onSnapshot, serverTimestamp
+  orderBy, onSnapshot, serverTimestamp,
+  initializeFirestore, persistentLocalCache, persistentMultipleTabManager, getDocFromCache, getDocsFromCache
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import {
   getAuth, signInWithEmailAndPassword, updatePassword, createUserWithEmailAndPassword,
@@ -721,12 +722,18 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026270003";
+const VERSAO_APP = "2026270004";
 
 /* ===================================================================== */
 
 const fbApp = initializeApp(firebaseConfig);
-const db = getFirestore(fbApp);
+// Memória local do Firebase: guarda no aparelho o que já foi visto (abre mais rápido na próxima vez)
+let db;
+try{
+  db = initializeFirestore(fbApp, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) });
+}catch(e){
+  db = getFirestore(fbApp);
+}
 const auth = getAuth(fbApp);
 
 // App secundário (mesmo projeto) só para criar o login de casas novas,
@@ -748,6 +755,9 @@ let casaAtualId = null;
 let ehSindico = false;
 let ehDev = false;
 let mesVisivel = new Date();
+mesVisivel.setDate(1);
+let ultimasCasasCarregadas = [];
+const cacheReservasMes = new Map(); // "AAAA-MM" -> lista de reservas
 let reservasDoMes = [];
 let todasAsCasas = [];
 let diaSelecionadoISO = null;
@@ -970,11 +980,27 @@ window.fazerLogout = async function(){
 /* =====================================================================
    CARREGAMENTO DO CONDOMÍNIO (antes do login, para a logo/nome aparecerem)
    ===================================================================== */
+/* Busca os dados do condomínio UMA vez por sessão (login e painel reaproveitam).
+   Se houver cópia no aparelho, usa na hora e atualiza pela internet em segundo plano. */
+let _promessaCondominio = null;
+function obterDadosCondominio(){
+  if(_promessaCondominio) return _promessaCondominio;
+  const ref = doc(db, "Condominios", TENANT_ID);
+  const doServidor = getDoc(ref).then(s=> s.exists() ? s.data() : {});
+  _promessaCondominio = getDocFromCache(ref)
+    .then(s=>{
+      if(!s.exists()) return doServidor;
+      doServidor.then(d=>{ _promessaCondominio = Promise.resolve(d); }).catch(()=>{});
+      return s.data();
+    })
+    .catch(()=> doServidor);
+  return _promessaCondominio;
+}
+
 async function carregarDadosCondominioParaLogin(){
   try{
-    const snap = await getDoc(doc(db, "Condominios", TENANT_ID));
-    if(snap.exists()){
-      const d = snap.data();
+    const d = await obterDadosCondominio();
+    if(d){
       if(d.nome) document.getElementById("login-nome-condominio").textContent = d.nome;
       if(d.subtitulo) document.getElementById("login-subtitulo").textContent = d.subtitulo;
       if(d.fotoBase64){
@@ -1012,8 +1038,10 @@ onAuthStateChanged(auth, async (user) => {
   // localizar o doc da casa pelo email virtual (ou, para o dev, pelo campo uid/email salvo)
   const casasSnap = await getDocs(collection(db, "Condominios", TENANT_ID, "casas"));
   let achou = null, achouId = null;
+  ultimasCasasCarregadas = [];
   casasSnap.forEach(d=>{
     const v = d.data();
+    ultimasCasasCarregadas.push({ id:d.id, ...v });
     if(v.uid === user.uid){ achou = v; achouId = d.id; }
   });
 
@@ -1065,8 +1093,9 @@ onAuthStateChanged(auth, async (user) => {
 async function iniciarApp(){
   document.getElementById("app-shell").style.display = "block";
 
-  const condSnap = await getDoc(doc(db, "Condominios", TENANT_ID));
-  condominioData = condSnap.exists() ? condSnap.data() : {};
+  // Busca condomínio e reservas do mês AO MESMO TEMPO
+  const promessaReservas = carregarReservasDoMes({ cacheLocalPrimeiro: true });
+  condominioData = { ...(await obterDadosCondominio()) };
 
   document.getElementById("topbar-nome").textContent = condominioData.nome || "Condomínio";
   if(condominioData.fotoBase64){
@@ -1097,13 +1126,13 @@ async function iniciarApp(){
   }
 
   if(ehSindico || ehDev){
-    const casasSnap = await getDocs(collection(db, "Condominios", TENANT_ID, "casas"));
-    todasAsCasas = [];
-    casasSnap.forEach(d=> todasAsCasas.push({ id:d.id, ...d.data() }));
+    // Reaproveita a lista de casas já baixada no login (não baixa de novo)
+    todasAsCasas = (ultimasCasasCarregadas || []).slice();
     todasAsCasas.sort((a,b)=> (a.numero+"").localeCompare(b.numero+"", "pt-BR", {numeric:true}));
+    otimizarFotosDoCondominio();
   }
 
-  await carregarReservasDoMes();
+  await promessaReservas;
   renderizarTudo();
   escutarPendentesEmTempoReal();
   if(ehSindico || ehDev) verificarReservaProxima();
@@ -1180,26 +1209,78 @@ window.renderizarBannerStatus = renderizarBannerStatus;
 /* =====================================================================
    CALENDÁRIO
    ===================================================================== */
+function chaveMes(y, m){ return `${y}-${String(m+1).padStart(2,"0")}`; }
+function consultaReservasMes(y, m){
+  return query(
+    collection(db, "Condominios", TENANT_ID, "reservas"),
+    where("data", ">=", isoDeData(y, m, 1)),
+    where("data", "<=", isoDeData(y, m, new Date(y, m+1, 0).getDate()))
+  );
+}
+async function buscarReservasMes(y, m){
+  const snap = await getDocs(consultaReservasMes(y, m));
+  const lista = [];
+  snap.forEach(d=> lista.push({ id:d.id, ...d.data() }));
+  cacheReservasMes.set(chaveMes(y, m), lista);
+  return lista;
+}
+function preCarregarMesesVizinhos(){
+  [-1, 1].forEach(delta=>{
+    const d = new Date(mesVisivel.getFullYear(), mesVisivel.getMonth() + delta, 1);
+    if(!cacheReservasMes.has(chaveMes(d.getFullYear(), d.getMonth()))){
+      buscarReservasMes(d.getFullYear(), d.getMonth()).catch(()=>{});
+    }
+  });
+}
+function mesVisivelChave(){ return chaveMes(mesVisivel.getFullYear(), mesVisivel.getMonth()); }
+
 window.mudarMes = async function(delta){
-  mesVisivel.setMonth(mesVisivel.getMonth() + delta);
-  await carregarReservasDoMes();
-  renderizarCalendario();
-  renderizarProximasReservas();
+  mesVisivel = new Date(mesVisivel.getFullYear(), mesVisivel.getMonth() + delta, 1);
+  const y = mesVisivel.getFullYear(), m = mesVisivel.getMonth(), chave = chaveMes(y, m);
+  if(cacheReservasMes.has(chave)){
+    // Mostra na hora o que já temos e confere pela internet em segundo plano
+    reservasDoMes = cacheReservasMes.get(chave);
+    renderizarCalendario();
+    renderizarProximasReservas();
+    buscarReservasMes(y, m).then(lista=>{
+      if(mesVisivelChave() !== chave) return;
+      reservasDoMes = lista;
+      renderizarCalendario();
+      renderizarProximasReservas();
+    }).catch(()=>{});
+  }else{
+    renderizarCalendario(); // troca o nome do mês na hora
+    const lista = await buscarReservasMes(y, m).catch(()=> []);
+    if(mesVisivelChave() !== chave) return;
+    reservasDoMes = lista;
+    renderizarCalendario();
+    renderizarProximasReservas();
+  }
+  preCarregarMesesVizinhos();
 };
 
-async function carregarReservasDoMes(){
+async function carregarReservasDoMes(opcoes = {}){
   const y = mesVisivel.getFullYear();
   const m = mesVisivel.getMonth();
-  const inicio = isoDeData(y, m, 1);
-  const fim = isoDeData(y, m, new Date(y, m+1, 0).getDate());
-  const q = query(
-    collection(db, "Condominios", TENANT_ID, "reservas"),
-    where("data", ">=", inicio),
-    where("data", "<=", fim)
-  );
-  const snap = await getDocs(q);
-  reservasDoMes = [];
-  snap.forEach(d=> reservasDoMes.push({ id:d.id, ...d.data() }));
+  if(opcoes.cacheLocalPrimeiro){
+    // Abertura do app: se o aparelho tem cópia, desenha na hora e atualiza em seguida
+    try{
+      const snapLocal = await getDocsFromCache(consultaReservasMes(y, m));
+      if(!snapLocal.empty){
+        reservasDoMes = [];
+        snapLocal.forEach(d=> reservasDoMes.push({ id:d.id, ...d.data() }));
+        buscarReservasMes(y, m).then(lista=>{
+          if(mesVisivelChave() !== chaveMes(y, m)) return;
+          reservasDoMes = lista;
+          renderizarTudo();
+        }).catch(()=>{});
+        preCarregarMesesVizinhos();
+        return;
+      }
+    }catch(e){ /* sem cópia local: busca normal */ }
+  }
+  reservasDoMes = await buscarReservasMes(y, m);
+  preCarregarMesesVizinhos();
 }
 
 function renderizarCalendario(){
@@ -1773,13 +1854,55 @@ window.abrirModal = function(id){
   document.getElementById(id).classList.add("show");
 };
 
+/* Reduz uma imagem (data URL) para o tamanho em que ela aparece no app */
+function reduzirImagem(dataUrl, ladoMaximo, qualidade = 0.78){
+  return new Promise((resolve)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const escala = Math.min(1, ladoMaximo / Math.max(img.width, img.height));
+      const w = Math.round(img.width * escala), h = Math.round(img.height * escala);
+      const c = document.createElement("canvas");
+      c.width = w; c.height = h;
+      const ctx = c.getContext("2d");
+      ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0, 0, w, h);
+      ctx.drawImage(img, 0, 0, w, h);
+      const reduzida = c.toDataURL("image/jpeg", qualidade);
+      resolve(reduzida.length < dataUrl.length ? reduzida : dataUrl);
+    };
+    img.onerror = ()=> resolve(dataUrl);
+    img.src = dataUrl;
+  });
+}
+const LADO_MAX_FOTO_CONDOMINIO = 800;
+const LADO_MAX_FOTO_SALAO = 600;
+const LIMITE_FOTO_OTIMIZADA = 120000; // ~120 KB em texto
+
+/* Na abertura pelo síndico/dev: se as fotos salvas estiverem pesadas, reduz e salva de novo (uma vez só) */
+async function otimizarFotosDoCondominio(){
+  try{
+    const dados = {};
+    if(condominioData.fotoBase64 && condominioData.fotoBase64.length > LIMITE_FOTO_OTIMIZADA){
+      const r = await reduzirImagem(condominioData.fotoBase64, LADO_MAX_FOTO_CONDOMINIO);
+      if(r.length < condominioData.fotoBase64.length * 0.8) dados.fotoBase64 = r;
+    }
+    if(condominioData.fotoSalao && condominioData.fotoSalao.length > LIMITE_FOTO_OTIMIZADA){
+      const r = await reduzirImagem(condominioData.fotoSalao, LADO_MAX_FOTO_SALAO);
+      if(r.length < condominioData.fotoSalao.length * 0.8) dados.fotoSalao = r;
+    }
+    if(Object.keys(dados).length){
+      await setDoc(doc(db, "Condominios", TENANT_ID), dados, { merge:true });
+      Object.assign(condominioData, dados);
+    }
+  }catch(e){ /* se falhar, tenta de novo na próxima abertura */ }
+}
+
 window.onFotoCondominioSelecionada = function(input){
   const file = input.files[0];
   if(!file) return;
   const reader = new FileReader();
-  reader.onload = ()=>{
-    condominioData._novaFoto = reader.result;
-    document.getElementById("cd-foto-preview").src = reader.result;
+  reader.onload = async ()=>{
+    condominioData._novaFoto = await reduzirImagem(reader.result, LADO_MAX_FOTO_CONDOMINIO);
+    document.getElementById("cd-foto-preview").src = condominioData._novaFoto;
     document.getElementById("cd-foto-preview").style.display = "block";
     document.getElementById("cd-foto-icone").style.display = "none";
   };
@@ -1790,9 +1913,9 @@ window.onFotoSalaoSelecionada = function(input){
   const file = input.files[0];
   if(!file) return;
   const reader = new FileReader();
-  reader.onload = ()=>{
-    condominioData._novaFotoSalao = reader.result;
-    document.getElementById("cd-foto-salao-preview").src = reader.result;
+  reader.onload = async ()=>{
+    condominioData._novaFotoSalao = await reduzirImagem(reader.result, LADO_MAX_FOTO_SALAO);
+    document.getElementById("cd-foto-salao-preview").src = condominioData._novaFotoSalao;
     document.getElementById("cd-foto-salao-preview").style.display = "block";
     document.getElementById("cd-foto-salao-icone").style.display = "none";
   };
