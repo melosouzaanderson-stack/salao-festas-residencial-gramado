@@ -100,6 +100,14 @@
   .login-msg{ font-size:12px; text-align:center; margin:0 0 12px; min-height:16px; }
   .login-msg.err{ color:#A32D2D; }
   .login-msg.ok{ color:var(--green-ink); }
+  .onb-boas{ background:var(--soft); border-left:4px solid var(--accent); border-radius:12px; padding:12px 14px; font-size:13px; color:var(--deep); line-height:1.5; margin:0 0 14px; }
+  .onb-passos{ display:flex; gap:6px; margin:0 0 4px; }
+  .onb-passos span{ flex:1; height:5px; border-radius:4px; background:var(--line); }
+  .onb-passos span.on{ background:var(--accent); }
+  .onb-etapa{ font-size:11px; color:var(--muted); margin:0 0 6px; }
+  .onb-titulo{ font-weight:600; color:var(--deep); margin:4px 0 10px; font-size:14px; }
+  .onb-expl{ font-size:12px; color:var(--muted); margin:-4px 0 12px; line-height:1.4; }
+  .field.campo-erro input{ border-color:var(--red) !important; background:#FFF5F5; }
 
   /* ===================== TOPBAR / DRAWER ===================== */
   .topbar{ position:sticky; top:0; z-index:30; display:flex; align-items:center; justify-content:space-between; padding:14px 18px; background:rgba(255,255,255,0.94); backdrop-filter:blur(6px); border-bottom:1px solid var(--line); }
@@ -300,10 +308,24 @@
       </div>
 
       <div id="bloco-trocar-senha" style="display:none;">
-        <p class="sub" style="margin:-6px 0 14px; font-size:12px; color:var(--muted);">Primeiro acesso — defina uma nova senha para continuar.</p>
-        <div class="field"><label>Nova senha</label><input type="password" id="in-nova-senha" placeholder="mínimo 6 caracteres"></div>
-        <div class="field"><label>Confirmar nova senha</label><input type="password" id="in-nova-senha-2" placeholder="repita a senha"></div>
-        <button class="btn btn-primary" onclick="confirmarTrocaSenhaInicial()">Salvar e entrar</button>
+        <div class="onb-boas" id="onb-boas-senha"></div>
+        <div id="onb-passos-senha"><div class="onb-passos"><span class="on"></span><span></span></div><p class="onb-etapa">Passo 1 de 2</p></div>
+        <p class="onb-titulo">Crie sua senha</p>
+        <div class="field"><label>Nova senha *</label><input type="password" id="in-nova-senha" placeholder="mínimo 6 caracteres"></div>
+        <div class="field"><label>Confirmar nova senha *</label><input type="password" id="in-nova-senha-2" placeholder="repita a senha"></div>
+        <button class="btn btn-primary" id="onb-btn-senha" onclick="confirmarTrocaSenhaInicial()">Continuar</button>
+      </div>
+
+      <div id="bloco-cadastro" style="display:none;">
+        <div class="onb-boas" id="onb-boas-cadastro" style="display:none;"><b><i class="ti ti-user-check"></i> Atualize seu cadastro</b><br>Estamos completando os dados de todos os moradores. Leva menos de 1 minuto.</div>
+        <div id="onb-passos-cadastro"><div class="onb-passos"><span class="on"></span><span class="on"></span></div><p class="onb-etapa">Passo 2 de 2</p></div>
+        <p class="onb-titulo">Complete seu cadastro de morador</p>
+        <p class="onb-expl">Esses dados ficam visíveis só para o síndico e servem para avisos sobre suas reservas e para recuperar sua senha.</p>
+        <div class="field" id="cad-campo-nome"><label>Nome do responsável *</label><input type="text" id="cad-nome" placeholder="Seu nome"></div>
+        <div class="field" id="cad-campo-celular"><label>Celular com DDD (WhatsApp) *</label><input type="text" id="cad-celular" placeholder="(00) 00000-0000" inputmode="tel" oninput="mascararTelefoneZelador(this)"></div>
+        <div class="field" id="cad-campo-email"><label>E-mail *</label><input type="email" id="cad-email" placeholder="email@exemplo.com"></div>
+        <div class="field"><label>Apelido da casa (opcional)</label><input type="text" id="cad-apelido" placeholder="ex: Casa da Família Silva"></div>
+        <button class="btn btn-primary" onclick="salvarCadastroObrigatorio()">Salvar e entrar</button>
       </div>
     </div>
     <div class="login-version" id="login-versao">v0000000000</div>
@@ -476,9 +498,9 @@
     <button class="close-x" onclick="fecharModal('modal-perfil')"><i class="ti ti-x"></i></button>
     <h3>Meu cadastro</h3>
     <div class="field"><label>Apelido da casa</label><input type="text" id="pf-apelido" placeholder="ex: Casa da Família Silva"></div>
-    <div class="field"><label>Nome do responsável</label><input type="text" id="pf-nome"></div>
-    <div class="field"><label>Telefone / WhatsApp</label><input type="text" id="pf-telefone" placeholder="(00) 00000-0000"></div>
-    <div class="field"><label id="pf-email-label">E-mail de contato (opcional)</label><input type="email" id="pf-email" placeholder="email@exemplo.com"></div>
+    <div class="field"><label>Nome do responsável *</label><input type="text" id="pf-nome"></div>
+    <div class="field"><label>Celular com DDD (WhatsApp) *</label><input type="text" id="pf-telefone" placeholder="(00) 00000-0000" inputmode="tel" oninput="mascararTelefoneZelador(this)"></div>
+    <div class="field"><label id="pf-email-label">E-mail *</label><input type="email" id="pf-email" placeholder="email@exemplo.com"></div>
     <button class="btn btn-primary" onclick="salvarPerfil()">Salvar dados</button>
     <div style="height:10px;"></div>
     <button class="btn btn-ghost" onclick="abrirModal('modal-trocar-senha')">Trocar senha</button>
@@ -568,11 +590,24 @@
     <div class="field"><label>Papel</label>
       <select id="nc-papel" onchange="onMudarPapelNovaCasa()"><option value="morador">Morador</option><option value="sindico">Síndico</option></select>
     </div>
+    <div class="field"><label>Celular com DDD (WhatsApp)</label><input type="text" id="nc-celular" placeholder="(00) 00000-0000" inputmode="tel" oninput="mascararTelefoneZelador(this)"></div>
     <div class="field" id="nc-campo-email">
       <label id="nc-email-label">E-mail de contato (opcional)</label>
       <input type="email" id="nc-email" placeholder="email@exemplo.com">
     </div>
     <button class="btn btn-primary" onclick="cadastrarNovaCasa()">Cadastrar casa</button>
+  </div>
+</div>
+
+<!-- ===================== MODAL: EDITAR CELULAR DA CASA (síndico / dev) ===================== -->
+<div class="modal-wrap" id="modal-editar-celular">
+  <div class="modal">
+    <button class="close-x" onclick="fecharModal('modal-editar-celular')"><i class="ti ti-x"></i></button>
+    <h3 id="ec-titulo">Casa</h3>
+    <p class="sub" id="ec-responsavel" style="margin:-6px 0 14px;"></p>
+    <div class="field"><label>Celular com DDD (WhatsApp)</label><input type="text" id="ec-celular" placeholder="(00) 00000-0000" inputmode="tel" oninput="mascararTelefoneZelador(this)"></div>
+    <button class="btn btn-primary" style="width:100%;margin-bottom:8px;" onclick="salvarCelularCasa()">Salvar</button>
+    <button class="btn btn-ghost" style="width:100%;" onclick="fecharModal('modal-editar-celular')">Cancelar</button>
   </div>
 </div>
 
@@ -672,7 +707,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026270001";
+const VERSAO_APP = "2026270002";
 
 /* ===================================================================== */
 
@@ -741,6 +776,17 @@ window.mascararTelefoneZelador = function(input){
   else if(v.length > 0) v = `(${v}`;
   input.value = v;
 };
+function formatarCelular(valor){
+  const v = (valor || "").replace(/\D/g,"").replace(/^55(?=\d{10,11}$)/,"").slice(0,11);
+  if(v.length > 6) return `(${v.slice(0,2)}) ${v.slice(2,7)}-${v.slice(7)}`;
+  if(v.length > 2) return `(${v.slice(0,2)}) ${v.slice(2)}`;
+  return v ? `(${v}` : "";
+}
+function celularValido(valor){ return (valor || "").replace(/\D/g,"").length === 11; }
+function emailValido(valor){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((valor || "").trim()); }
+function cadastroCompleto(c){
+  return !!(c && (c.nomeResponsavel || "").trim() && celularValido(c.telefone) && emailValido(c.emailContato));
+}
 function whatsappZeladorDigits(){
   const digitos = (condominioData.zeladorWhatsapp || "").replace(/\D/g,"");
   if(!digitos) return "";
@@ -819,12 +865,69 @@ window.confirmarTrocaSenhaInicial = async function(){
     await updatePassword(auth.currentUser, nova);
     await updateDoc(doc(db, "Condominios", TENANT_ID, "casas", casaAtualId), { senhaTrocada: true });
     casaAtual.senhaTrocada = true;
-    showToast("Senha atualizada!");
+    showToast("Senha criada!");
+    msg.textContent = ""; msg.className = "login-msg";
     document.getElementById("bloco-trocar-senha").style.display = "none";
-    document.getElementById("bloco-entrar").style.display = "block";
-    iniciarApp();
+    if(!cadastroCompleto(casaAtual)){
+      mostrarBlocoCadastro(true);
+      return;
+    }
+    finalizarOnboarding();
   }catch(e){
     msg.textContent = "Não foi possível salvar a nova senha. Faça login novamente e tente de novo.";
+    msg.className = "login-msg err";
+  }
+};
+
+function mostrarBlocoCadastro(ehPrimeiroAcesso){
+  document.getElementById("login-hero").style.display = "none";
+  document.getElementById("onb-passos-cadastro").style.display = ehPrimeiroAcesso ? "block" : "none";
+  document.getElementById("onb-boas-cadastro").style.display = ehPrimeiroAcesso ? "none" : "block";
+  document.getElementById("cad-nome").value = casaAtual.nomeResponsavel || "";
+  document.getElementById("cad-celular").value = formatarCelular(casaAtual.telefone);
+  document.getElementById("cad-email").value = casaAtual.emailContato || "";
+  document.getElementById("cad-apelido").value = casaAtual.apelido || "";
+  ["nome","celular","email"].forEach(k=> document.getElementById("cad-campo-" + k).classList.remove("campo-erro"));
+  document.getElementById("bloco-cadastro").style.display = "block";
+}
+
+function finalizarOnboarding(){
+  document.getElementById("bloco-trocar-senha").style.display = "none";
+  document.getElementById("bloco-cadastro").style.display = "none";
+  document.getElementById("bloco-entrar").style.display = "block";
+  document.getElementById("login-hero").style.display = "";
+  document.getElementById("tela-login").style.display = "none";
+  iniciarApp();
+}
+
+window.salvarCadastroObrigatorio = async function(){
+  const nome = document.getElementById("cad-nome").value.trim();
+  const telefone = document.getElementById("cad-celular").value.trim();
+  const emailContato = document.getElementById("cad-email").value.trim();
+  const apelido = document.getElementById("cad-apelido").value.trim();
+  const msg = document.getElementById("login-msg");
+  const erros = { nome: !nome, celular: !celularValido(telefone), email: !emailValido(emailContato) };
+  Object.keys(erros).forEach(k=> document.getElementById("cad-campo-" + k).classList.toggle("campo-erro", erros[k]));
+  if(erros.nome || erros.celular || erros.email){
+    msg.textContent = erros.celular && !erros.nome && !erros.email
+      ? "Informe o celular com DDD: (00) 00000-0000."
+      : erros.email && !erros.nome && !erros.celular
+        ? "Informe um e-mail válido."
+        : "Preencha os campos obrigatórios destacados.";
+    msg.className = "login-msg err";
+    return;
+  }
+  try{
+    await updateDoc(doc(db, "Condominios", TENANT_ID, "casas", casaAtualId), { nomeResponsavel: nome, telefone, emailContato, apelido });
+    casaAtual.nomeResponsavel = nome; casaAtual.telefone = telefone; casaAtual.emailContato = emailContato; casaAtual.apelido = apelido;
+    if(ehSindico){
+      await setDoc(doc(db, "Condominios", TENANT_ID), { emailSindico: emailContato }, { merge:true });
+    }
+    msg.textContent = ""; msg.className = "login-msg";
+    showToast("Cadastro concluído. Bem-vindo(a)!");
+    finalizarOnboarding();
+  }catch(e){
+    msg.textContent = "Não foi possível salvar. Tente novamente.";
     msg.className = "login-msg err";
   }
 };
@@ -892,10 +995,25 @@ onAuthStateChanged(auth, async (user) => {
   ehSindico = casaAtual.papel === "sindico";
 
   if(!casaAtual.senhaTrocada){
+    const precisaCadastro = !cadastroCompleto(casaAtual);
+    document.getElementById("onb-boas-senha").innerHTML = precisaCadastro
+      ? `<b><i class="ti ti-confetti"></i> Bem-vindo(a), Casa ${casaAtual.numero}!</b><br>Este é o seu primeiro acesso. Antes de começar, precisamos de 2 passos rápidos: criar sua senha e completar seu cadastro de morador.`
+      : `<b><i class="ti ti-key"></i> Olá, Casa ${casaAtual.numero}!</b><br>Sua senha foi redefinida. Crie uma senha nova para continuar.`;
+    document.getElementById("onb-passos-senha").style.display = precisaCadastro ? "block" : "none";
+    document.getElementById("onb-btn-senha").textContent = precisaCadastro ? "Continuar" : "Salvar e entrar";
+    document.getElementById("login-hero").style.display = "none";
     document.getElementById("tela-carregando").style.display = "none";
     document.getElementById("tela-login").style.display = "flex";
     document.getElementById("bloco-entrar").style.display = "none";
     document.getElementById("bloco-trocar-senha").style.display = "block";
+    return;
+  }
+
+  if(!cadastroCompleto(casaAtual)){
+    document.getElementById("tela-carregando").style.display = "none";
+    document.getElementById("tela-login").style.display = "flex";
+    document.getElementById("bloco-entrar").style.display = "none";
+    mostrarBlocoCadastro(false);
     return;
   }
 
@@ -932,7 +1050,7 @@ async function iniciarApp(){
 
   document.getElementById("pf-apelido").value = casaAtual.apelido || "";
   document.getElementById("pf-nome").value = casaAtual.nomeResponsavel || "";
-  document.getElementById("pf-telefone").value = casaAtual.telefone || "";
+  document.getElementById("pf-telefone").value = formatarCelular(casaAtual.telefone);
 
   if(ehSindico || ehDev){
     document.getElementById("tab-aprovacoes").style.display = "block";
@@ -1532,6 +1650,12 @@ window.salvarPerfil = async function(){
   const nome = document.getElementById("pf-nome").value.trim();
   const telefone = document.getElementById("pf-telefone").value.trim();
   const emailContato = document.getElementById("pf-email").value.trim();
+  if(!nome){ showToast("Informe o nome do responsável."); return; }
+  if(!celularValido(telefone)){
+    showToast("Informe o celular com DDD: (00) 00000-0000.");
+    return;
+  }
+  if(!emailValido(emailContato)){ showToast("Informe um e-mail válido."); return; }
   if(ehSindico && !emailContato){
     showToast("Como síndico, seu e-mail é obrigatório — é ele que recebe as notificações.");
     return;
@@ -1577,11 +1701,11 @@ window.abrirModal = function(id){
   if(id === "modal-perfil"){
     document.getElementById("pf-apelido").value = casaAtual.apelido || "";
     document.getElementById("pf-nome").value = casaAtual.nomeResponsavel || "";
-    document.getElementById("pf-telefone").value = casaAtual.telefone || "";
+    document.getElementById("pf-telefone").value = formatarCelular(casaAtual.telefone);
     document.getElementById("pf-email").value = casaAtual.emailContato || "";
     document.getElementById("pf-email-label").textContent = ehSindico
-      ? "E-mail de contato (obrigatório — recebe as notificações)"
-      : "E-mail de contato (opcional)";
+      ? "E-mail * (recebe as notificações do síndico)"
+      : "E-mail *";
   }
   if(id === "modal-condominio"){
     document.getElementById("cd-nome").value = condominioData.nome || "";
@@ -1687,7 +1811,13 @@ function renderizarListaCasas(){
     info.className = "info";
     info.innerHTML = `
       <p class="t1">${c.apelido || ("Casa " + c.numero)}${c.papel === "sindico" ? " · síndico" : ""}</p>
-      <p class="t2">${c.nomeResponsavel || "sem responsável cadastrado"}</p>`;
+      <p class="t2">${c.nomeResponsavel || "sem responsável cadastrado"}</p>
+      <p class="t2" style="font-size:11.5px;">${celularValido(c.telefone)
+        ? `<i class="ti ti-brand-whatsapp"></i> ${formatarCelular(c.telefone)}`
+        : `<span style="color:var(--red-ink);"><i class="ti ti-phone-off"></i> sem celular</span>`}</p>`;
+    info.style.cursor = "pointer";
+    info.title = "Editar celular";
+    info.onclick = ()=> abrirEditarCelular(c.id);
 
     div.appendChild(infoWrap);
     div.appendChild(info);
@@ -1751,6 +1881,34 @@ window.alternarPapelCasa = async function(casaId, papelAtual){
     renderizarListaCasas();
   }catch(e){
     showToast("Não foi possível alterar. Tente novamente.");
+  }
+};
+
+/* ---------- Editar celular de uma casa (síndico / dev) ---------- */
+let casaCelularId = null;
+window.abrirEditarCelular = function(casaId){
+  const c = todasAsCasas.find(x=> x.id === casaId);
+  if(!c) return;
+  casaCelularId = casaId;
+  document.getElementById("ec-titulo").textContent = `Casa ${c.numero}`;
+  document.getElementById("ec-responsavel").textContent = c.nomeResponsavel || c.apelido || "Sem responsável cadastrado";
+  document.getElementById("ec-celular").value = formatarCelular(c.telefone);
+  document.getElementById("modal-editar-celular").classList.add("show");
+};
+window.salvarCelularCasa = async function(){
+  const c = todasAsCasas.find(x=> x.id === casaCelularId);
+  if(!c) return;
+  const celular = document.getElementById("ec-celular").value.trim();
+  if(celular && !celularValido(celular)){ showToast("Informe o celular com DDD: (00) 00000-0000."); return; }
+  try{
+    await updateDoc(doc(db, "Condominios", TENANT_ID, "casas", c.id), { telefone: celular });
+    c.telefone = celular;
+    if(c.id === casaAtualId && casaAtual) casaAtual.telefone = celular;
+    renderizarListaCasas();
+    showToast(celular ? `Celular da Casa ${c.numero} salvo.` : `Celular da Casa ${c.numero} removido.`);
+    fecharModal("modal-editar-celular");
+  }catch(e){
+    showToast("Não foi possível salvar. Tente novamente.");
   }
 };
 
@@ -1819,7 +1977,9 @@ window.cadastrarNovaCasa = async function(){
   const numero = document.getElementById("nc-numero").value.trim();
   const papel = document.getElementById("nc-papel").value;
   const emailContato = document.getElementById("nc-email").value.trim();
+  const celular = document.getElementById("nc-celular").value.trim();
   if(!numero){ showToast("Informe o número da casa."); return; }
+  if(celular && !celularValido(celular)){ showToast("Informe o celular com DDD: (00) 00000-0000."); return; }
   if(papel === "sindico" && !emailContato){
     showToast("Informe o e-mail do síndico — é obrigatório para as notificações.");
     return;
@@ -1833,19 +1993,20 @@ window.cadastrarNovaCasa = async function(){
 
     // A gravação no Firestore acontece com VOCÊ ainda autenticado (sessão principal intacta).
     await setDoc(doc(db, "Condominios", TENANT_ID, "casas", novoUid), {
-      numero, papel, apelido: "", nomeResponsavel: "", telefone: "",
+      numero, papel, apelido: "", nomeResponsavel: "", telefone: celular,
       emailContato: emailContato,
       senhaTrocada: false, uid: novoUid, criadoEm: serverTimestamp()
     });
     if(papel === "sindico"){
       await setDoc(doc(db, "Condominios", TENANT_ID), { emailSindico: emailContato }, { merge:true });
     }
-    todasAsCasas.push({ id: novoUid, numero, papel, apelido:"", nomeResponsavel:"", telefone:"", emailContato });
+    todasAsCasas.push({ id: novoUid, numero, papel, apelido:"", nomeResponsavel:"", telefone: celular, emailContato });
     todasAsCasas.sort((a,b)=> (a.numero+"").localeCompare(b.numero+"", "pt-BR", {numeric:true}));
     renderizarListaCasas();
     showToast(`Casa ${numero} cadastrada com senha padrão 123456.`);
     document.getElementById("nc-numero").value = "";
     document.getElementById("nc-email").value = "";
+    document.getElementById("nc-celular").value = "";
   }catch(e){
     if(e.code === "auth/email-already-in-use"){
       showToast(`A Casa ${numero} já está cadastrada.`);
