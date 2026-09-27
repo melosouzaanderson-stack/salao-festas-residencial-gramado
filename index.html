@@ -25,19 +25,21 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --deep:#3B2F26;
-    --accent:#B8763F;
-    --accent-light:#D9A876;
-    --soft:#F0E4D4;
-    --bg:#FFFFFF;
+    --deep:#0F172A;
+    --accent:#2563EB;
+    --accent-d:#1D4ED8;
+    --accent-light:#93C5FD;
+    --soft:#EAF1FD;
+    --bg:#F5F8FC;
     --paper:#FFFFFF;
-    --ink:#3B2F26;
-    --muted:#9C8974;
-    --muted-2:#B4A692;
-    --line:#E8DCC8;
-    --amber:#FAC775; --amber-ink:#633806;
-    --red:#F09595; --red-ink:#791F1F;
-    --green:#C0DD97; --green-ink:#27500A;
+    --ink:#0F172A;
+    --muted:#475569;
+    --muted-2:#64748B;
+    --line:#DDE5F0;
+    --amber:#FFF1D6; --amber-ink:#6E4700; --amber-bd:#F5CE7A;
+    --red:#FDE4E1; --red-ink:#A8322A; --red-bd:#F3B2AC;
+    --green:#E3F4E8; --green-ink:#1F7A44;
+    --azul1:#3B82F6; --azul2:#1D4ED8;
     --radius:16px;
   }
   *{box-sizing:border-box;}
@@ -283,6 +285,208 @@
   .gate-loading{ min-height:100vh; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:13px; }
   .rs-aviso{ background:#FFF6E8; border:1px solid var(--amber); color:var(--amber-ink); border-radius:12px; padding:10px 12px; font-size:12.5px; margin:0 0 14px; line-height:1.45; }
   .icon-btn.btn-chave{ border-color:var(--accent); color:var(--accent); }
+
+  /* =====================================================================
+     TEMA AZUL (v2026270006) — letras grandes, alto contraste, toque fácil
+     ===================================================================== */
+  body{ font-size:16px; }
+  .field label{ font-size:14px; color:#334155; font-weight:500; margin-bottom:6px; }
+  input, textarea, select{ padding:13px 14px; border-radius:12px; border-color:#CBD5E1; }
+  input:focus, textarea:focus, select:focus{ outline:3px solid rgba(37,99,235,.25); border-color:var(--accent); }
+  .btn{ height:52px; border-radius:14px; font-size:17px; font-weight:600; transition:transform .12s ease; }
+  .btn:active{ transform:scale(.97); }
+  .btn-primary{ background:linear-gradient(135deg,var(--azul1),var(--azul2)); color:#fff; box-shadow:0 6px 16px rgba(29,78,216,.28); }
+  .btn-ghost{ background:#fff; color:var(--accent-d); border:2px solid #BFD3F5; }
+  .btn-danger{ background:var(--red); color:var(--red-ink); border:1px solid var(--red-bd); }
+  .btn-sm{ height:46px; font-size:15px; }
+  .toast{ font-size:15px; padding:14px 18px; border-radius:14px; background:#0F172A; }
+
+  /* Login */
+  .login-box{ border-radius:24px; box-shadow:0 10px 30px rgba(15,23,42,.08); }
+  .login-hero{ background:linear-gradient(135deg,#DBEAFE,#93C5FD); }
+  .login-title{ font-size:22px; font-weight:600; }
+  .login-sub{ font-size:15px; }
+  .login-link{ font-size:15px; padding:8px 0; margin:4px 0 14px; color:var(--accent-d); font-weight:500; }
+  .login-msg{ font-size:14px; }
+  .login-version{ font-size:11px; }
+  .onb-boas{ background:#EAF1FD; border-left-color:var(--accent); font-size:15px; }
+  .onb-etapa{ font-size:13px; }
+  .onb-titulo{ font-size:17px; }
+  .onb-expl{ font-size:14px; }
+  .conf-casa .conf-num{ background:linear-gradient(135deg,var(--azul1),var(--azul2)); color:#fff; width:72px; height:72px; font-size:28px; }
+  .conf-casa .conf-perg{ font-size:20px; }
+  .conf-casa .conf-expl{ font-size:15px; }
+
+  /* Topo e menu */
+  .topbar{ padding:12px 16px; }
+  .topbar .brand .avatar{ width:38px; height:38px; border-radius:12px; background:linear-gradient(135deg,var(--azul1),var(--azul2)); box-shadow:0 3px 8px rgba(29,78,216,.3); }
+  .topbar .brand .avatar i{ color:#fff !important; font-size:19px !important; }
+  .topbar .brand span{ font-size:16px; font-weight:600; }
+  .burger{ width:46px; height:46px; border-radius:13px; }
+  .burger i{ font-size:22px; color:var(--deep); }
+  .overlay{ background:rgba(15,23,42,.5); }
+  .drawer{ background:linear-gradient(160deg,#1E293B,#0F172A); padding:20px 18px; }
+  .drawer .close-btn{ width:46px; height:46px; border-radius:13px; font-size:20px; }
+  .drawer .who .nome{ font-size:20px; margin:0; }
+  .drawer .who .casa{ font-size:15px; opacity:.8; margin:4px 0 0; }
+  .drawer-item{ font-size:17px; padding:12px 4px; min-height:56px; }
+  .drawer-item i{ width:40px; height:40px; border-radius:12px; background:rgba(96,165,250,.16); color:#93C5FD; display:flex; align-items:center; justify-content:center; font-size:21px; opacity:1; flex:none; }
+  .drawer-item.danger{ color:#FCA5A5; }
+  .drawer-item.danger i{ background:rgba(248,113,113,.16); color:#FCA5A5; }
+
+  /* Abas */
+  .tabs{ margin:12px 16px 8px; padding:4px; gap:4px; background:#E2E8F0; border-radius:14px; }
+  .tab{ padding:13px 4px; font-size:16px; font-weight:600; border-radius:11px; color:#475569; }
+  .tab.active{ background:#fff; color:var(--deep); box-shadow:0 2px 6px rgba(15,23,42,.12); }
+  .back-row{ font-size:16px; padding:14px 16px 0; color:#334155; min-height:44px; }
+  .back-row i{ font-size:20px; }
+
+  /* Calendário */
+  .cal-head .mes{ font-size:22px; font-weight:600; text-transform:capitalize; }
+  .cal-head button{ width:46px; height:46px; border-radius:13px; border:1px solid var(--line); background:#fff; color:var(--deep); font-size:20px; display:flex; align-items:center; justify-content:center; }
+  .cal-grid-dow{ gap:6px; }
+  .cal-grid-dow span{ font-size:14px; font-weight:600; color:#475569; }
+  .cal-grid{ gap:6px; }
+  .cal-day{ font-size:17px; font-weight:500; border-radius:12px; background:#fff; border:1px solid var(--line); flex-direction:column; gap:1px; transition:transform .12s ease; }
+  .cal-day:active{ transform:scale(.94); }
+  .cal-day i{ font-size:13px; line-height:1; }
+  .cal-day.fds{ color:var(--accent-d); font-weight:600; }
+  .cal-day.passado{ background:#EEF2F7; border-color:transparent; color:#94A3B8; }
+  .cal-day.pendente{ background:var(--amber); border-color:var(--amber-bd); color:var(--amber-ink); }
+  .cal-day.reservado{ background:var(--red); border-color:var(--red-bd); color:var(--red-ink); }
+  .cal-day.minha{ background:linear-gradient(145deg,var(--azul1),var(--azul2)); border:none; color:#fff; box-shadow:0 4px 10px rgba(29,78,216,.3); }
+  .cal-day.hoje{ box-shadow:none; border:2px solid var(--accent); font-weight:700; }
+  .cal-day.minha.hoje{ border:2px solid #0F172A; }
+  .legenda{ gap:8px; border-top:none; padding-top:4px; }
+  .legenda .it{ font-size:14px; font-weight:600; border-radius:99px; padding:7px 12px; gap:6px; }
+  .legenda .it i{ font-size:16px; }
+  .legenda .l0{ background:#fff; border:1px solid #CBD5E1; color:#334155; }
+  .legenda .l1{ background:var(--amber); color:var(--amber-ink); }
+  .legenda .l2{ background:var(--red); color:var(--red-ink); }
+  .legenda .l3{ background:#DBEAFE; color:var(--accent-d); }
+
+  /* Listas e cartões de reserva */
+  .lista-titulo{ font-family:'Fraunces', serif; font-size:20px; font-weight:600; color:var(--deep); margin:22px 0 10px; }
+  .item-reserva{ background:#fff; border:1px solid var(--line); border-radius:16px; padding:12px; margin-bottom:10px; gap:12px; align-items:center; border-top:1px solid var(--line); transition:opacity .22s ease, transform .12s ease; }
+  .item-reserva:active{ transform:scale(.98); }
+  .item-reserva .data-bloco{ width:58px; flex:none; border-radius:12px; text-align:center; padding:7px 0; line-height:1.05; }
+  .item-reserva .data-bloco .d{ font-family:'Fraunces', serif; font-weight:600; font-size:24px; display:block; }
+  .item-reserva .data-bloco .m{ font-size:13px; text-transform:uppercase; font-weight:700; letter-spacing:.04em; }
+  .data-bloco.pendente{ background:var(--amber); color:var(--amber-ink); }
+  .data-bloco.confirmada{ background:var(--green); color:var(--green-ink); }
+  .data-bloco.minha{ background:#DBEAFE; color:var(--accent-d); }
+  .data-bloco.reservado, .data-bloco.recusada{ background:var(--red); color:var(--red-ink); }
+  .item-reserva .info{ flex:1; min-width:0; }
+  .item-reserva .info .t1{ font-size:17px; font-weight:600; color:var(--deep); }
+  .item-reserva .info .t2{ font-size:15px; color:#475569; margin-top:2px; }
+  .item-reserva.anterior{ opacity:.78; }
+  .pill{ display:inline-flex; align-items:center; gap:5px; font-size:14px; font-weight:600; border-radius:99px; padding:5px 11px; margin-top:8px; }
+  .pill i{ font-size:17px; }
+  .pill.confirmada{ background:var(--green); color:var(--green-ink); }
+  .pill.pendente{ background:var(--amber); color:var(--amber-ink); }
+  .pill.recusada{ background:var(--red); color:var(--red-ink); }
+  .pill.livre{ background:var(--green); color:var(--green-ink); margin:0 0 16px; }
+  .acoes-reserva{ display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+  .acoes-reserva button{ border:1px solid #CBD5E1; background:#fff; border-radius:12px; min-height:46px; padding:0 14px; font-size:15px; font-weight:600; color:var(--deep); display:flex; align-items:center; gap:6px; }
+  .acoes-reserva button i{ font-size:19px; color:var(--accent-d); }
+  .acoes-reserva button .ti-brand-whatsapp{ color:#1F7A44; }
+  .icon-btn{ width:46px; height:46px; border-radius:12px; }
+  .icon-btn i{ font-size:20px; }
+  .empty{ padding:28px 10px; color:#475569; }
+  .empty i{ font-size:34px; color:var(--accent); }
+  .empty p{ font-size:16px; line-height:1.45; }
+  .convite-vazio{ border:2px dashed #BFD3F5; border-radius:18px; padding:18px; text-align:center; color:#475569; font-size:16px; margin:14px 0; cursor:pointer; background:transparent; width:100%; }
+  .convite-vazio i{ font-size:32px; color:var(--accent); display:block; margin-bottom:6px; }
+  .convite-vazio b{ color:var(--accent-d); }
+
+  /* Tela inicial */
+  #home-status-banner{ border-radius:20px; padding:18px; }
+  .home-banner .tag{ font-size:13px; font-weight:700; letter-spacing:.1em; }
+  .home-banner h2{ font-size:24px; font-weight:600; }
+  .home-banner p{ font-size:16px; }
+  .home-chips{ display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+  .home-chip{ display:flex; align-items:center; gap:6px; border-radius:99px; padding:8px 12px; font-size:14px; font-weight:700; background:rgba(255,255,255,.88); color:#0C1E3A; }
+  .home-chip i{ font-size:18px; }
+  .home-chip .ok{ color:#1F7A44; } .home-chip .esp{ color:#B45309; }
+  .periodo-noite .home-chip{ background:rgba(255,255,255,.14); color:#fff; }
+  .periodo-noite .home-chip .ok{ color:#86EFAC; } .periodo-noite .home-chip .esp{ color:#FCD34D; }
+  .home-btn-row{ gap:12px; }
+  .home-btn{ aspect-ratio:auto; min-height:170px; border-radius:20px; padding:16px 14px; text-align:left; align-items:flex-start; justify-content:space-between; position:relative; overflow:hidden; transition:transform .12s ease; }
+  .home-btn:active{ transform:scale(.97); }
+  .home-btn .ic{ width:52px; height:52px; border-radius:15px; }
+  .home-btn .ic i{ font-size:26px !important; }
+  .home-btn .tx h3{ font-size:18px; font-weight:600; margin:0 0 3px; }
+  .home-btn .tx p{ font-size:14px; line-height:1.3; }
+  .home-btn.primary{ background:linear-gradient(145deg,var(--azul1),var(--azul2)); box-shadow:0 10px 22px rgba(29,78,216,.32); }
+  .home-btn-watermark{ opacity:.12; }
+  .home-btn.primary .ic{ background:rgba(255,255,255,.22); }
+  .home-btn.primary .ic i{ color:#fff; }
+  .home-btn.primary .tx h3{ color:#fff; }
+  .home-btn.primary .tx p{ color:#DCE8FF; }
+  .home-btn.escuro{ background:linear-gradient(145deg,#1E293B,#0F172A); box-shadow:0 10px 22px rgba(15,23,42,.28); }
+  .home-btn.escuro .ic{ background:rgba(96,165,250,.18); }
+  .home-btn.escuro .ic i{ color:#60A5FA; }
+  .home-btn.escuro .tx h3{ color:#fff; }
+  .home-btn.escuro .tx p{ color:#CBD5E1; }
+  .home-btn .contador{ position:absolute; right:12px; top:12px; background:#FBBF24; color:#1F1400; font-weight:700; font-size:15px; border-radius:99px; padding:3px 10px; }
+  .home-secao{ display:flex; align-items:center; justify-content:space-between; margin:22px 0 10px; }
+  .home-secao h4{ margin:0; font-family:'Fraunces', serif; font-size:20px; font-weight:600; color:var(--deep); }
+  .home-secao button{ background:none; border:none; color:var(--accent-d); font-size:15px; font-weight:600; padding:10px 0; }
+  .home-banner.aviso-condo{ background:#fff; border:1px solid var(--line); }
+  .home-banner.aviso-condo .tag{ color:var(--accent-d); }
+  .home-banner.aviso-condo h2{ font-size:19px; }
+  .home-banner.aviso-condo p{ color:#475569; }
+  .home-banner-btn{ font-size:16px; padding:12px 18px; border-radius:12px; font-weight:600; min-height:46px; }
+  .home-status-pendentes{ font-size:15px; min-height:46px; }
+
+  /* Banner por horário: céu azul com sol e lua */
+  .periodo-manha{ background:linear-gradient(135deg,#E0F2FE 0%,#BAE6FD 55%,#7DD3FC 100%); }
+  .periodo-tarde{ background:linear-gradient(180deg,#1E40AF 0%,#2563EB 60%,#C084FC 100%); }
+  .periodo-noite{ background:linear-gradient(135deg,#1E3A8A 0%,#0F172A 100%); }
+  .periodo-manha .tag{ color:#075985; } .periodo-manha h2{ color:#0C1E3A; } .periodo-manha p{ color:#1E3A5F; }
+  .periodo-tarde .tag{ color:#DBEAFE; } .periodo-tarde h2{ color:#fff; } .periodo-tarde p{ color:#F1F6FF; }
+  .periodo-noite .tag{ color:#93C5FD; } .periodo-noite h2{ color:#fff; } .periodo-noite p{ color:#CBD5E1; }
+  .periodo-tarde .home-status-pendentes{ background:rgba(255,255,255,.9); color:#0C1E3A; }
+  .periodo-manha .home-status-pendentes{ background:rgba(255,255,255,.85); color:#0C1E3A; }
+  .periodo-noite .home-banner-btn, .periodo-tarde .home-banner-btn{ color:var(--accent-d); }
+  .periodo-manha .decor-sol-cheio{ top:-18px; right:-18px; width:110px; height:110px; background:radial-gradient(circle,#FFE58A 0 34%,rgba(255,229,138,.55) 45%,rgba(255,229,138,0) 70%); box-shadow:none; }
+  .decor-nuvem{ display:none; position:absolute; background:#fff; border-radius:99px; opacity:.85; }
+  .periodo-manha .decor-nuvem{ display:block; }
+  .periodo-tarde .decor-sol-poente{ bottom:34px; right:22px; width:74px; height:74px; clip-path:none; background:radial-gradient(circle,#FFD37A 0 55%,rgba(255,176,90,.6) 62%,rgba(255,176,90,0) 75%); box-shadow:none; }
+  .periodo-tarde .decor-horizonte{ bottom:0; height:36px; background:linear-gradient(180deg,rgba(29,78,216,.55),rgba(30,58,138,.85)); }
+  .periodo-noite .decor-lua{ top:20px; right:30px; width:46px; height:46px; background:transparent; box-shadow:12px -6px 0 0 #FDE68A; transform:rotate(-15deg); }
+  .periodo-noite .decor-estrela{ width:3px; height:3px; animation:piscaEstrela 3s ease-in-out infinite; }
+  .periodo-noite .decor-estrela:nth-child(odd){ animation-delay:1.2s; }
+  @keyframes piscaEstrela{ 50%{ opacity:.35; } }
+
+  /* Janelas */
+  .modal-wrap{ background:rgba(15,23,42,.5); }
+  .modal-wrap.show .modal{ animation:sobeModal .3s cubic-bezier(.2,.8,.2,1); }
+  @keyframes sobeModal{ from{ transform:translateY(40px); opacity:.4; } to{ transform:none; opacity:1; } }
+  .modal{ border-radius:24px 24px 0 0; padding:22px 20px 28px; }
+  .modal h3{ font-size:22px; font-weight:600; }
+  .modal .sub{ font-size:15px; color:#475569; }
+  .modal .close-x{ width:46px; height:46px; font-size:22px; color:#475569; margin:-10px -8px 0 0; }
+  .status-badge{ font-size:14px; font-weight:600; padding:6px 12px; display:inline-flex; align-items:center; gap:5px; }
+  .status-badge.pendente{ background:var(--amber); color:var(--amber-ink); }
+  .status-badge.confirmada{ background:var(--green); color:var(--green-ink); }
+  .status-badge.recusada{ background:var(--red); color:var(--red-ink); }
+  .rel-filtro-btn{ font-size:14px; padding:12px 6px; background:#EAF1FD; color:#334155; }
+  .var-chip{ font-size:13px; background:#EAF1FD; color:var(--accent-d); }
+  .lock-note span{ font-size:14px; color:#475569; }
+  .rs-aviso{ font-size:15px; }
+
+  #home-status-banner > *:not(.periodo-decor){ position:relative; z-index:1; }
+  .cal-grid button:disabled{ visibility:hidden; }
+  .toast:not(.show){ opacity:0; pointer-events:none; }
+
+  /* Entrada suave */
+  .screen.active .anima{ animation:entraSuave .4s cubic-bezier(.2,.8,.2,1) both; }
+  .screen.active .anima.a2{ animation-delay:.08s; } .screen.active .anima.a3{ animation-delay:.16s; } .screen.active .anima.a4{ animation-delay:.24s; }
+  @keyframes entraSuave{ from{ opacity:0; transform:translateY(8px); } to{ opacity:1; transform:none; } }
+  @media (prefers-reduced-motion: reduce){
+    .screen.active .anima, .modal-wrap.show .modal, .periodo-noite .decor-estrela, .home-status-pendentes.pulsante{ animation:none !important; }
+  }
 </style>
 </head>
 <body>
@@ -362,17 +566,19 @@
 
     <div class="tabs" id="tabs-nav" style="display:none;">
       <div class="tab active" data-tab="agenda" onclick="mudarTab('agenda')">Agenda</div>
-      <div class="tab" data-tab="reservas" onclick="mudarTab('reservas')">Reservas</div>
+      <div class="tab" data-tab="reservas" onclick="mudarTab('reservas')">Minhas reservas</div>
       <div class="tab" data-tab="aprovacoes" id="tab-aprovacoes" style="display:none;" onclick="mudarTab('aprovacoes')">Aprovações</div>
     </div>
 
     <!-- ===== TELA INICIAL (HOME) ===== -->
     <div class="screen active" id="screen-home">
-      <div class="home-banner" id="home-status-banner">
+      <div class="home-banner anima" id="home-status-banner">
         <div class="periodo-decor" aria-hidden="true">
           <div class="decor-sol-cheio"></div>
           <div class="decor-sol-poente"></div>
           <div class="decor-horizonte"></div>
+          <div class="decor-nuvem" style="width:58px; height:16px; right:8px; top:118px;"></div>
+          <div class="decor-nuvem" style="width:38px; height:12px; right:40px; top:140px;"></div>
           <div class="decor-lua"></div>
           <span class="decor-estrela" style="top:14px; left:40px;"></span>
           <span class="decor-estrela" style="top:28px; left:90px;"></span>
@@ -383,6 +589,7 @@
         <p class="tag" id="home-status-tag">bem-vindo(a)</p>
         <h2 id="home-status-titulo">—</h2>
         <p id="home-status-texto">—</p>
+        <div class="home-chips" id="home-chips"></div>
         <div class="home-status-pendentes" id="home-status-pendentes" style="display:none;" onclick="abrirAprovacoesDireto()">
           <i class="ti ti-bell"></i> <span id="home-status-pendentes-texto"></span>
         </div>
@@ -392,23 +599,29 @@
         <button class="home-banner-btn" id="home-status-btn" style="display:none;" onclick="abrirModal('modal-perfil')">Completar cadastro</button>
       </div>
 
-      <div class="home-banner aviso-condo" id="home-aviso-condo" style="display:none;">
-        <p class="tag">aviso</p>
+      <div class="home-banner aviso-condo anima a4" id="home-aviso-condo" style="display:none;">
+        <p class="tag">Aviso</p>
         <h2 id="home-banner-titulo">—</h2>
         <p id="home-banner-texto">—</p>
       </div>
 
-      <div class="home-btn-row">
+      <div class="home-btn-row anima a2">
         <button class="home-btn primary" onclick="abrirReservaSalao()">
           <div class="home-btn-watermark" id="home-btn-watermark-salao"></div>
-          <div class="ic"><i class="ti ti-calendar-event"></i></div>
-          <div class="tx"><h3>Reserva do Salão</h3><p>Ver agenda e pedir reserva</p></div>
+          <div class="ic"><i class="ti ti-calendar-plus"></i></div>
+          <div class="tx"><h3>Reservar o salão</h3><p>Ver agenda e pedir data</p></div>
         </button>
 
-        <button class="home-btn disabled" disabled>
-          <div class="ic"><i class="ti ti-tools"></i></div>
-          <div class="tx"><h3>Em construção</h3><p>Novidades em breve</p></div>
+        <button class="home-btn escuro" onclick="abrirMinhasReservas()">
+          <span class="contador" id="home-contador-minhas" style="display:none;">0</span>
+          <div class="ic"><i class="ti ti-ticket"></i></div>
+          <div class="tx"><h3>Minhas reservas</h3><p>Acompanhe seus pedidos</p></div>
         </button>
+      </div>
+
+      <div id="home-proxima-festa" class="anima a3" style="display:none;">
+        <div class="home-secao"><h4>Sua próxima festa</h4><button onclick="abrirMinhasReservas()">Ver todas</button></div>
+        <div id="home-proxima-lista"></div>
       </div>
     </div>
 
@@ -419,17 +632,17 @@
     <!-- ===== TELA AGENDA ===== -->
     <div class="screen" id="screen-agenda">
       <div class="cal-head">
-        <button onclick="mudarMes(-1)"><i class="ti ti-chevron-left"></i></button>
+        <button onclick="mudarMes(-1)" aria-label="Mês anterior"><i class="ti ti-chevron-left"></i></button>
         <span class="mes" id="cal-mes-label">—</span>
-        <button onclick="mudarMes(1)"><i class="ti ti-chevron-right"></i></button>
+        <button onclick="mudarMes(1)" aria-label="Próximo mês"><i class="ti ti-chevron-right"></i></button>
       </div>
       <div class="cal-grid-dow"><span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span></div>
       <div class="cal-grid" id="cal-grid"></div>
       <div class="legenda">
-        <div class="it"><span class="sw" style="background:var(--soft);"></span>Livre</div>
-        <div class="it"><span class="sw" style="background:var(--amber);"></span>Pendente</div>
-        <div class="it"><span class="sw" style="background:var(--red);"></span>Reservado</div>
-        <div class="it"><span class="sw" style="background:var(--green);"></span>Sua reserva</div>
+        <div class="it l0">Livre</div>
+        <div class="it l1"><i class="ti ti-clock"></i>Pendente</div>
+        <div class="it l2"><i class="ti ti-lock"></i>Reservado</div>
+        <div class="it l3"><i class="ti ti-star"></i>Sua reserva</div>
       </div>
       <p class="lista-titulo">Próximas reservas</p>
       <div id="lista-proximas"></div>
@@ -437,7 +650,6 @@
 
     <!-- ===== TELA MINHAS RESERVAS ===== -->
     <div class="screen" id="screen-reservas">
-      <p class="lista-titulo" style="margin-top:16px;">Minhas reservas</p>
       <div id="lista-minhas"></div>
     </div>
 
@@ -723,7 +935,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026270005";
+const VERSAO_APP = "2026270006";
 
 /* ===================================================================== */
 
@@ -1135,6 +1347,7 @@ async function iniciarApp(){
 
   await promessaReservas;
   renderizarTudo();
+  carregarMinhasReservas();
   escutarPendentesEmTempoReal();
   if(ehSindico || ehDev) verificarReservaProxima();
 }
@@ -1195,8 +1408,8 @@ function renderizarBannerStatus(){
   if(cadastroEstaCompleto()){
     const primeiroNome = casaAtual.nomeResponsavel.trim().split(" ")[0];
     tag.textContent = periodo.saudacao.toLowerCase();
-    titulo.textContent = `${periodo.saudacao}, ${primeiroNome}!`;
-    texto.textContent = `Casa ${casaAtual.numero} — acompanhe aqui a agenda do salão de festas.`;
+    titulo.textContent = `Olá, ${primeiroNome}!`;
+    texto.textContent = `Casa ${casaAtual.numero} · que tal garantir a data da sua próxima festa?`;
     btn.style.display = "none";
   }else{
     tag.textContent = periodo.saudacao.toLowerCase() + " · cadastro pendente";
@@ -1314,13 +1527,21 @@ function renderizarCalendario(){
     const reserva = reservaAtivaDoDia(iso);
     const b = document.createElement("button");
     b.className = "cal-day";
-    b.textContent = dia;
+    const numero = document.createElement("span");
+    numero.textContent = dia;
+    b.appendChild(numero);
+    const diaSemana = new Date(y, m, dia).getDay();
+    if(diaSemana === 0 || diaSemana === 6) b.classList.add("fds");
+    if(iso < hojeIso) b.classList.add("passado");
     if(iso === hojeIso) b.classList.add("hoje");
+    let icone = "";
     if(reserva){
-      if(reserva.status === "pendente") b.classList.add("pendente");
-      else if(reserva.status === "confirmada" && reserva.casaId === casaAtualId) b.classList.add("minha");
-      else if(reserva.status === "confirmada") b.classList.add("reservado");
+      if(reserva.status === "pendente"){ b.classList.add("pendente"); icone = "ti-clock"; }
+      else if(reserva.status === "confirmada" && reserva.casaId === casaAtualId){ b.classList.add("minha"); icone = "ti-star"; }
+      else if(reserva.status === "confirmada"){ b.classList.add("reservado"); icone = "ti-lock"; }
     }
+    if(icone){ const ic = document.createElement("i"); ic.className = "ti " + icone; ic.setAttribute("aria-hidden","true"); b.appendChild(ic); }
+    b.setAttribute("aria-label", `${dia} de ${nomesMes[m]}` + (reserva && reserva.status !== "recusada" ? ` — ${legendaStatus(reserva.status)}` : " — livre"));
     b.onclick = ()=> abrirDetalheDia(iso, reserva);
     grid.appendChild(b);
   }
@@ -1330,7 +1551,10 @@ function abrirDetalheDia(iso, reserva){
   diaSelecionadoISO = iso;
   const titulo = document.getElementById("dd-titulo");
   const conteudo = document.getElementById("dd-conteudo");
-  titulo.textContent = formatarDataBR(iso);
+  const nomesMesTit = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+  const [ty, tm, td] = iso.split("-").map(Number);
+  const dsemTit = nomeDiaSemana(iso).replace("-feira","");
+  titulo.textContent = `${dsemTit.charAt(0).toUpperCase() + dsemTit.slice(1)}, ${td} de ${nomesMesTit[tm-1]}`;
 
   const hojeIso = isoDeData(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
   const passado = iso < hojeIso;
@@ -1339,7 +1563,7 @@ function abrirDetalheDia(iso, reserva){
     if(passado){
       conteudo.innerHTML = `<p class="sub" style="margin:0;">Data já passou.</p>`;
     }else{
-      conteudo.innerHTML = `<p class="sub" style="margin:0 0 16px;">Esse dia está livre para reserva do salão.</p>`;
+      conteudo.innerHTML = `<span class="pill livre"><i class="ti ti-circle-check"></i>Data livre</span><p class="sub" style="margin:0 0 16px;">Esse dia está livre para reserva do salão.</p>`;
       const btn = document.createElement("button");
       btn.className = "btn btn-primary";
       btn.textContent = "Pedir esse dia";
@@ -1352,7 +1576,7 @@ function abrirDetalheDia(iso, reserva){
     }
   }else{
     const vejoDetalhe = ehSindico || ehDev || reserva.casaId === casaAtualId;
-    let html = `<span class="status-badge ${reserva.status}">${legendaStatus(reserva.status)}</span>`;
+    let html = `<span class="status-badge ${reserva.status}"><i class="ti ${iconeStatus(reserva.status)}"></i>${legendaStatus(reserva.status)}</span>`;
     if(vejoDetalhe){
       const casaNome = (todasAsCasas.find(c=>c.id===reserva.casaId)||{}).apelido || (todasAsCasas.find(c=>c.id===reserva.casaId)||{}).numero || "—";
       html += `<p style="margin:14px 0 4px;font-size:13px;">Reservado por: <b>Casa ${reserva.casaNumero || ""} ${reserva.casaId===casaAtualId ? "(você)" : ""}</b></p>`;
@@ -1405,6 +1629,10 @@ function abrirDetalheDia(iso, reserva){
 }
 window.abrirDetalheDia = abrirDetalheDia;
 
+function iconeStatus(s){
+  return s === "pendente" ? "ti-clock" : s === "confirmada" ? "ti-circle-check" : "ti-circle-x";
+}
+const MESES_CURTOS = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
 function legendaStatus(s){
   return s === "pendente" ? "Aguardando aprovação" : s === "confirmada" ? "Confirmada" : "Recusada";
 }
@@ -1487,6 +1715,7 @@ window.confirmarPedidoReserva = async function(){
     });
     fecharModal("modal-nova-reserva");
     showToast("Pedido enviado! O síndico foi notificado.");
+    carregarMinhasReservas();
     await notificarSindicoNovoPedido(diaSelecionadoISO, casaNumeroEscolhida);
     await carregarReservasDoMes();
     renderizarTudo();
@@ -1538,7 +1767,7 @@ async function aprovarReserva(id){
   try{
     await updateDoc(doc(db, "Condominios", TENANT_ID, "reservas", id), { status: "confirmada" });
     atualizarStatusLocal(id, "confirmada");
-    setTimeout(()=>{ renderizarTudo(); renderizarMinhasReservas(); renderListaPendentesElementos(); renderListaTodasElementos(); }, 230);
+    setTimeout(()=>{ renderizarTudo(); carregarMinhasReservas(); renderListaPendentesElementos(); renderListaTodasElementos(); }, 230);
   }catch(e){
     showToast("Não foi possível aprovar. Tente novamente.");
     document.querySelectorAll(`[data-reserva-id="${id}"]`).forEach(el=> el.classList.remove("removendo"));
@@ -1551,7 +1780,7 @@ async function recusarReserva(id){
   try{
     await updateDoc(doc(db, "Condominios", TENANT_ID, "reservas", id), { status: "recusada" });
     atualizarStatusLocal(id, "recusada");
-    setTimeout(()=>{ renderizarTudo(); renderizarMinhasReservas(); renderListaPendentesElementos(); renderListaTodasElementos(); }, 230);
+    setTimeout(()=>{ renderizarTudo(); carregarMinhasReservas(); renderListaPendentesElementos(); renderListaTodasElementos(); }, 230);
   }catch(e){
     showToast("Não foi possível recusar. Tente novamente.");
     document.querySelectorAll(`[data-reserva-id="${id}"]`).forEach(el=> el.classList.remove("removendo"));
@@ -1564,7 +1793,7 @@ async function cancelarReserva(id){
   try{
     await updateDoc(doc(db, "Condominios", TENANT_ID, "reservas", id), { status: "recusada" });
     atualizarStatusLocal(id, "recusada");
-    setTimeout(()=>{ renderizarTudo(); renderizarMinhasReservas(); renderListaPendentesElementos(); renderListaTodasElementos(); }, 230);
+    setTimeout(()=>{ renderizarTudo(); carregarMinhasReservas(); renderListaPendentesElementos(); renderListaTodasElementos(); }, 230);
   }catch(e){
     showToast("Não foi possível cancelar. Tente novamente.");
     document.querySelectorAll(`[data-reserva-id="${id}"]`).forEach(el=> el.classList.remove("removendo"));
@@ -1666,6 +1895,7 @@ window.abrirReservaProximaDetalhe = function(){
 function renderizarTudo(){
   renderizarCalendario();
   renderizarProximasReservas();
+  renderizarResumoHome();
 }
 
 function renderizarProximasReservas(){
@@ -1682,15 +1912,167 @@ function renderizarProximasReservas(){
   lista.forEach(r=> el.appendChild(itemReservaEl(r)));
 }
 
+/* ---------- Minhas reservas (todas as datas da casa, não só o mês visível) ---------- */
+let minhasReservasTodas = null;
+async function carregarMinhasReservas(){
+  if(!casaAtualId) return;
+  try{
+    const snap = await getDocs(query(collection(db, "Condominios", TENANT_ID, "reservas"), where("casaId", "==", casaAtualId)));
+    const lista = [];
+    snap.forEach(d=> lista.push({ id:d.id, ...d.data() }));
+    minhasReservasTodas = lista.sort((a,b)=> a.data.localeCompare(b.data));
+  }catch(e){
+    if(!minhasReservasTodas) minhasReservasTodas = reservasDoMes.filter(r=> r.casaId === casaAtualId);
+  }
+  renderizarResumoHome();
+  if(document.getElementById("screen-reservas").classList.contains("active")) renderizarMinhasReservas();
+}
+function hojeISO(){ const h = new Date(); return isoDeData(h.getFullYear(), h.getMonth(), h.getDate()); }
+function minhasFuturasAtivas(){
+  const hoje = hojeISO();
+  return (minhasReservasTodas || []).filter(r=> r.data >= hoje && r.status !== "recusada");
+}
+
+function cartaoMinhaReserva(r, anterior){
+  const el = itemReservaEl(r, false);
+  if(anterior) el.classList.add("anterior");
+  const info = el.querySelector(".info");
+  const t1 = info.querySelector(".t1");
+  if(r.observacao) t1.textContent = r.observacao;
+  else t1.textContent = r.status === "pendente" ? "Pedido enviado" : r.status === "confirmada" ? "Sua reserva" : "Pedido não aprovado";
+  if(!anterior && r.status !== "recusada"){
+    const dias = Math.round((new Date(r.data + "T00:00:00") - new Date(hojeISO() + "T00:00:00")) / 86400000);
+    const t2 = info.querySelector(".t2");
+    t2.textContent += dias === 0 ? " · é hoje!" : dias === 1 ? " · é amanhã" : ` · faltam ${dias} dias`;
+  }
+  if(!anterior && r.status === "confirmada"){
+    const acoes = document.createElement("div");
+    acoes.className = "acoes-reserva";
+    const bAgenda = document.createElement("button");
+    bAgenda.innerHTML = `<i class="ti ti-calendar-event"></i>Na agenda`;
+    bAgenda.onclick = (e)=>{ e.stopPropagation(); adicionarNaAgenda(r); };
+    const bConv = document.createElement("button");
+    bConv.innerHTML = `<i class="ti ti-brand-whatsapp"></i>Convidar`;
+    bConv.onclick = (e)=>{ e.stopPropagation(); convidarPeloWhatsApp(r); };
+    acoes.appendChild(bAgenda); acoes.appendChild(bConv);
+    info.appendChild(acoes);
+  }
+  return el;
+}
+
 function renderizarMinhasReservas(){
   const el = document.getElementById("lista-minhas");
   el.innerHTML = "";
-  const minhas = reservasDoMes.filter(r=> r.casaId === casaAtualId).sort((a,b)=> a.data.localeCompare(b.data));
-  if(minhas.length === 0){
-    el.innerHTML = `<div class="empty"><i class="ti ti-calendar-plus"></i><p>Você ainda não tem reservas neste mês. Toque em um dia livre na agenda para pedir.</p></div>`;
+  if(minhasReservasTodas === null){
+    el.innerHTML = `<div class="empty"><i class="ti ti-loader-2"></i><p>Carregando suas reservas…</p></div>`;
+    carregarMinhasReservas();
     return;
   }
-  minhas.forEach(r=> el.appendChild(itemReservaEl(r, true)));
+  const hoje = hojeISO();
+  const proximas = minhasReservasTodas.filter(r=> r.data >= hoje && r.status !== "recusada");
+  const anteriores = minhasReservasTodas.filter(r=> !(r.data >= hoje && r.status !== "recusada")).sort((a,b)=> b.data.localeCompare(a.data)).slice(0, 10);
+  const titulo = (txt)=>{ const p = document.createElement("p"); p.className = "lista-titulo"; p.textContent = txt; return p; };
+
+  el.appendChild(titulo("Próximas"));
+  if(proximas.length === 0){
+    const v = document.createElement("div");
+    v.className = "empty";
+    v.innerHTML = `<i class="ti ti-calendar-plus"></i><p>Você não tem festas marcadas.</p>`;
+    el.appendChild(v);
+  }else{
+    proximas.forEach(r=> el.appendChild(cartaoMinhaReserva(r, false)));
+  }
+  if(anteriores.length){
+    el.appendChild(titulo("Anteriores"));
+    anteriores.forEach(r=> el.appendChild(cartaoMinhaReserva(r, true)));
+  }
+  const convite = document.createElement("button");
+  convite.className = "convite-vazio";
+  convite.innerHTML = `<i class="ti ti-confetti"></i>Planejando outra festa?<br><b>Veja as datas livres</b>`;
+  convite.onclick = ()=> mudarTab("agenda");
+  el.appendChild(convite);
+}
+
+/* ---------- Resumo da tela inicial: chips, contador e próxima festa ---------- */
+function renderizarResumoHome(){
+  const chips = document.getElementById("home-chips");
+  if(!chips || !casaAtual) return;
+  const hoje = new Date();
+  const listaMes = cacheReservasMes.get(chaveMes(hoje.getFullYear(), hoje.getMonth()));
+  let html = "";
+  if(listaMes){
+    const ultimo = new Date(hoje.getFullYear(), hoje.getMonth()+1, 0).getDate();
+    const ocupados = new Set(listaMes.filter(r=> r.status === "pendente" || r.status === "confirmada").map(r=> r.data));
+    let livres = 0;
+    for(let d = hoje.getDate(); d <= ultimo; d++){
+      if(!ocupados.has(isoDeData(hoje.getFullYear(), hoje.getMonth(), d))) livres++;
+    }
+    const nomesMesChip = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+    html += `<span class="home-chip"><i class="ti ti-calendar-check ok"></i>${livres} ${livres === 1 ? "data livre" : "datas livres"} em ${nomesMesChip[hoje.getMonth()]}</span>`;
+  }
+  const futuras = minhasFuturasAtivas();
+  const aguardando = futuras.filter(r=> r.status === "pendente").length;
+  if(aguardando) html += `<span class="home-chip"><i class="ti ti-clock esp"></i>${aguardando} ${aguardando === 1 ? "pedido aguardando" : "pedidos aguardando"}</span>`;
+  chips.innerHTML = html;
+
+  const contador = document.getElementById("home-contador-minhas");
+  contador.textContent = futuras.length;
+  contador.style.display = futuras.length ? "block" : "none";
+
+  const bloco = document.getElementById("home-proxima-festa");
+  const lista = document.getElementById("home-proxima-lista");
+  if(futuras.length){
+    lista.innerHTML = "";
+    lista.appendChild(cartaoMinhaReserva(futuras[0], false));
+    bloco.style.display = "block";
+  }else{
+    bloco.style.display = "none";
+  }
+}
+
+window.abrirMinhasReservas = function(){
+  document.getElementById("tabs-nav").style.display = "flex";
+  document.getElementById("back-row").style.display = "flex";
+  mudarTab("reservas");
+};
+
+/* ---------- Na agenda (calendário do celular) e Convidar (WhatsApp) ---------- */
+function textoCalendario(t){ return String(t || "").replace(/[\\;,]/g, (c)=> "\\" + c).replace(/\n/g, " "); }
+function adicionarNaAgenda(r){
+  const [y, m, d] = r.data.split("-").map(Number);
+  const dois = (n)=> String(n).padStart(2, "0");
+  const fim = new Date(y, m-1, d+1);
+  const ini = `${y}${dois(m)}${dois(d)}`;
+  const fimTxt = `${fim.getFullYear()}${dois(fim.getMonth()+1)}${dois(fim.getDate())}`;
+  const titulo = r.observacao ? `${r.observacao} (salão de festas)` : "Festa no salão de festas";
+  const local = (condominioData && condominioData.nome) || "Salão de festas do condomínio";
+  const ehApple = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  if(ehApple){
+    const agora = new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+    const ics = [
+      "BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Salao de Festas//PT-BR","BEGIN:VEVENT",
+      `UID:${r.id}-${TENANT_ID}@salao-festas`,`DTSTAMP:${agora}`,
+      `DTSTART;VALUE=DATE:${ini}`,`DTEND;VALUE=DATE:${fimTxt}`,
+      `SUMMARY:${textoCalendario(titulo)}`,`LOCATION:${textoCalendario(local)}`,
+      "BEGIN:VALARM","TRIGGER:-P1D","ACTION:DISPLAY",`DESCRIPTION:${textoCalendario(titulo)}`,"END:VALARM",
+      "END:VEVENT","END:VCALENDAR"
+    ].join("\r\n");
+    const url = URL.createObjectURL(new Blob([ics], { type:"text/calendar;charset=utf-8" }));
+    const a = document.createElement("a");
+    a.href = url; a.download = `festa-${r.data}.ics`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=> URL.revokeObjectURL(url), 4000);
+  }else{
+    const params = new URLSearchParams({ action:"TEMPLATE", text:titulo, dates:`${ini}/${fimTxt}`, location:local });
+    window.open(`https://calendar.google.com/calendar/render?${params.toString()}`, "_blank", "noopener");
+  }
+}
+function convidarPeloWhatsApp(r){
+  const dsem = nomeDiaSemana(r.data);
+  const local = (condominioData && condominioData.nome) ? `no salão de festas do ${condominioData.nome}` : "no salão de festas do condomínio";
+  const evento = r.observacao ? ` (${r.observacao})` : "";
+  const texto = `Você está convidado(a) para a minha festa${evento}! Vai ser ${dsem}, dia ${formatarDataBR(r.data)}, ${local}. Conto com você!`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, "_blank", "noopener");
 }
 
 function renderListaPendentesElementos(){
@@ -1742,11 +2124,11 @@ function itemReservaEl(r, mostrarCasa=false, comAcoes=false){
   wrap.dataset.reservaId = r.id;
   wrap.style.cursor = "pointer";
 
-  const corClasse = r.status === "pendente" ? "pendente" : (r.casaId === casaAtualId ? "minha" : "reservado");
+  const corClasse = r.status === "pendente" ? "pendente" : r.status === "recusada" ? "recusada" : (r.casaId === casaAtualId ? "minha" : "reservado");
+  const [, mesTxt, diaTxt] = r.data.split("-");
   const dia = document.createElement("div");
-  dia.className = "dia cal-day " + corClasse;
-  dia.style.cursor = "default";
-  dia.textContent = r.data.split("-")[2];
+  dia.className = "data-bloco " + corClasse;
+  dia.innerHTML = `<span class="d">${diaTxt}</span><span class="m">${MESES_CURTOS[parseInt(mesTxt,10)-1]}</span>`;
 
   const info = document.createElement("div");
   info.className = "info";
@@ -1762,8 +2144,12 @@ function itemReservaEl(r, mostrarCasa=false, comAcoes=false){
   }
   const t2 = document.createElement("p");
   t2.className = "t2";
-  t2.textContent = formatarDataBR(r.data) + " · " + legendaStatus(r.status);
-  info.appendChild(t1); info.appendChild(t2);
+  const dsem = nomeDiaSemana(r.data);
+  t2.textContent = dsem.charAt(0).toUpperCase() + dsem.slice(1) + " · " + formatarDataBR(r.data);
+  const pill = document.createElement("span");
+  pill.className = "pill " + r.status;
+  pill.innerHTML = `<i class="ti ${iconeStatus(r.status)}"></i>${legendaStatus(r.status)}`;
+  info.appendChild(t1); info.appendChild(t2); info.appendChild(pill);
 
   wrap.appendChild(dia); wrap.appendChild(info);
 
@@ -1771,10 +2157,10 @@ function itemReservaEl(r, mostrarCasa=false, comAcoes=false){
     const acoes = document.createElement("div");
     acoes.className = "acoes";
     const ok = document.createElement("button");
-    ok.className = "icon-btn ok"; ok.innerHTML = `<i class="ti ti-check"></i>`;
+    ok.className = "icon-btn ok"; ok.innerHTML = `<i class="ti ti-check"></i>`; ok.setAttribute("aria-label","Aprovar");
     ok.onclick = (e)=>{ e.stopPropagation(); aprovarReserva(r.id); };
     const no = document.createElement("button");
-    no.className = "icon-btn no"; no.innerHTML = `<i class="ti ti-x"></i>`;
+    no.className = "icon-btn no"; no.innerHTML = `<i class="ti ti-x"></i>`; no.setAttribute("aria-label","Recusar");
     no.onclick = (e)=>{ e.stopPropagation(); recusarReserva(r.id); };
     acoes.appendChild(ok); acoes.appendChild(no);
     wrap.appendChild(acoes);
