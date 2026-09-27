@@ -107,6 +107,10 @@
   .onb-etapa{ font-size:11px; color:var(--muted); margin:0 0 6px; }
   .onb-titulo{ font-weight:600; color:var(--deep); margin:4px 0 10px; font-size:14px; }
   .onb-expl{ font-size:12px; color:var(--muted); margin:-4px 0 12px; line-height:1.4; }
+  .conf-casa{ text-align:center; padding:6px 0 4px; }
+  .conf-casa .conf-num{ display:inline-flex; align-items:center; justify-content:center; width:64px; height:64px; border-radius:16px; background:var(--soft); color:var(--accent); font-size:24px; font-weight:600; margin:0 0 12px; }
+  .conf-casa .conf-perg{ font-size:16px; font-weight:600; color:var(--deep); margin:0 0 6px; }
+  .conf-casa .conf-expl{ font-size:12.5px; color:var(--muted); margin:0 0 18px; line-height:1.45; }
   .field.campo-erro input{ border-color:var(--red) !important; background:#FFF5F5; }
 
   /* ===================== TOPBAR / DRAWER ===================== */
@@ -301,10 +305,20 @@
       <p class="login-msg" id="login-msg"></p>
 
       <div id="bloco-entrar">
-        <div class="field"><label>Casa</label><input type="text" id="in-casa" placeholder="ex: 07" inputmode="numeric"></div>
+        <div class="field"><label>Casa</label><input type="text" id="in-casa" placeholder="ex: 07" inputmode="numeric" autocomplete="off" name="casa-numero-nao-salvar"></div>
         <div class="field"><label>Senha</label><input type="password" id="in-senha" placeholder="••••"></div>
         <span class="login-link" onclick="abrirEsqueciSenha()">Esqueci minha senha</span>
         <button class="btn btn-primary" onclick="fazerLogin()">Entrar</button>
+      </div>
+
+      <div id="bloco-confirmar-casa" style="display:none;">
+        <div class="conf-casa">
+          <div class="conf-num" id="conf-num">00</div>
+          <p class="conf-perg" id="conf-perg">Você é morador(a) desta casa?</p>
+          <p class="conf-expl">Este é o primeiro acesso desta casa. Confirme que você mora nela antes de continuar.</p>
+        </div>
+        <button class="btn btn-primary" id="conf-btn-sim" style="width:100%;margin-bottom:8px;" onclick="confirmarSouDaCasa()">Sim, sou da Casa 00</button>
+        <button class="btn btn-ghost" style="width:100%;" onclick="naoSouDaCasa()">Não, entrei na casa errada</button>
       </div>
 
       <div id="bloco-trocar-senha" style="display:none;">
@@ -707,7 +721,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026270002";
+const VERSAO_APP = "2026270003";
 
 /* ===================================================================== */
 
@@ -879,6 +893,22 @@ window.confirmarTrocaSenhaInicial = async function(){
   }
 };
 
+window.confirmarSouDaCasa = function(){
+  document.getElementById("bloco-confirmar-casa").style.display = "none";
+  document.getElementById("bloco-trocar-senha").style.display = "block";
+};
+
+window.naoSouDaCasa = async function(){
+  document.getElementById("in-casa").value = "";
+  document.getElementById("in-senha").value = "";
+  document.getElementById("in-nova-senha").value = "";
+  document.getElementById("in-nova-senha-2").value = "";
+  await signOut(auth);
+  const msg = document.getElementById("login-msg");
+  msg.textContent = "Confira o número da sua casa e entre novamente.";
+  msg.className = "login-msg err";
+};
+
 function mostrarBlocoCadastro(ehPrimeiroAcesso){
   document.getElementById("login-hero").style.display = "none";
   document.getElementById("onb-passos-cadastro").style.display = ehPrimeiroAcesso ? "block" : "none";
@@ -966,6 +996,9 @@ onAuthStateChanged(auth, async (user) => {
   if(!user){
     casaAtual = null; casaAtualId = null;
     document.getElementById("app-shell").style.display = "none";
+    ["bloco-confirmar-casa","bloco-trocar-senha","bloco-cadastro"].forEach(id=> document.getElementById(id).style.display = "none");
+    document.getElementById("bloco-entrar").style.display = "block";
+    document.getElementById("login-hero").style.display = "";
     if(document.getElementById("tela-carregando").style.display !== "none" || document.getElementById("tela-login").style.display === "none"){
       // primeira carga ou logout
     }
@@ -1005,7 +1038,11 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById("tela-carregando").style.display = "none";
     document.getElementById("tela-login").style.display = "flex";
     document.getElementById("bloco-entrar").style.display = "none";
-    document.getElementById("bloco-trocar-senha").style.display = "block";
+    document.getElementById("bloco-trocar-senha").style.display = "none";
+    document.getElementById("conf-num").textContent = casaAtual.numero;
+    document.getElementById("conf-perg").textContent = `Você é morador(a) da Casa ${casaAtual.numero}?`;
+    document.getElementById("conf-btn-sim").textContent = `Sim, sou da Casa ${casaAtual.numero}`;
+    document.getElementById("bloco-confirmar-casa").style.display = "block";
     return;
   }
 
