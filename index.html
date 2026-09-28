@@ -480,6 +480,31 @@
   .cal-grid button:disabled{ visibility:hidden; }
   .toast:not(.show){ opacity:0; pointer-events:none; }
 
+  /* Relatório de festas realizadas */
+  .rel-filtros{ display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+  .rel-filtro-btn{ font-size:15px; font-weight:600; padding:13px 6px; border-radius:12px; }
+  .rel-filtro-btn.active{ background:linear-gradient(135deg,var(--azul1),var(--azul2)); }
+  .rel-kpis{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+  .rel-kpi{ background:#F5F8FC; border:1px solid var(--line); border-radius:14px; padding:12px 6px; text-align:center; }
+  .rel-kpi .n{ font-family:'Fraunces', serif; font-size:28px; font-weight:600; color:var(--accent-d); display:block; line-height:1.2; }
+  .rel-kpi .n.txt{ font-size:19px; line-height:1.75; text-transform:capitalize; }
+  .rel-kpi .l{ font-size:13px; color:#475569; font-weight:600; line-height:1.2; }
+  .rel-sec{ font-family:'Fraunces', serif; font-size:19px; font-weight:600; margin:20px 0 10px; color:var(--deep); }
+  .rel-bar{ display:flex; align-items:center; gap:10px; margin-bottom:9px; font-size:15px; }
+  .rel-bar .c{ width:70px; font-weight:600; flex:none; }
+  .rel-bar .t{ flex:1; height:26px; background:#EEF2F7; border-radius:8px; overflow:hidden; }
+  .rel-bar .t span{ display:block; height:100%; background:linear-gradient(90deg,#60A5FA,#1D4ED8); border-radius:8px; }
+  .rel-bar .v{ width:26px; text-align:right; font-weight:700; }
+  .rel-item{ display:flex; gap:12px; align-items:center; border:1px solid var(--line); border-radius:14px; padding:10px; margin-bottom:8px; }
+  .rel-item .data-bloco{ width:54px; flex:none; border-radius:11px; text-align:center; padding:6px 0; line-height:1.05; background:var(--green); color:var(--green-ink); }
+  .rel-item .data-bloco .d{ font-family:'Fraunces', serif; font-weight:600; font-size:22px; display:block; }
+  .rel-item .data-bloco .m{ font-size:12px; text-transform:uppercase; font-weight:700; }
+  .rel-item .t1{ margin:0; font-weight:600; font-size:16px; }
+  .rel-item .t2{ margin:2px 0 0; font-size:14px; color:#475569; }
+  .rel-acoes{ display:flex; flex-direction:column; gap:10px; margin-top:18px; }
+  .rel-btn-whats{ background:#1F7A44; color:#fff; }
+  .rel-email-box{ background:#F5F8FC; border:1px solid var(--line); border-radius:14px; padding:12px; }
+
   /* Entrada suave */
   .screen.active .anima{ animation:entraSuave .4s cubic-bezier(.2,.8,.2,1) both; }
   .screen.active .anima.a2{ animation-delay:.08s; } .screen.active .anima.a3{ animation-delay:.16s; } .screen.active .anima.a4{ animation-delay:.24s; }
@@ -675,7 +700,7 @@
   <div class="drawer-item" onclick="abrirModal('modal-perfil')"><i class="ti ti-user"></i> Meu cadastro</div>
   <div class="drawer-item" id="menu-config-condominio" style="display:none;" onclick="abrirModal('modal-condominio')"><i class="ti ti-building"></i> Condomínio</div>
   <div class="drawer-item" id="menu-casas" style="display:none;" onclick="abrirModal('modal-casas')"><i class="ti ti-users"></i> Casas cadastradas</div>
-  <div class="drawer-item" id="menu-relatorio" style="display:none;" onclick="abrirModal('modal-relatorio')"><i class="ti ti-report"></i> Relatório</div>
+  <div class="drawer-item" id="menu-relatorio" style="display:none;" onclick="abrirModal('modal-relatorio')"><i class="ti ti-report"></i> Festas realizadas</div>
   <div class="drawer-item danger" onclick="fazerLogout()"><i class="ti ti-logout"></i> Sair</div>
   <p style="font-size:10px; opacity:.5; margin-top:24px;" id="drawer-versao">v0000000000</p>
 </div>
@@ -861,33 +886,36 @@
 <!-- ===================== MODAL: RELATÓRIO DE USO (síndico / dev) ===================== -->
 <div class="modal-wrap" id="modal-relatorio">
   <div class="modal">
-    <button class="close-x" onclick="fecharModal('modal-relatorio')"><i class="ti ti-x"></i></button>
-    <h3>Relatório de uso do salão</h3>
+    <button class="close-x" onclick="fecharModal('modal-relatorio')" aria-label="Fechar"><i class="ti ti-x"></i></button>
+    <h3>Festas realizadas</h3>
+    <p class="sub" style="margin:-8px 0 14px;">Reservas aprovadas cujas datas já passaram. Festas futuras não entram.</p>
 
     <div class="rel-filtros">
       <button class="rel-filtro-btn active" id="rel-btn-mes-anterior" onclick="definirPeriodoRelatorio('mes-anterior')">Mês anterior</button>
-      <button class="rel-filtro-btn" id="rel-btn-mes-atual" onclick="definirPeriodoRelatorio('mes-atual')">Mês atual</button>
+      <button class="rel-filtro-btn" id="rel-btn-este-mes" onclick="definirPeriodoRelatorio('este-mes')">Este mês</button>
+      <button class="rel-filtro-btn" id="rel-btn-este-ano" onclick="definirPeriodoRelatorio('este-ano')">Este ano</button>
       <button class="rel-filtro-btn" id="rel-btn-personalizado" onclick="definirPeriodoRelatorio('personalizado')">Personalizado</button>
     </div>
 
     <div id="rel-campos-personalizado" style="display:none;margin-top:12px;">
       <div style="display:flex;gap:10px;">
-        <div class="field" style="flex:1;"><label>De</label><input type="date" id="rel-data-inicio"></div>
-        <div class="field" style="flex:1;"><label>Até</label><input type="date" id="rel-data-fim"></div>
+        <div class="field" style="flex:1;"><label for="rel-data-inicio">De</label><input type="date" id="rel-data-inicio"></div>
+        <div class="field" style="flex:1;"><label for="rel-data-fim">Até</label><input type="date" id="rel-data-fim"></div>
       </div>
       <button class="btn btn-ghost btn-sm" onclick="aplicarPeriodoPersonalizado()">Aplicar</button>
     </div>
 
-    <p class="sub" id="rel-periodo-label" style="margin:14px 0 4px;">—</p>
-    <p class="sub" id="rel-total-label" style="margin:0 0 10px;">—</p>
+    <p class="sub" id="rel-periodo-label" style="margin:14px 0 10px;">—</p>
+    <div id="rel-conteudo"></div>
 
-    <div id="rel-tabela-wrap">
-      <table class="rel-tabela">
-        <thead>
-          <tr><th>Casa</th><th>Nome</th><th>Data</th></tr>
-        </thead>
-        <tbody id="rel-tabela-corpo"></tbody>
-      </table>
+    <div id="rel-acoes" class="rel-acoes" style="display:none;">
+      <button class="btn rel-btn-whats" onclick="enviarRelatorioWhatsApp()"><i class="ti ti-brand-whatsapp"></i>Enviar resumo no WhatsApp</button>
+      <button class="btn btn-primary" onclick="abrirEnvioEmailRelatorio()"><i class="ti ti-mail"></i>Enviar por e-mail</button>
+      <div id="rel-email-box" class="rel-email-box" style="display:none;">
+        <div class="field" style="margin-bottom:10px;"><label for="rel-email-destino">Enviar para o e-mail</label><input type="email" id="rel-email-destino" placeholder="email@exemplo.com"></div>
+        <button class="btn btn-primary" id="rel-email-enviar" onclick="enviarRelatorioEmail()"><i class="ti ti-send"></i>Enviar agora</button>
+      </div>
+      <button class="btn btn-ghost" onclick="baixarPlanilhaRelatorio()"><i class="ti ti-file-spreadsheet"></i>Baixar planilha (Excel)</button>
     </div>
   </div>
 </div>
@@ -928,6 +956,7 @@ const TENANT_ID = "residencial-jardins";
 // E-mail com acesso de desenvolvedor (irrestrito), igual ao App Massagens.
 const EMAIL_DESENVOLVEDOR = "souza.iatech@gmail.com";
 const URL_FN_RESETAR_SENHA = "https://resetar-senha-admin-892386095601.southamerica-east1.run.app";
+const URL_FN_RELATORIO_EMAIL = "https://enviar-relatorio-email-892386095601.southamerica-east1.run.app";
 
 // EmailJS — preencha com as chaves da sua conta em https://www.emailjs.com
 // (Serviço gratuito: cria os 3 valores abaixo no painel deles, sem custo.)
@@ -935,7 +964,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026270006";
+const VERSAO_APP = "2026270007";
 
 /* ===================================================================== */
 
@@ -2589,35 +2618,52 @@ window.cadastrarNovaCasa = async function(){
 };
 
 /* =====================================================================
-   RELATÓRIO DE USO DO SALÃO (síndico / dev)
+   RELATÓRIO DE FESTAS REALIZADAS (síndico / dev)
+   Realizada = reserva confirmada com data ANTERIOR a hoje.
    ===================================================================== */
 function mesNomeCurto(m){
   return ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"][m];
+}
+const NOMES_MES_REL = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+let relatorioAtual = null; // { rotulo, inicio, fim, linhas, total, casas, diaMaisUsado, porCasa }
+
+function ontemISO(){
+  const d = new Date(); d.setDate(d.getDate() - 1);
+  return isoDeData(d.getFullYear(), d.getMonth(), d.getDate());
 }
 
 window.definirPeriodoRelatorio = function(tipo){
   document.querySelectorAll(".rel-filtro-btn").forEach(b=> b.classList.remove("active"));
   document.getElementById("rel-campos-personalizado").style.display = "none";
+  document.getElementById("rel-email-box").style.display = "none";
 
   const hoje = new Date();
+  const ontem = ontemISO();
   let inicio, fim, rotulo;
 
-  if(tipo === "mes-atual"){
-    document.getElementById("rel-btn-mes-atual").classList.add("active");
+  if(tipo === "este-mes"){
+    document.getElementById("rel-btn-este-mes").classList.add("active");
     inicio = isoDeData(hoje.getFullYear(), hoje.getMonth(), 1);
-    fim = isoDeData(hoje.getFullYear(), hoje.getMonth(), new Date(hoje.getFullYear(), hoje.getMonth()+1, 0).getDate());
-    rotulo = `${mesNomeCurto(hoje.getMonth())}/${hoje.getFullYear()}`;
+    fim = ontem;
+    rotulo = `${NOMES_MES_REL[hoje.getMonth()]} de ${hoje.getFullYear()} (até ontem)`;
+  }else if(tipo === "este-ano"){
+    document.getElementById("rel-btn-este-ano").classList.add("active");
+    inicio = isoDeData(hoje.getFullYear(), 0, 1);
+    fim = ontem;
+    rotulo = `${hoje.getFullYear()} (até ontem)`;
   }else if(tipo === "personalizado"){
     document.getElementById("rel-btn-personalizado").classList.add("active");
     document.getElementById("rel-campos-personalizado").style.display = "block";
     const inicioInput = document.getElementById("rel-data-inicio").value;
-    const fimInput = document.getElementById("rel-data-fim").value;
+    let fimInput = document.getElementById("rel-data-fim").value;
     if(!inicioInput || !fimInput){
       document.getElementById("rel-periodo-label").textContent = "Escolha as duas datas e toque em Aplicar.";
-      document.getElementById("rel-total-label").textContent = "";
-      document.getElementById("rel-tabela-corpo").innerHTML = "";
+      document.getElementById("rel-conteudo").innerHTML = "";
+      document.getElementById("rel-acoes").style.display = "none";
+      relatorioAtual = null;
       return;
     }
+    if(fimInput > ontem) fimInput = ontem;
     inicio = inicioInput; fim = fimInput;
     rotulo = `${formatarDataBR(inicio)} a ${formatarDataBR(fim)}`;
   }else{
@@ -2625,22 +2671,28 @@ window.definirPeriodoRelatorio = function(tipo){
     const mesAnterior = new Date(hoje.getFullYear(), hoje.getMonth()-1, 1);
     inicio = isoDeData(mesAnterior.getFullYear(), mesAnterior.getMonth(), 1);
     fim = isoDeData(mesAnterior.getFullYear(), mesAnterior.getMonth(), new Date(mesAnterior.getFullYear(), mesAnterior.getMonth()+1, 0).getDate());
-    rotulo = `${mesNomeCurto(mesAnterior.getMonth())}/${mesAnterior.getFullYear()}`;
+    rotulo = `${NOMES_MES_REL[mesAnterior.getMonth()]} de ${mesAnterior.getFullYear()}`;
   }
 
-  document.getElementById("rel-periodo-label").textContent = `Período: ${rotulo}`;
-  carregarRelatorio(inicio, fim);
+  document.getElementById("rel-periodo-label").textContent = `Período: ${rotulo.charAt(0).toUpperCase() + rotulo.slice(1)}`;
+  carregarRelatorio(inicio, fim, rotulo);
 };
 
 window.aplicarPeriodoPersonalizado = function(){
   definirPeriodoRelatorio("personalizado");
 };
 
-async function carregarRelatorio(inicioISO, fimISO){
-  const corpo = document.getElementById("rel-tabela-corpo");
-  const totalLabel = document.getElementById("rel-total-label");
-  corpo.innerHTML = `<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:16px 0;">Carregando…</td></tr>`;
-  totalLabel.textContent = "";
+async function carregarRelatorio(inicioISO, fimISO, rotulo){
+  const el = document.getElementById("rel-conteudo");
+  const acoes = document.getElementById("rel-acoes");
+  acoes.style.display = "none";
+  relatorioAtual = null;
+
+  if(fimISO < inicioISO){
+    el.innerHTML = `<div class="empty"><i class="ti ti-calendar-off"></i><p>Ainda não houve festas neste período.</p></div>`;
+    return;
+  }
+  el.innerHTML = `<div class="empty"><i class="ti ti-loader-2"></i><p>Carregando…</p></div>`;
 
   try{
     const q = query(
@@ -2655,27 +2707,129 @@ async function carregarRelatorio(inicioISO, fimISO){
       const r = d.data();
       const casa = todasAsCasas.find(c=> c.id === r.casaId);
       linhas.push({
-        casa: r.casaNumero || (casa ? casa.numero : "—"),
+        casa: String(r.casaNumero || (casa ? casa.numero : "—")),
         nome: (casa && (casa.nomeResponsavel || casa.apelido)) || "—",
-        data: r.data
+        data: r.data,
+        diaSemana: nomeDiaSemana(r.data)
       });
     });
-    linhas.sort((a,b)=> a.data.localeCompare(b.data));
-
-    totalLabel.textContent = linhas.length === 1 ? "1 reserva no período" : `${linhas.length} reservas no período`;
+    linhas.sort((a,b)=> b.data.localeCompare(a.data));
 
     if(linhas.length === 0){
-      corpo.innerHTML = `<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:16px 0;">Nenhuma reserva no período.</td></tr>`;
+      el.innerHTML = `<div class="empty"><i class="ti ti-calendar-off"></i><p>Nenhuma festa realizada neste período.</p></div>`;
       return;
     }
-    corpo.innerHTML = linhas.map(l=>
-      `<tr><td>Casa ${l.casa}</td><td>${escaparHtml(l.nome)}</td><td>${formatarDataBR(l.data)}</td></tr>`
-    ).join("");
+
+    const contaCasa = {};
+    const contaDia = {};
+    linhas.forEach(l=>{
+      contaCasa[l.casa] = (contaCasa[l.casa] || 0) + 1;
+      contaDia[l.diaSemana] = (contaDia[l.diaSemana] || 0) + 1;
+    });
+    const porCasaOrdenado = Object.entries(contaCasa).sort((a,b)=> b[1]-a[1] || a[0].localeCompare(b[0], "pt-BR", {numeric:true}));
+    const maxDia = Math.max(...Object.values(contaDia));
+    const diasTop = Object.keys(contaDia).filter(d=> contaDia[d] === maxDia).map(d=> d.replace("-feira",""));
+    const diaMaisUsadoTxt = diasTop.length > 2 ? "Vários" : diasTop.join(" e ");
+    const diaMaisUsado = diaMaisUsadoTxt.charAt(0).toUpperCase() + diaMaisUsadoTxt.slice(1);
+
+    let porCasa = porCasaOrdenado.slice(0, 4);
+    const resto = porCasaOrdenado.slice(4).reduce((s, [,n])=> s + n, 0);
+    if(resto > 0) porCasa.push(["Outras", resto]);
+
+    relatorioAtual = { rotulo, inicio: inicioISO, fim: fimISO, linhas, total: linhas.length, casas: porCasaOrdenado.length, diaMaisUsado, porCasa, porCasaCompleto: porCasaOrdenado };
+
+    const maxBarra = Math.max(...porCasa.map(([,n])=> n));
+    el.innerHTML = `
+      <div class="rel-kpis">
+        <div class="rel-kpi"><span class="n">${linhas.length}</span><span class="l">${linhas.length === 1 ? "Festa realizada" : "Festas realizadas"}</span></div>
+        <div class="rel-kpi"><span class="n">${porCasaOrdenado.length}</span><span class="l">${porCasaOrdenado.length === 1 ? "Casa" : "Casas diferentes"}</span></div>
+        <div class="rel-kpi"><span class="n txt">${escaparHtml(diaMaisUsado)}</span><span class="l">Dia mais usado</span></div>
+      </div>
+      <p class="rel-sec">Festas por casa</p>
+      ${porCasa.map(([c, n])=> `<div class="rel-bar"><span class="c">${c === "Outras" ? "Outras" : "Casa " + escaparHtml(c)}</span><span class="t"><span style="width:${Math.round(n / maxBarra * 100)}%"></span></span><span class="v">${n}</span></div>`).join("")}
+      <p class="rel-sec">Lista de festas</p>
+      ${linhas.map(l=>{
+        const [, mm, dd] = l.data.split("-");
+        const ds = l.diaSemana.charAt(0).toUpperCase() + l.diaSemana.slice(1);
+        return `<div class="rel-item"><div class="data-bloco"><span class="d">${dd}</span><span class="m">${mesNomeCurto(parseInt(mm,10)-1)}</span></div><div><p class="t1">Casa ${escaparHtml(l.casa)} · ${escaparHtml(l.nome)}</p><p class="t2">${ds} · ${formatarDataBR(l.data)}</p></div></div>`;
+      }).join("")}`;
+    acoes.style.display = "flex";
   }catch(e){
-    corpo.innerHTML = `<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:16px 0;">Não foi possível carregar o relatório.</td></tr>`;
+    el.innerHTML = `<div class="empty"><i class="ti ti-alert-triangle"></i><p>Não foi possível carregar o relatório. Tente novamente.</p></div>`;
     console.error("Erro ao carregar relatório:", e);
   }
 }
+
+function textoResumoRelatorio(comLista){
+  const r = relatorioAtual;
+  if(!r) return "";
+  const nome = (condominioData && condominioData.nome) || "Condomínio";
+  const periodo = r.rotulo.charAt(0).toUpperCase() + r.rotulo.slice(1);
+  let t = `Festas realizadas no salão — ${nome}\nPeríodo: ${periodo}\n\n`;
+  t += `• Total: ${r.total} ${r.total === 1 ? "festa" : "festas"}\n`;
+  t += `• Casas diferentes: ${r.casas}\n`;
+  t += `• Dia mais usado: ${r.diaMaisUsado}\n\n`;
+  t += `Festas por casa:\n` + r.porCasa.map(([c,n])=> `${c === "Outras" ? "Outras casas" : "Casa " + c}: ${n}`).join("\n");
+  if(comLista){
+    t += `\n\nLista de festas:\n` + r.linhas.map(l=> `${formatarDataBR(l.data)} (${l.diaSemana}) — Casa ${l.casa} · ${l.nome}`).join("\n");
+  }
+  return t;
+}
+
+window.enviarRelatorioWhatsApp = function(){
+  if(!relatorioAtual) return;
+  window.open(`https://wa.me/?text=${encodeURIComponent(textoResumoRelatorio(false))}`, "_blank", "noopener");
+};
+
+window.abrirEnvioEmailRelatorio = function(){
+  const box = document.getElementById("rel-email-box");
+  const input = document.getElementById("rel-email-destino");
+  if(!input.value) input.value = (condominioData && condominioData.emailSindico) || (casaAtual && casaAtual.emailContato) || "";
+  box.style.display = box.style.display === "none" ? "block" : "none";
+};
+
+window.enviarRelatorioEmail = async function(){
+  if(!relatorioAtual) return;
+  const destino = document.getElementById("rel-email-destino").value.trim();
+  if(!emailValido(destino)){ showToast("Informe um e-mail válido."); return; }
+  const btn = document.getElementById("rel-email-enviar");
+  btn.disabled = true; btn.textContent = "Enviando…";
+  const r = relatorioAtual;
+  try{
+    const token = await auth.currentUser.getIdToken();
+    const resp = await fetch(URL_FN_RELATORIO_EMAIL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify({ tenantId: TENANT_ID, inicio: r.inicio, fim: r.fim, periodo: r.rotulo.charAt(0).toUpperCase() + r.rotulo.slice(1), destino })
+    });
+    const dados = await resp.json().catch(()=> ({}));
+    if(!resp.ok || !dados.ok){ showToast(dados.erro || "Não foi possível enviar o e-mail. Tente novamente."); }
+    else{
+      showToast(`Relatório enviado para ${destino}.`);
+      document.getElementById("rel-email-box").style.display = "none";
+    }
+  }catch(e){
+    showToast("Não foi possível enviar o e-mail. Confira a internet e tente novamente.");
+  }
+  btn.disabled = false; btn.innerHTML = `<i class="ti ti-send"></i>Enviar agora`;
+};
+
+window.baixarPlanilhaRelatorio = function(){
+  if(!relatorioAtual) return;
+  const r = relatorioAtual;
+  const cel = (v)=> `"${String(v).replace(/"/g, '""')}"`;
+  const linhas = [["Data","Dia da semana","Casa","Responsável"].map(cel).join(";")]
+    .concat([...r.linhas].reverse().map(l=> [formatarDataBR(l.data), l.diaSemana, `Casa ${l.casa}`, l.nome].map(cel).join(";")));
+  linhas.push("");
+  linhas.push([cel("Total de festas"), cel(r.total)].join(";"));
+  linhas.push([cel("Casas diferentes"), cel(r.casas)].join(";"));
+  const blob = new Blob(["﻿" + linhas.join("\r\n")], { type:"text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = `festas-realizadas-${r.inicio}-a-${r.fim}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=> URL.revokeObjectURL(url), 4000);
+};
 
 /* inicia o carregamento do condomínio para a tela de login */
 carregarDadosCondominioParaLogin();
