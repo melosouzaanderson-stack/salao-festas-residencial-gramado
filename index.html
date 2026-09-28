@@ -503,6 +503,19 @@
   .rel-item .t2{ margin:2px 0 0; font-size:14px; color:#475569; }
   .rel-acoes{ display:flex; flex-direction:column; gap:10px; margin-top:18px; }
   .rel-btn-whats{ background:#1F7A44; color:#fff; }
+  .auto-switch{ display:flex; align-items:center; gap:12px; background:#F5F8FC; border:1px solid var(--line); border-radius:14px; padding:12px 14px; margin:0 0 14px; cursor:pointer; }
+  .auto-switch .txt{ flex:1; }
+  .auto-switch .txt b{ display:block; font-size:15px; color:var(--ink); }
+  .auto-switch .txt span{ display:block; font-size:13px; color:var(--muted); margin-top:2px; }
+  .auto-switch input{ position:absolute; opacity:0; width:1px; height:1px; }
+  .auto-switch .trilho{ flex:none; width:52px; height:30px; border-radius:15px; background:#CBD5E1; position:relative; transition:background .2s; }
+  .auto-switch .trilho::after{ content:""; position:absolute; top:3px; left:3px; width:24px; height:24px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.25); transition:left .2s; }
+  .auto-switch input:checked + .trilho{ background:#2563EB; }
+  .auto-switch input:checked + .trilho::after{ left:25px; }
+  .auto-switch input:focus-visible + .trilho{ outline:3px solid #93C5FD; outline-offset:2px; }
+  .rel-auto-aviso{ display:flex; gap:10px; align-items:flex-start; background:#EAF1FD; border:1px solid #BFDBFE; color:#1E3A8A; border-radius:14px; padding:12px 14px; margin:0 0 14px; font-size:14px; line-height:1.4; }
+  .rel-auto-aviso.desligado{ background:#F1F5F9; border-color:var(--line); color:#475569; }
+  .rel-auto-aviso i{ font-size:20px; margin-top:1px; }
   .rel-email-box{ background:#F5F8FC; border:1px solid var(--line); border-radius:14px; padding:12px; }
 
   /* Entrada suave */
@@ -784,6 +797,11 @@
     <div class="field"><label>Nome do condomínio</label><input type="text" id="cd-nome"></div>
     <div class="field"><label>Subtítulo</label><input type="text" id="cd-subtitulo"></div>
     <div class="field"><label>E-mail do síndico (recebe notificações)</label><input type="text" id="cd-email-sindico"></div>
+    <label class="auto-switch" for="cd-relatorio-auto">
+      <span class="txt"><b>Relatório mensal automático</b><span>Todo 1º dia útil do mês, às 8h, o relatório das festas do mês anterior vai para o e-mail do síndico. Se não houve festa, nada é enviado.</span></span>
+      <input type="checkbox" id="cd-relatorio-auto" role="switch">
+      <span class="trilho" aria-hidden="true"></span>
+    </label>
     <div class="field"><label>Título do aviso na tela inicial</label><input type="text" id="cd-aviso-titulo" placeholder="ex: Bem-vindo(a)!"></div>
     <div class="field"><label>Texto do aviso na tela inicial</label><textarea id="cd-aviso-texto" rows="3" placeholder="ex: Manutenção da piscina dia 15."></textarea></div>
 
@@ -889,6 +907,7 @@
     <button class="close-x" onclick="fecharModal('modal-relatorio')" aria-label="Fechar"><i class="ti ti-x"></i></button>
     <h3>Festas realizadas</h3>
     <p class="sub" style="margin:-8px 0 14px;">Reservas aprovadas cujas datas já passaram. Festas futuras não entram.</p>
+    <div id="rel-auto-aviso" class="rel-auto-aviso"></div>
 
     <div class="rel-filtros">
       <button class="rel-filtro-btn active" id="rel-btn-mes-anterior" onclick="definirPeriodoRelatorio('mes-anterior')">Mês anterior</button>
@@ -964,7 +983,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026270007";
+const VERSAO_APP = "2026270008";
 
 /* ===================================================================== */
 
@@ -2268,6 +2287,7 @@ window.abrirModal = function(id){
     document.getElementById("cd-nome").value = condominioData.nome || "";
     document.getElementById("cd-subtitulo").value = condominioData.subtitulo || "";
     document.getElementById("cd-email-sindico").value = condominioData.emailSindico || "";
+    document.getElementById("cd-relatorio-auto").checked = condominioData.relatorioAutomatico !== false;
     document.getElementById("cd-aviso-titulo").value = condominioData.avisoTitulo || "";
     document.getElementById("cd-aviso-texto").value = condominioData.avisoTexto || "";
     document.getElementById("cd-lembrete-assunto").value = condominioData.lembreteEmailAssunto || "";
@@ -2289,7 +2309,7 @@ window.abrirModal = function(id){
     }
   }
   if(id === "modal-casas") renderizarListaCasas();
-  if(id === "modal-relatorio") definirPeriodoRelatorio("mes-anterior");
+  if(id === "modal-relatorio"){ atualizarAvisoRelatorioAuto(); definirPeriodoRelatorio("mes-anterior"); }
   document.getElementById(id).classList.add("show");
 };
 
@@ -2373,7 +2393,8 @@ window.salvarCondominio = async function(){
   const zeladorApelido = document.getElementById("cd-zelador-apelido").value.trim();
   const zeladorWhatsapp = document.getElementById("cd-zelador-whatsapp").value.trim();
   const msgZeladorTexto = document.getElementById("cd-msg-zelador").value.trim();
-  const dados = { nome, subtitulo, emailSindico, avisoTitulo, avisoTexto, lembreteEmailAssunto, lembreteEmailTexto, zeladorNome, zeladorApelido, zeladorWhatsapp, msgZeladorTexto };
+  const relatorioAutomatico = document.getElementById("cd-relatorio-auto").checked;
+  const dados = { nome, subtitulo, emailSindico, relatorioAutomatico, avisoTitulo, avisoTexto, lembreteEmailAssunto, lembreteEmailTexto, zeladorNome, zeladorApelido, zeladorWhatsapp, msgZeladorTexto };
   if(condominioData._novaFoto) dados.fotoBase64 = condominioData._novaFoto;
   if(condominioData._novaFotoSalao) dados.fotoSalao = condominioData._novaFotoSalao;
   try{
@@ -2780,6 +2801,26 @@ window.enviarRelatorioWhatsApp = function(){
   if(!relatorioAtual) return;
   window.open(`https://wa.me/?text=${encodeURIComponent(textoResumoRelatorio(false))}`, "_blank", "noopener");
 };
+
+function atualizarAvisoRelatorioAuto(){
+  const el = document.getElementById("rel-auto-aviso");
+  const email = (condominioData && condominioData.emailSindico) || "";
+  const ligado = !condominioData || condominioData.relatorioAutomatico !== false;
+  el.classList.toggle("desligado", !ligado || !email);
+  el.innerHTML = "";
+  const icone = document.createElement("i");
+  icone.className = "ti " + (ligado && email ? "ti-calendar-check" : "ti-calendar-off");
+  const txt = document.createElement("div");
+  if(ligado && email){
+    txt.innerHTML = "<b>Envio automático ligado</b><br>Todo 1º dia útil do mês, o relatório do mês anterior vai para: ";
+    const b = document.createElement("b"); b.textContent = email; txt.appendChild(b);
+  } else if(ligado){
+    txt.innerHTML = "<b>Envio automático sem e-mail</b><br>Cadastre o e-mail do síndico em Configurações do condomínio.";
+  } else {
+    txt.innerHTML = "<b>Envio automático desligado</b><br>Para ligar, vá em Configurações do condomínio.";
+  }
+  el.append(icone, txt);
+}
 
 window.abrirEnvioEmailRelatorio = function(){
   const box = document.getElementById("rel-email-box");
