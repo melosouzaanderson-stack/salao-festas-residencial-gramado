@@ -525,6 +525,16 @@
   @media (prefers-reduced-motion: reduce){
     .screen.active .anima, .modal-wrap.show .modal, .periodo-noite .decor-estrela, .home-status-pendentes.pulsante{ animation:none !important; }
   }
+  /* Localização e convite (v2026280001) */
+  .maps-status{ display:none; align-items:center; gap:6px; font-size:15px; font-weight:600; margin-top:8px; }
+  .maps-status.ok{ display:flex; color:#1F7A44; }
+  .maps-status.erro{ display:flex; color:#A8322A; }
+  .dica-maps{ background:#FFF1D6; color:#6E4700; border-radius:14px; padding:14px 16px; font-size:15px; line-height:1.5; margin:12px 0 4px; }
+  .convite-previa{ background:#F5F8FC; border:1px solid #DDE5F0; border-radius:14px; padding:14px; font-size:15px; line-height:1.5; white-space:pre-line; word-break:break-word; color:#0F172A; margin:0 0 16px; }
+  .convite-previa .link{ color:#1D4ED8; text-decoration:underline; }
+  .btn-whats{ background:#1F7A44; color:#fff; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .btn-whats i{ font-size:22px; }
+  .convite-nota{ font-size:15px; color:#475569; text-align:center; margin:10px 0 0; }
 </style>
 </head>
 <body>
@@ -827,6 +837,16 @@
       <p style="font-size:11px;color:var(--muted);margin:6px 0 0;">Esse texto já fica salvo, pronto para quando o envio automático desse lembrete for implementado.</p>
     </div>
 
+    <p class="config-subtitulo">Localização (vai no convite dos moradores)</p>
+    <div class="field"><label for="cd-endereco">Endereço escrito</label><textarea id="cd-endereco" rows="2" maxlength="200" placeholder="Ex.: Av. Berlim, 123 – Jardim Europa, Goiânia - GO"></textarea></div>
+    <div class="field">
+      <label for="cd-maps">Link do Google Maps</label>
+      <input type="url" id="cd-maps" maxlength="300" autocomplete="off" inputmode="url" placeholder="Ex.: https://maps.app.goo.gl/..." oninput="atualizarStatusMaps()">
+      <div class="maps-status" id="cd-maps-status"></div>
+    </div>
+    <button class="btn btn-ghost" type="button" onclick="testarLinkMaps()"><i class="ti ti-map"></i> Testar no mapa</button>
+    <div class="dica-maps"><b>Como pegar o link</b><br>1. Abra o Google Maps e procure o condomínio.<br>2. Toque em "Compartilhar".<br>3. Toque em "Copiar link" e cole aqui.</div>
+
     <p class="config-subtitulo">Zelador</p>
     <div class="field"><label>Nome</label><input type="text" id="cd-zelador-nome" placeholder="Nome completo"></div>
     <div class="field"><label>Apelido (opcional)</label><input type="text" id="cd-zelador-apelido" placeholder="Como é chamado"></div>
@@ -844,6 +864,19 @@
 
     <button class="btn btn-primary" onclick="salvarCondominio()">Salvar alterações</button>
     <div class="lock-note"><i class="ti ti-lock"></i><span>Visível apenas para síndico e desenvolvedor</span></div>
+  </div>
+</div>
+
+<!-- ===================== MODAL: CONVIDAR AMIGOS ===================== -->
+<div class="modal-wrap" id="modal-convite">
+  <div class="modal">
+    <button class="close-x" aria-label="Fechar" onclick="fecharModal('modal-convite')"><i class="ti ti-x"></i></button>
+    <h3><i class="ti ti-users"></i> Convidar amigos</h3>
+    <div class="field"><label for="cv-horario">Horário da festa (opcional)</label><input type="text" id="cv-horario" maxlength="20" autocomplete="off" placeholder="Ex.: 19h" oninput="atualizarPreviaConvite()"></div>
+    <p class="sub" style="margin:0 0 8px;font-weight:600;color:#0F172A;">Prévia da mensagem</p>
+    <div class="convite-previa" id="cv-previa"></div>
+    <button class="btn btn-whats" type="button" onclick="enviarConviteWhatsApp()"><i class="ti ti-brand-whatsapp"></i> Enviar pelo WhatsApp</button>
+    <p class="convite-nota">Você escolhe o contato ou grupo no WhatsApp.</p>
   </div>
 </div>
 
@@ -983,7 +1016,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026270009";
+const VERSAO_APP = "2026280001";
 
 /* ===================================================================== */
 
@@ -2004,7 +2037,7 @@ function cartaoMinhaReserva(r, anterior){
     bAgenda.innerHTML = `<i class="ti ti-calendar-event"></i>Na agenda`;
     bAgenda.onclick = (e)=>{ e.stopPropagation(); adicionarNaAgenda(r); };
     const bConv = document.createElement("button");
-    bConv.innerHTML = `<i class="ti ti-brand-whatsapp"></i>Convidar`;
+    bConv.innerHTML = `<i class="ti ti-brand-whatsapp"></i>Convidar amigos`;
     bConv.onclick = (e)=>{ e.stopPropagation(); convidarPeloWhatsApp(r); };
     acoes.appendChild(bAgenda); acoes.appendChild(bConv);
     info.appendChild(acoes);
@@ -2119,13 +2152,94 @@ function adicionarNaAgenda(r){
     window.open(`https://calendar.google.com/calendar/render?${params.toString()}`, "_blank", "noopener");
   }
 }
-function convidarPeloWhatsApp(r){
-  const dsem = nomeDiaSemana(r.data);
-  const local = (condominioData && condominioData.nome) ? `no salão de festas do ${condominioData.nome}` : "no salão de festas do condomínio";
-  const evento = r.observacao ? ` (${r.observacao})` : "";
-  const texto = `Você está convidado(a) para a minha festa${evento}! Vai ser ${dsem}, dia ${formatarDataBR(r.data)}, ${local}. Conto com você!`;
-  window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, "_blank", "noopener");
+/* Link do Google Maps: só aceita endereços do Google Maps, sempre https */
+function linkMapsValido(texto){
+  const t = String(texto || "").trim();
+  if(!t || t.length > 300) return null;
+  let u;
+  try{ u = new URL(t); }catch(e){ return null; }
+  if(u.protocol !== "https:") return null;
+  if(u.username || u.password || u.port) return null;
+  const h = u.hostname.toLowerCase();
+  const caminho = u.pathname.toLowerCase();
+  const ok =
+    h === "maps.app.goo.gl" ||
+    (h === "goo.gl" && caminho.startsWith("/maps")) ||
+    h === "maps.google.com" || h === "maps.google.com.br" ||
+    (/^(www\.)?google\.com(\.br)?$/.test(h) && caminho.startsWith("/maps"));
+  return ok ? u.toString() : null;
 }
+window.atualizarStatusMaps = function(){
+  const v = document.getElementById("cd-maps").value.trim();
+  const st = document.getElementById("cd-maps-status");
+  st.className = "maps-status";
+  if(!v){ st.innerHTML = ""; return; }
+  if(linkMapsValido(v)){
+    st.className = "maps-status ok";
+    st.innerHTML = `<i class="ti ti-check"></i> Link do Google Maps válido`;
+  }else{
+    st.className = "maps-status erro";
+    st.innerHTML = `<i class="ti ti-alert-triangle"></i> Cole um link do Google Maps`;
+  }
+};
+window.testarLinkMaps = function(){
+  const link = linkMapsValido(document.getElementById("cd-maps").value);
+  if(!link){ showToast("Cole primeiro um link do Google Maps."); return; }
+  window.open(link, "_blank", "noopener");
+};
+
+/* Convite pelo WhatsApp: mensagem pronta, a pessoa escolhe para quem enviar */
+let reservaConvite = null;
+function textoLimpo(t, max){ return String(t || "").replace(/[\r\n\t*_~`]+/g, " ").replace(/\s+/g, " ").trim().slice(0, max); }
+function linhasConvite(r){
+  const horario = textoLimpo(document.getElementById("cv-horario").value, 20);
+  const evento = r.observacao ? ` (${textoLimpo(r.observacao, 80)})` : "";
+  const dsem = nomeDiaSemana(r.data);
+  const dataTxt = dsem.charAt(0).toUpperCase() + dsem.slice(1) + ", " + formatarDataBR(r.data);
+  const nomeCondo = textoLimpo(condominioData && condominioData.nome, 80);
+  const local = nomeCondo ? `Salão de festas do ${nomeCondo}` : "Salão de festas do condomínio";
+  const endereco = textoLimpo(condominioData && condominioData.endereco, 200);
+  const link = linkMapsValido(condominioData && condominioData.linkMaps);
+  const numCasa = textoLimpo(r.casaNumero || (casaAtual && casaAtual.numero), 10);
+  const L = [];
+  L.push({ t:`Olá! Você está convidado(a) para a minha festa${evento}.` });
+  L.push({ t:"" });
+  L.push({ r:"Data:", t:dataTxt });
+  if(horario) L.push({ r:"Horário:", t:horario });
+  L.push({ r:"Local:", t:local });
+  if(endereco) L.push({ r:"Endereço:", t:endereco });
+  if(numCasa){ L.push({ t:"" }); L.push({ t:"Na portaria, avise que vai à ", b:`Casa ${numCasa}`, fim:"." }); }
+  if(link){ L.push({ t:"" }); L.push({ r:"Como chegar:", t:link, link:true }); }
+  return L;
+}
+window.atualizarPreviaConvite = function(){
+  if(!reservaConvite) return;
+  const el = document.getElementById("cv-previa");
+  el.innerHTML = "";
+  linhasConvite(reservaConvite).forEach((l, i, arr)=>{
+    if(l.r){ const b = document.createElement("b"); b.textContent = l.r + " "; el.appendChild(b); }
+    const s = document.createElement("span");
+    s.textContent = l.t;
+    if(l.link) s.className = "link";
+    el.appendChild(s);
+    if(l.b){ const b = document.createElement("b"); b.textContent = l.b; el.appendChild(b); }
+    if(l.fim) el.appendChild(document.createTextNode(l.fim));
+    if(i < arr.length - 1) el.appendChild(document.createTextNode("\n"));
+  });
+};
+function convidarPeloWhatsApp(r){
+  reservaConvite = r;
+  document.getElementById("cv-horario").value = "";
+  atualizarPreviaConvite();
+  abrirModal("modal-convite");
+}
+window.enviarConviteWhatsApp = function(){
+  if(!reservaConvite) return;
+  const texto = linhasConvite(reservaConvite).map(l=>
+    (l.r ? `*${l.r}* ` : "") + l.t + (l.b ? `*${l.b}*` : "") + (l.fim || "")
+  ).join("\n");
+  window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, "_blank", "noopener");
+};
 
 function renderListaPendentesElementos(){
   const elP = document.getElementById("lista-pendentes");
@@ -2296,6 +2410,9 @@ window.abrirModal = function(id){
     document.getElementById("cd-aviso-texto").value = condominioData.avisoTexto || "";
     document.getElementById("cd-lembrete-assunto").value = condominioData.lembreteEmailAssunto || "";
     document.getElementById("cd-lembrete-texto").value = condominioData.lembreteEmailTexto || "";
+    document.getElementById("cd-endereco").value = condominioData.endereco || "";
+    document.getElementById("cd-maps").value = condominioData.linkMaps || "";
+    atualizarStatusMaps();
     document.getElementById("cd-zelador-nome").value = condominioData.zeladorNome || "";
     document.getElementById("cd-zelador-apelido").value = condominioData.zeladorApelido || "";
     document.getElementById("cd-zelador-whatsapp").value = condominioData.zeladorWhatsapp || "";
@@ -2398,7 +2515,15 @@ window.salvarCondominio = async function(){
   const zeladorWhatsapp = document.getElementById("cd-zelador-whatsapp").value.trim();
   const msgZeladorTexto = document.getElementById("cd-msg-zelador").value.trim();
   const relatorioAutomatico = document.getElementById("cd-relatorio-auto").checked;
-  const dados = { nome, subtitulo, emailSindico, relatorioAutomatico, avisoTitulo, avisoTexto, lembreteEmailAssunto, lembreteEmailTexto, zeladorNome, zeladorApelido, zeladorWhatsapp, msgZeladorTexto };
+  const endereco = document.getElementById("cd-endereco").value.replace(/\s+/g, " ").trim().slice(0, 200);
+  const mapsDigitado = document.getElementById("cd-maps").value.trim();
+  const linkMaps = mapsDigitado ? linkMapsValido(mapsDigitado) : "";
+  if(mapsDigitado && !linkMaps){
+    showToast("O link da localização precisa ser do Google Maps.");
+    document.getElementById("cd-maps").focus();
+    return;
+  }
+  const dados = { nome, subtitulo, emailSindico, relatorioAutomatico, avisoTitulo, avisoTexto, lembreteEmailAssunto, lembreteEmailTexto, zeladorNome, zeladorApelido, zeladorWhatsapp, msgZeladorTexto, endereco, linkMaps };
   if(condominioData._novaFoto) dados.fotoBase64 = condominioData._novaFoto;
   if(condominioData._novaFotoSalao) dados.fotoSalao = condominioData._novaFotoSalao;
   try{
