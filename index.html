@@ -983,7 +983,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026270008";
+const VERSAO_APP = "2026270009";
 
 /* ===================================================================== */
 
@@ -1398,6 +1398,11 @@ async function iniciarApp(){
   carregarMinhasReservas();
   escutarPendentesEmTempoReal();
   if(ehSindico || ehDev) verificarReservaProxima();
+  // Link do e-mail de novo pedido (?aba=aprovacoes) abre direto nas aprovações
+  if((ehSindico || ehDev) && new URLSearchParams(location.search).get("aba") === "aprovacoes"){
+    abrirAprovacoesDireto();
+    history.replaceState(null, "", location.pathname);
+  }
 }
 
 /* =====================================================================
@@ -1764,7 +1769,7 @@ window.confirmarPedidoReserva = async function(){
     fecharModal("modal-nova-reserva");
     showToast("Pedido enviado! O síndico foi notificado.");
     carregarMinhasReservas();
-    await notificarSindicoNovoPedido(diaSelecionadoISO, casaNumeroEscolhida);
+    notificarSindicoNovoPedido(reservaId);
     await carregarReservasDoMes();
     renderizarTudo();
   }catch(e){
@@ -1779,16 +1784,15 @@ window.confirmarPedidoReserva = async function(){
   }
 };
 
-async function notificarSindicoNovoPedido(dataIso, casaNumero){
-  if(!window.emailjs || EMAILJS_PUBLIC_KEY.indexOf("COLE_AQUI") !== -1) return;
-  const emailSindico = (condominioData && condominioData.emailSindico) || "";
-  if(!emailSindico) return;
+// Aviso ao síndico: o servidor confere o pedido e manda o e-mail pelo Gmail do app
+async function notificarSindicoNovoPedido(reservaId){
   try{
-    await window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-      to_email: emailSindico,
-      condominio: condominioData.nome || "",
-      data_reserva: formatarDataBR(dataIso),
-      casa: casaNumero
+    const token = await auth.currentUser.getIdToken();
+    await fetch(URL_FN_RELATORIO_EMAIL, {
+      method: "POST",
+      keepalive: true,
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify({ modo: "novoPedido", tenantId: TENANT_ID, reservaId })
     });
   }catch(e){ /* falha de e-mail não deve travar o fluxo do usuário */ }
 }
