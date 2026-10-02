@@ -9,8 +9,9 @@
 
   ARQUITETURA MULTITENANT
   Cada condomínio é um "tenant" dentro do mesmo projeto Firebase do App Massagens.
-  O TENANT_ID abaixo identifica QUAL condomínio esta cópia do arquivo representa.
-  Para publicar o app em outro condomínio, basta duplicar este arquivo e trocar o TENANT_ID.
+  Este arquivo é ÚNICO para todos os condomínios. O condomínio é descoberto ao abrir:
+  1) quem já está logado  2) link com ?c=codigo  3) guardado no aparelho  4) padrão (Gramado).
+  NÃO duplique este arquivo para publicar outro condomínio.
 
   ANTES DE PUBLICAR, revise o arquivo firestore.rules.txt (entregue junto) e
   publique essas regras no Firebase Console > Firestore Database > Regras.
@@ -828,13 +829,14 @@
     </div>
 
     <div class="field">
-      <label>Assunto do e-mail de lembrete de preparação (uso futuro)</label>
-      <input type="text" id="cd-lembrete-assunto" placeholder="ex: Reserva se aproxima — prepare o salão">
+      <label>Assunto do e-mail de lembrete ao síndico</label>
+      <input type="text" id="cd-lembrete-assunto" placeholder="ex: Reserva se aproxima — prepare o salão" oninput="atualizarAlertaLembrete()">
     </div>
     <div class="field">
-      <label>Texto do e-mail de lembrete de preparação (uso futuro)</label>
-      <textarea id="cd-lembrete-texto" rows="4" placeholder="ex: Confira os itens de higiene e reforce a limpeza do salão antes do evento."></textarea>
-      <p style="font-size:11px;color:var(--muted);margin:6px 0 0;">Esse texto já fica salvo, pronto para quando o envio automático desse lembrete for implementado.</p>
+      <label>Texto do e-mail de lembrete ao síndico</label>
+      <textarea id="cd-lembrete-texto" rows="4" placeholder="ex: Confira os itens de higiene e reforce a limpeza do salão antes do evento." oninput="atualizarAlertaLembrete()"></textarea>
+      <p style="font-size:13px;color:var(--muted);margin:6px 0 0;">O síndico recebe este lembrete por e-mail antes de cada festa confirmada. Precisa de assunto e de texto.</p>
+      <div class="rs-aviso" id="cd-lembrete-alerta" style="display:none;margin:10px 0 0;"><i class="ti ti-alert-triangle"></i> <span id="cd-lembrete-alerta-texto"></span></div>
     </div>
 
     <p class="config-subtitulo">Localização (vai no convite dos moradores)</p>
@@ -934,6 +936,17 @@
   </div>
 </div>
 
+<!-- ===================== MODAL: SALVAR SEM LEMBRETE (síndico / dev) ===================== -->
+<div class="modal-wrap" id="modal-sem-lembrete" style="z-index:70;">
+  <div class="modal">
+    <button class="close-x" onclick="voltarParaPreencherLembrete()"><i class="ti ti-x"></i></button>
+    <h3>Salvar sem lembrete?</h3>
+    <div class="rs-aviso"><i class="ti ti-alert-triangle"></i> <span id="sl-texto"></span></div>
+    <button class="btn btn-primary" style="width:100%;margin-bottom:8px;" onclick="voltarParaPreencherLembrete()">Não, voltar e preencher</button>
+    <button class="btn btn-ghost" style="width:100%;" onclick="salvarCondominioSemLembrete()">Sim, salvar assim</button>
+  </div>
+</div>
+
 <!-- ===================== MODAL: RELATÓRIO DE USO (síndico / dev) ===================== -->
 <div class="modal-wrap" id="modal-relatorio">
   <div class="modal">
@@ -1001,9 +1014,38 @@ const firebaseConfig = {
   appId: "1:892386095601:web:509dfbf92b9de90471d450"
 };
 
-// Identificador deste condomínio dentro do projeto Firebase compartilhado.
-// Para publicar em outro condomínio, duplique o arquivo e troque só esta linha.
-const TENANT_ID = "residencial-jardins";
+// Condomínio padrão: é o que abre no link puro (sem ?c=), para não mudar nada
+// para os moradores que já usam o app.
+const TENANT_PADRAO = "residencial-jardins";
+const CHAVE_TENANT_APARELHO = "salaoFestas.condominio";
+const tenantValido = (t)=> /^[a-z0-9-]{1,64}$/.test(String(t || ""));
+function lerTenantDoAparelho(){
+  try{ const t = localStorage.getItem(CHAVE_TENANT_APARELHO); return tenantValido(t) ? t : null; }catch(e){ return null; }
+}
+function guardarTenantNoAparelho(t){
+  try{ if(tenantValido(t)) localStorage.setItem(CHAVE_TENANT_APARELHO, t); }catch(e){ /* sem armazenamento: segue pelo link */ }
+}
+function esquecerTenantDoAparelho(){
+  try{ localStorage.removeItem(CHAVE_TENANT_APARELHO); }catch(e){}
+}
+// O e-mail de login de cada casa já carrega o condomínio: casa07@<condominio>.condominio.app
+function tenantDoEmail(email){
+  const m = /^casa\d+@([a-z0-9-]{1,64})\.condominio\.app$/i.exec(String(email || ""));
+  return m ? m[1].toLowerCase() : null;
+}
+// Ordem de descoberta ao abrir: link ?c=  ->  guardado no aparelho  ->  padrão.
+// (Quem já está logado tem prioridade sobre tudo: é ajustado no onAuthStateChanged.)
+let ORIGEM_TENANT = "padrao";
+function descobrirTenantInicial(){
+  let doLink = null;
+  try{ doLink = (new URLSearchParams(location.search).get("c") || "").trim().toLowerCase(); }catch(e){}
+  if(doLink){ ORIGEM_TENANT = "link"; return tenantValido(doLink) ? doLink : "codigo-invalido"; }
+  const guardado = lerTenantDoAparelho();
+  if(guardado){ ORIGEM_TENANT = "aparelho"; return guardado; }
+  return TENANT_PADRAO;
+}
+let TENANT_ID = descobrirTenantInicial();
+let condominioInexistente = false;
 
 // E-mail com acesso de desenvolvedor (irrestrito), igual ao App Massagens.
 const EMAIL_DESENVOLVEDOR = "souza.iatech@gmail.com";
@@ -1016,7 +1058,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026280001";
+const VERSAO_APP = "2026020001";
 
 /* ===================================================================== */
 
@@ -1280,7 +1322,7 @@ let _promessaCondominio = null;
 function obterDadosCondominio(){
   if(_promessaCondominio) return _promessaCondominio;
   const ref = doc(db, "Condominios", TENANT_ID);
-  const doServidor = getDoc(ref).then(s=> s.exists() ? s.data() : {});
+  const doServidor = getDoc(ref).then(s=> s.exists() ? s.data() : { _naoExiste:true });
   _promessaCondominio = getDocFromCache(ref)
     .then(s=>{
       if(!s.exists()) return doServidor;
@@ -1291,18 +1333,38 @@ function obterDadosCondominio(){
   return _promessaCondominio;
 }
 
+function preencherCabecalhoLogin(d){
+  if(!d || d._naoExiste) return;
+  if(d.nome) document.getElementById("login-nome-condominio").textContent = d.nome;
+  if(d.subtitulo) document.getElementById("login-subtitulo").textContent = d.subtitulo;
+  if(d.fotoBase64){
+    document.getElementById("login-hero-placeholder").style.display = "none";
+    const img = document.getElementById("login-hero-img");
+    img.src = d.fotoBase64;
+    img.style.display = "block";
+  }
+}
+// Link com código de condomínio que não existe: mensagem simples, sem campos de entrada
+function mostrarCondominioInexistente(){
+  const msg = document.getElementById("login-msg");
+  msg.textContent = "Condomínio não encontrado. Confira o link com o síndico.";
+  msg.className = "login-msg err";
+  document.getElementById("bloco-entrar").style.display = "none";
+}
 async function carregarDadosCondominioParaLogin(){
   try{
     const d = await obterDadosCondominio();
-    if(d){
-      if(d.nome) document.getElementById("login-nome-condominio").textContent = d.nome;
-      if(d.subtitulo) document.getElementById("login-subtitulo").textContent = d.subtitulo;
-      if(d.fotoBase64){
-        document.getElementById("login-hero-placeholder").style.display = "none";
-        const img = document.getElementById("login-hero-img");
-        img.src = d.fotoBase64;
-        img.style.display = "block";
+    if(d && d._naoExiste && !auth.currentUser){
+      if(ORIGEM_TENANT === "aparelho"){
+        // O condomínio guardado no aparelho não existe mais: volta ao padrão
+        esquecerTenantDoAparelho();
+        ORIGEM_TENANT = "padrao"; TENANT_ID = TENANT_PADRAO; _promessaCondominio = null;
+        return carregarDadosCondominioParaLogin();
       }
+      if(ORIGEM_TENANT === "link"){ condominioInexistente = true; mostrarCondominioInexistente(); }
+    }else if(d && !d._naoExiste){
+      preencherCabecalhoLogin(d);
+      if(ORIGEM_TENANT === "link") guardarTenantNoAparelho(TENANT_ID);
     }
   }catch(e){ /* segue com os valores padrão */ }
   document.getElementById("tela-carregando").style.display = "none";
@@ -1319,6 +1381,7 @@ onAuthStateChanged(auth, async (user) => {
     ["bloco-confirmar-casa","bloco-trocar-senha","bloco-cadastro"].forEach(id=> document.getElementById(id).style.display = "none");
     document.getElementById("bloco-entrar").style.display = "block";
     document.getElementById("login-hero").style.display = "";
+    if(condominioInexistente) mostrarCondominioInexistente();
     if(document.getElementById("tela-carregando").style.display !== "none" || document.getElementById("tela-login").style.display === "none"){
       // primeira carga ou logout
     }
@@ -1328,6 +1391,19 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   ehDev = (user.email || "").toLowerCase() === EMAIL_DESENVOLVEDOR.toLowerCase();
+
+  // Quem já está logado manda: o condomínio é o da própria conta, mesmo que o link diga outro
+  const tenantDaSessao = tenantDoEmail(user.email);
+  if(tenantDaSessao){
+    if(tenantDaSessao !== TENANT_ID){
+      TENANT_ID = tenantDaSessao;
+      _promessaCondominio = null;
+      cacheReservasMes.clear();
+      obterDadosCondominio().then(preencherCabecalhoLogin).catch(()=>{});
+    }
+    condominioInexistente = false;
+    guardarTenantNoAparelho(tenantDaSessao);
+  }
 
   // localizar o doc da casa pelo email virtual (ou, para o dev, pelo campo uid/email salvo)
   const casasSnap = await getDocs(collection(db, "Condominios", TENANT_ID, "casas"));
@@ -2410,6 +2486,7 @@ window.abrirModal = function(id){
     document.getElementById("cd-aviso-texto").value = condominioData.avisoTexto || "";
     document.getElementById("cd-lembrete-assunto").value = condominioData.lembreteEmailAssunto || "";
     document.getElementById("cd-lembrete-texto").value = condominioData.lembreteEmailTexto || "";
+    atualizarAlertaLembrete();
     document.getElementById("cd-endereco").value = condominioData.endereco || "";
     document.getElementById("cd-maps").value = condominioData.linkMaps || "";
     atualizarStatusMaps();
@@ -2502,7 +2579,31 @@ window.onFotoSalaoSelecionada = function(input){
   reader.readAsDataURL(file);
 };
 
-window.salvarCondominio = async function(){
+// O lembrete só é enviado quando o condomínio tem assunto E texto cadastrados
+function oQueFaltaNoLembrete(){
+  const semAssunto = !document.getElementById("cd-lembrete-assunto").value.trim();
+  const semTexto = !document.getElementById("cd-lembrete-texto").value.trim();
+  if(semAssunto && semTexto) return "o assunto e o texto";
+  if(semAssunto) return "o assunto";
+  if(semTexto) return "o texto";
+  return "";
+}
+window.atualizarAlertaLembrete = function(){
+  const falta = oQueFaltaNoLembrete();
+  document.getElementById("cd-lembrete-alerta").style.display = falta ? "block" : "none";
+  if(falta) document.getElementById("cd-lembrete-alerta-texto").textContent = `Lembrete desligado: falta ${falta}.`;
+};
+window.voltarParaPreencherLembrete = function(){
+  fecharModal("modal-sem-lembrete");
+  const assunto = document.getElementById("cd-lembrete-assunto");
+  (assunto.value.trim() ? document.getElementById("cd-lembrete-texto") : assunto).focus();
+};
+window.salvarCondominioSemLembrete = function(){
+  fecharModal("modal-sem-lembrete");
+  salvarCondominio(true);
+};
+
+window.salvarCondominio = async function(confirmouSemLembrete){
   const nome = document.getElementById("cd-nome").value.trim();
   const subtitulo = document.getElementById("cd-subtitulo").value.trim();
   const emailSindico = document.getElementById("cd-email-sindico").value.trim();
@@ -2521,6 +2622,13 @@ window.salvarCondominio = async function(){
   if(mapsDigitado && !linkMaps){
     showToast("O link da localização precisa ser do Google Maps.");
     document.getElementById("cd-maps").focus();
+    return;
+  }
+  // Lembrete incompleto: avisa do risco e deixa a pessoa escolher (pode gravar vazio)
+  const faltaNoLembrete = oQueFaltaNoLembrete();
+  if(faltaNoLembrete && confirmouSemLembrete !== true){
+    document.getElementById("sl-texto").textContent = `O lembrete por e-mail está sem ${faltaNoLembrete}. Sem isso, o síndico não recebe o lembrete antes das festas. Deseja salvar mesmo assim?`;
+    document.getElementById("modal-sem-lembrete").classList.add("show");
     return;
   }
   const dados = { nome, subtitulo, emailSindico, relatorioAutomatico, avisoTitulo, avisoTexto, lembreteEmailAssunto, lembreteEmailTexto, zeladorNome, zeladorApelido, zeladorWhatsapp, msgZeladorTexto, endereco, linkMaps };
