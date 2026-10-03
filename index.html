@@ -567,6 +567,33 @@
   .cfg-corpo{ display:none; padding:14px 12px 6px; border-top:1px solid var(--line); }
   .cfg-sec.aberta .cfg-corpo{ display:block; }
 
+  /* ===== Locais, preços e áreas do pedido ===== */
+  .local-linha{ display:flex; align-items:center; gap:12px; width:100%; text-align:left; background:#fff; border:1px solid var(--line); border-radius:14px; padding:12px; margin-bottom:8px; font-family:inherit; color:var(--deep); cursor:pointer; }
+  .local-linha .ic{ flex:none; width:42px; height:42px; border-radius:12px; background:linear-gradient(135deg,var(--azul1),var(--azul2)); color:#fff; display:flex; align-items:center; justify-content:center; font-size:21px; }
+  .local-linha.inativo{ opacity:.6; }
+  .local-linha .txt{ flex:1; min-width:0; }
+  .local-linha .t1{ margin:0; font-size:16px; font-weight:600; }
+  .local-linha .t2{ margin:2px 0 0; font-size:14px; color:var(--muted); }
+  .local-linha .v{ flex:none; text-align:right; font-size:16px; font-weight:600; color:var(--accent-d); white-space:nowrap; }
+  .local-linha .v small{ display:block; font-size:12px; font-weight:400; color:var(--muted); }
+  .pill-local{ display:inline-block; font-size:12px; font-weight:600; border-radius:999px; padding:2px 9px; margin-left:6px; vertical-align:middle; }
+  .pill-local.princ{ background:#DBEAFE; color:#1D4ED8; } .pill-local.aces{ background:#EEF2F7; color:#475569; }
+  .area-opc{ display:flex; align-items:center; gap:12px; width:100%; text-align:left; background:#fff; border:2px solid var(--line); border-radius:14px; padding:12px; margin-bottom:8px; font-family:inherit; color:var(--deep); cursor:pointer; min-height:64px; }
+  .area-opc.on{ border-color:var(--accent); background:#F3F8FF; }
+  .area-opc.trava{ cursor:default; }
+  .area-opc .cx{ flex:none; width:28px; height:28px; border-radius:8px; border:2px solid #B8C6DC; display:flex; align-items:center; justify-content:center; color:transparent; font-size:18px; }
+  .area-opc.on .cx{ background:var(--accent); border-color:var(--accent); color:#fff; }
+  .area-opc .txt{ flex:1; min-width:0; }
+  .area-opc .t1{ margin:0; font-size:17px; font-weight:600; }
+  .area-opc .t2{ margin:2px 0 0; font-size:14px; color:var(--muted); }
+  .area-opc .v{ flex:none; font-size:16px; font-weight:600; white-space:nowrap; }
+  .area-total{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; background:var(--deep); color:#fff; border-radius:14px; padding:14px 16px; margin:4px 0 12px; }
+  .area-total span{ font-size:15px; color:#BFDBFE; }
+  .area-total b{ font-size:26px; font-weight:600; }
+  .reserva-areas{ background:var(--soft); border-radius:12px; padding:10px 12px; margin:10px 0 0; font-size:15px; }
+  .reserva-areas .l{ display:flex; justify-content:space-between; gap:10px; padding:3px 0; }
+  .reserva-areas .l.tot{ border-top:1px solid #C9D8F2; margin-top:4px; padding-top:7px; font-weight:600; color:var(--accent-d); }
+
   /* ===== Senha inicial por casa ===== */
   .senha-caixa{ background:var(--soft); border:2px dashed #93B4EE; border-radius:16px; padding:14px; text-align:center; margin:0 0 14px; }
   .senha-caixa .rot{ font-size:15px; color:var(--muted); margin:0 0 4px; }
@@ -891,7 +918,22 @@
       <select id="nr-casa-select"></select>
     </div>
     <div class="field"><label>Observação (opcional)</label><textarea id="nr-obs" rows="3" placeholder="ex: aniversário de 10 anos"></textarea></div>
+    <div class="dev-info" id="nr-valor" style="display:none;margin-bottom:12px;"><i class="ti ti-receipt"></i><span id="nr-valor-texto"></span></div>
     <button class="btn btn-primary" onclick="confirmarPedidoReserva()">Enviar pedido</button>
+  </div>
+</div>
+
+<!-- ===================== MODAL: ÁREAS DO PEDIDO ===================== -->
+<div class="modal-wrap" id="modal-areas">
+  <div class="modal">
+    <button class="close-x" onclick="fecharModal('modal-areas')"><i class="ti ti-x"></i></button>
+    <h3>O que você quer reservar?</h3>
+    <p class="sub" id="ar-data-label">—</p>
+    <div id="ar-lista"></div>
+    <div class="area-total"><span>Subtotal da diária</span><b id="ar-total">R$ 0,00</b></div>
+    <div class="dev-info" style="margin-bottom:12px;"><i class="ti ti-receipt"></i><span>O valor é lançado no boleto do condomínio depois da festa.</span></div>
+    <button class="btn btn-primary" id="ar-btn" style="width:100%;margin-bottom:8px;" onclick="confirmarAreasDoPedido()">Confirmar pedido</button>
+    <button class="btn btn-ghost" style="width:100%;" onclick="fecharModal('modal-areas')">Voltar</button>
   </div>
 </div>
 
@@ -952,7 +994,7 @@
     <input type="file" id="cd-foto-input" accept="image/*" style="display:none;" onchange="onFotoCondominioSelecionada(this)">
     <div class="field"><label>Nome do condomínio</label><input type="text" id="cd-nome"></div>
     <div class="field"><label>Subtítulo</label><input type="text" id="cd-subtitulo"></div>
-    <div class="field"><label>E-mail do síndico (recebe notificações)</label><input type="text" id="cd-email-sindico"></div>
+    <div class="field"><label>E-mails dos síndicos (recebem as notificações)</label><input type="text" id="cd-email-sindico" autocapitalize="none" autocomplete="off"><p style="font-size:13px;color:var(--muted);margin:6px 0 0;">Para mais de um síndico, separe os e-mails por vírgula.</p></div>
     <div class="field">
       <label>Foto do salão (marca d'água no botão "Reserva do Salão")</label>
       <div style="display:flex;align-items:center;gap:12px;">
@@ -981,6 +1023,18 @@
     </div>
     <button class="btn btn-ghost" type="button" onclick="testarLinkMaps()"><i class="ti ti-map"></i> Testar no mapa</button>
     <div class="dica-maps"><b>Como pegar o link</b><br>1. Abra o Google Maps e procure o condomínio.<br>2. Toque em "Compartilhar".<br>3. Toque em "Copiar link" e cole aqui.</div>
+      </div>
+    </div>
+    <div class="cfg-sec" id="cfg-sec-locais">
+      <button type="button" class="cfg-cab" onclick="alternarSecaoConfig('locais')" aria-expanded="false">
+        <span class="ic"><i class="ti ti-building-pavilion"></i></span>
+        <span class="txt"><span class="t1">Locais e preços</span><span class="t2" id="cfg-res-locais"></span></span>
+        <i class="ti ti-chevron-right seta"></i>
+      </button>
+      <div class="cfg-corpo">
+        <div id="cd-locais-lista"></div>
+        <p style="font-size:14px;color:var(--muted);margin:4px 0 12px;line-height:1.45;">O salão é o local principal e entra em todo pedido. Os demais são acessórios, pedidos junto com o salão. Com só o salão cadastrado, o pedido de reserva fica igual ao de hoje.</p>
+        <button class="btn btn-ghost" type="button" style="width:100%;margin-bottom:8px;" onclick="abrirEdicaoLocal(null)"><i class="ti ti-plus"></i> Adicionar local</button>
       </div>
     </div>
     <div class="cfg-sec" id="cfg-sec-aviso">
@@ -1108,6 +1162,12 @@
       <h3 id="rs-titulo">Resetar senha?</h3>
       <p class="sub" id="rs-responsavel" style="margin:-6px 0 14px;"></p>
       <div class="rs-aviso"><i class="ti ti-alert-triangle"></i> O app gera uma <b>nova senha inicial</b> para a casa. O morador será desconectado dos aparelhos e terá que criar uma senha nova no próximo login.</div>
+      <label class="auto-switch" for="rs-troca">
+        <span class="txt"><b>A casa mudou de morador</b><span>Apaga o nome, o celular e o e-mail do morador anterior. Se a casa era de síndico, volta a ser de morador. O novo morador completa o cadastro no primeiro acesso.</span></span>
+        <input type="checkbox" id="rs-troca" role="switch" onchange="aoMudarTrocaMorador()">
+        <span class="trilho" aria-hidden="true"></span>
+      </label>
+      <div class="field" id="rs-campo-celular" style="display:none;"><label>Celular do novo morador (WhatsApp)</label><input type="text" id="rs-celular-novo" placeholder="(00) 00000-0000" inputmode="tel" autocomplete="off" oninput="mascararTelefoneZelador(this)"><p style="font-size:13px;color:var(--muted);margin:6px 0 0;">Opcional. Com o celular, você envia a senha direto pelo WhatsApp.</p></div>
       <button class="btn btn-primary" id="rs-btn-confirmar" style="width:100%;margin-bottom:8px;" onclick="confirmarResetSenha()">Resetar senha</button>
       <button class="btn btn-ghost" style="width:100%;" onclick="fecharModal('modal-reset-senha')">Cancelar</button>
     </div>
@@ -1118,6 +1178,24 @@
       <p class="sub" id="rs-sem-telefone" style="margin:0 0 12px;display:none;">Esta casa não tem telefone cadastrado. Avise o morador de outra forma.</p>
       <button class="btn btn-ghost" style="width:100%;" onclick="fecharModal('modal-reset-senha')">Fechar</button>
     </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL: CADASTRO DE LOCAL (síndico / dev) ===================== -->
+<div class="modal-wrap" id="modal-local" data-fixo="1" style="z-index:70;">
+  <div class="modal">
+    <h3 id="lc-titulo">Novo local</h3>
+    <div class="field"><label>Nome do local *</label><input type="text" id="lc-nome" maxlength="40" autocomplete="off" placeholder="Ex.: Piscina"></div>
+    <div class="field"><label>Valor da diária (R$) *</label><input type="text" id="lc-diaria" inputmode="decimal" autocomplete="off" placeholder="0,00"><p style="font-size:13px;color:var(--muted);margin:6px 0 0;">Use 0,00 se o local não tiver cobrança.</p></div>
+    <label class="auto-switch" for="lc-ativo" id="lc-ativo-linha">
+      <span class="txt"><b>Disponível para reserva</b><span>Desligue para tirar do pedido sem apagar.</span></span>
+      <input type="checkbox" id="lc-ativo" role="switch">
+      <span class="trilho" aria-hidden="true"></span>
+    </label>
+    <div class="dev-info" style="margin-bottom:12px;"><i class="ti ti-link"></i><span id="lc-nota"></span></div>
+    <button class="btn btn-primary btn-linha" onclick="salvarEdicaoLocal()"><i class="ti ti-check"></i> Salvar local</button>
+    <button class="btn btn-danger btn-linha" id="lc-btn-excluir" onclick="excluirLocalEmEdicao()"><i class="ti ti-trash"></i> Excluir local</button>
+    <button class="btn btn-ghost btn-linha" onclick="fecharModal('modal-local')">Cancelar</button>
   </div>
 </div>
 
@@ -1302,7 +1380,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026030005";
+const VERSAO_APP = "2026030006";
 
 /* ===================================================================== */
 
@@ -1342,6 +1420,54 @@ let reservasDoMes = [];
 let todasAsCasas = [];
 let diaSelecionadoISO = null;
 
+/* ---------- locais para alugar e valores (diária) ---------- */
+const LOCAL_PRINCIPAL_PADRAO = { id:"salao", nome:"Salão de festas", diaria:0, ativo:true, principal:true };
+// Lista de locais do condomínio, sempre com o principal (salão) em primeiro
+function locaisDoCondominio(dados){
+  const bruto = Array.isArray(dados && dados.locais) ? dados.locais : [];
+  const limpos = bruto.filter(l=> l && l.id && l.nome).map(l=> ({
+    id: String(l.id), nome: String(l.nome).slice(0, 40), diaria: Math.max(0, Number(l.diaria) || 0),
+    ativo: l.ativo !== false, principal: !!l.principal
+  }));
+  if(!limpos.some(l=> l.principal)) limpos.unshift({ ...LOCAL_PRINCIPAL_PADRAO });
+  const principal = limpos.find(l=> l.principal);
+  principal.ativo = true;
+  return [principal, ...limpos.filter(l=> l !== principal).map(l=> ({ ...l, principal:false }))];
+}
+function formatarReais(n){
+  return "R$ " + (Number(n) || 0).toLocaleString("pt-BR", { minimumFractionDigits:2, maximumFractionDigits:2 });
+}
+// "80", "80,5", "1.250,00" ou "80.50" -> número; inválido -> NaN
+function lerReais(txt){
+  let v = String(txt || "").replace(/[^\d,.]/g, "");
+  if(!v) return NaN;
+  if(v.includes(",")) v = v.replace(/\./g, "").replace(",", ".");
+  const n = parseFloat(v);
+  return isFinite(n) && n >= 0 ? Math.round(n * 100) / 100 : NaN;
+}
+function totalDasAreas(areas){ return Math.round((areas || []).reduce((t,a)=> t + (Number(a.diaria) || 0), 0) * 100) / 100; }
+function nomesDasAreas(areas){ return (areas || []).map(a=> a.nome).join(" + "); }
+// O condomínio guarda em emailSindico os e-mails de TODOS os síndicos, separados por vírgula
+function listaDeEmails(txt){
+  return String(txt || "").split(/[,;\s]+/).map(e=> e.trim().toLowerCase())
+    .filter(e=> emailValido(e)).filter((e,i,a)=> a.indexOf(e) === i);
+}
+async function ajustarEmailsSindico({ adicionar, remover }){
+  let atual = (condominioData && condominioData.emailSindico) || "";
+  try{
+    const s = await getDoc(doc(db, "Condominios", TENANT_ID));
+    if(s.exists()) atual = s.data().emailSindico || "";
+  }catch(e){ /* usa o que já está em memória */ }
+  let lista = listaDeEmails(atual);
+  const r = String(remover || "").trim().toLowerCase();
+  const a = String(adicionar || "").trim().toLowerCase();
+  if(r && r !== a) lista = lista.filter(e=> e !== r);
+  if(a && emailValido(a) && !lista.includes(a)) lista.push(a);
+  const novo = lista.join(", ");
+  await setDoc(doc(db, "Condominios", TENANT_ID), { emailSindico: novo }, { merge:true });
+  if(condominioData) condominioData.emailSindico = novo;
+}
+
 /* ---------- senha inicial de cada casa ---------- */
 // Número da casa (2 dígitos ou mais) + 4 dígitos aleatórios. Ex.: Casa 7 -> 07 + 4831.
 // Vale só até o primeiro acesso, quando o morador cria a própria senha.
@@ -1361,7 +1487,7 @@ function mostrarSenhaInicial(info){
   // info: { numero, telefone, nome, senha, modo: "nova" | "reset" }
   senhaInicialAtual = info;
   const temCelular = celularValido(info.telefone);
-  document.getElementById("si-titulo").textContent = info.modo === "reset" ? "Senha resetada" : `Casa ${info.numero} cadastrada`;
+  document.getElementById("si-titulo").textContent = info.modo === "reset" ? "Senha resetada" : info.modo === "troca" ? `Casa ${info.numero} pronta para o novo morador` : `Casa ${info.numero} cadastrada`;
   document.getElementById("si-rotulo").textContent = (info.modo === "reset" ? "Nova senha inicial da Casa " : "Senha inicial da Casa ") + info.numero;
   document.getElementById("si-senha").textContent = info.senha;
   document.getElementById("si-aviso").textContent = temCelular
@@ -1627,10 +1753,11 @@ window.salvarCadastroObrigatorio = async function(){
     return;
   }
   try{
+    const emailAnteriorDaCasa = casaAtual.emailContato;
     await updateDoc(doc(db, "Condominios", TENANT_ID, "casas", casaAtualId), { nomeResponsavel: nome, telefone, emailContato, apelido });
     casaAtual.nomeResponsavel = nome; casaAtual.telefone = telefone; casaAtual.emailContato = emailContato; casaAtual.apelido = apelido;
     if(ehSindico){
-      await setDoc(doc(db, "Condominios", TENANT_ID), { emailSindico: emailContato }, { merge:true });
+      await ajustarEmailsSindico({ adicionar: emailContato, remover: emailAnteriorDaCasa });
     }
     msg.textContent = ""; msg.className = "login-msg";
     showToast("Cadastro concluído. Bem-vindo(a)!");
@@ -2369,6 +2496,10 @@ function abrirDetalheDia(iso, reserva){
       const casaNome = (todasAsCasas.find(c=>c.id===reserva.casaId)||{}).apelido || (todasAsCasas.find(c=>c.id===reserva.casaId)||{}).numero || "—";
       html += `<p style="margin:14px 0 4px;font-size:13px;">Reservado por: <b>Casa ${reserva.casaNumero || ""} ${reserva.casaId===casaAtualId ? "(você)" : ""}</b></p>`;
       if(reserva.observacao) html += `<p style="margin:0;font-size:13px;color:var(--muted);">${escaparHtml(reserva.observacao)}</p>`;
+      if(Array.isArray(reserva.areas) && reserva.areas.length){
+        html += `<div class="reserva-areas">` + reserva.areas.map(a=> `<div class="l"><span>${escaparHtml(a.nome)}</span><span>${formatarReais(a.diaria)}</span></div>`).join("")
+             +  `<div class="l tot"><span>Total da diária</span><span>${formatarReais(reserva.valorTotal != null ? reserva.valorTotal : totalDasAreas(reserva.areas))}</span></div></div>`;
+      }
     }else{
       html += `<p style="margin:14px 0 0;font-size:13px;color:var(--muted);">Quem reservou fica visível só para o síndico.</p>`;
     }
@@ -2435,6 +2566,11 @@ function abrirNovaReserva(iso, paraQuem){
   diaSelecionadoISO = iso;
   document.getElementById("nr-data-label").textContent = formatarDataBR(iso);
   document.getElementById("nr-obs").value = "";
+  // Só o salão, mas com diária: avisa o valor (com mais locais, o valor aparece na escolha das áreas)
+  const locaisPedido = locaisDoPedido();
+  const mostraValor = locaisPedido.length === 1 && locaisPedido[0].diaria > 0;
+  document.getElementById("nr-valor").style.display = mostraValor ? "flex" : "none";
+  if(mostraValor) document.getElementById("nr-valor-texto").textContent = `Diária do salão: ${formatarReais(locaisPedido[0].diaria)}. O valor é lançado no boleto do condomínio depois da festa.`;
 
   const campoCasa = document.getElementById("nr-campo-casa");
   const select = document.getElementById("nr-casa-select");
@@ -2472,8 +2608,63 @@ window.escolherParaQuem = function(opcao){
   abrirNovaReserva(diaSelecionadoISO, opcao === "outro" ? "outro" : "mim");
 };
 
+// Locais que podem entrar no pedido: o principal (salão) e os acessórios disponíveis
+function locaisDoPedido(){ return locaisDoCondominio(condominioData).filter(l=> l.principal || l.ativo); }
+let areasMarcadas = new Set();
+function atualizarTotalDasAreas(){
+  const escolhidas = locaisDoPedido().filter(l=> l.principal || areasMarcadas.has(l.id));
+  document.getElementById("ar-total").textContent = formatarReais(totalDasAreas(escolhidas));
+}
+function abrirEscolhaDeAreas(){
+  areasMarcadas = new Set();
+  document.getElementById("ar-data-label").textContent = formatarDataBR(diaSelecionadoISO);
+  const caixa = document.getElementById("ar-lista");
+  caixa.innerHTML = "";
+  locaisDoPedido().forEach(l=>{
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "area-opc" + (l.principal ? " on trava" : "");
+    b.setAttribute("role", "checkbox");
+    b.setAttribute("aria-checked", l.principal ? "true" : "false");
+    b.innerHTML = '<span class="cx"><i class="ti"></i></span><span class="txt"><p class="t1"></p><p class="t2"></p></span><span class="v"></span>';
+    b.querySelector(".cx i").classList.add(l.principal ? "ti-lock" : "ti-check");
+    b.querySelector(".t1").textContent = l.nome;
+    b.querySelector(".t2").textContent = l.principal ? "Sempre incluído" : "Opcional";
+    b.querySelector(".v").textContent = formatarReais(l.diaria);
+    if(!l.principal){
+      b.onclick = ()=>{
+        if(areasMarcadas.has(l.id)) areasMarcadas.delete(l.id); else areasMarcadas.add(l.id);
+        const on = areasMarcadas.has(l.id);
+        b.classList.toggle("on", on);
+        b.setAttribute("aria-checked", on ? "true" : "false");
+        atualizarTotalDasAreas();
+      };
+    }
+    caixa.appendChild(b);
+  });
+  atualizarTotalDasAreas();
+  const btn = document.getElementById("ar-btn");
+  btn.disabled = false; btn.textContent = "Confirmar pedido";
+  document.getElementById("modal-areas").classList.add("show");
+}
+window.confirmarAreasDoPedido = async function(){
+  const btn = document.getElementById("ar-btn");
+  btn.disabled = true; btn.textContent = "Enviando...";
+  const escolhidas = locaisDoPedido().filter(l=> l.principal || areasMarcadas.has(l.id));
+  fecharModal("modal-areas");
+  await enviarPedidoReserva(escolhidas);
+};
+// Botão "Enviar pedido": com mais de um local, abre antes a escolha das áreas
 window.confirmarPedidoReserva = async function(){
+  const locais = locaisDoPedido();
+  if(locais.length > 1){ abrirEscolhaDeAreas(); return; }
+  // Só o salão: igual a sempre. Se ele tem diária, o valor vai junto no pedido.
+  await enviarPedidoReserva(locais[0].diaria > 0 ? [locais[0]] : null);
+};
+async function enviarPedidoReserva(areasEscolhidas){
   const obs = document.getElementById("nr-obs").value.trim();
+  const areas = Array.isArray(areasEscolhidas) && areasEscolhidas.length
+    ? areasEscolhidas.map(l=> ({ id:l.id, nome:l.nome, diaria: Number(l.diaria) || 0 })) : null;
   let casaIdEscolhida = casaAtualId;
   let casaNumeroEscolhida = casaAtual.numero;
   const campoCasaVisivel = document.getElementById("nr-campo-casa").style.display === "block";
@@ -2500,7 +2691,8 @@ window.confirmarPedidoReserva = async function(){
         observacao: obs,
         status: "pendente",
         criadoPor: casaAtualId,
-        criadoEm: serverTimestamp()
+        criadoEm: serverTimestamp(),
+        ...(areas ? { areas, valorTotal: totalDasAreas(areas) } : {})
       });
     });
     fecharModal("modal-nova-reserva");
@@ -2519,7 +2711,7 @@ window.confirmarPedidoReserva = async function(){
     }
     showToast("Não foi possível enviar o pedido. Tente novamente.");
   }
-};
+}
 
 // Aviso ao síndico: o servidor confere o pedido e manda o e-mail pelo Gmail do app
 async function notificarSindicoNovoPedido(reservaId){
@@ -3019,7 +3211,14 @@ function itemReservaEl(r, mostrarCasa=false, comAcoes=false){
   const pill = document.createElement("span");
   pill.className = "pill " + r.status;
   pill.innerHTML = `<i class="ti ${iconeStatus(r.status)}"></i>${legendaStatus(r.status)}`;
-  info.appendChild(t1); info.appendChild(t2); info.appendChild(pill);
+  info.appendChild(t1); info.appendChild(t2);
+  if(vejoQuem && Array.isArray(r.areas) && r.areas.length){
+    const t3 = document.createElement("p");
+    t3.className = "t2";
+    t3.textContent = nomesDasAreas(r.areas) + " · " + formatarReais(r.valorTotal != null ? r.valorTotal : totalDasAreas(r.areas));
+    info.appendChild(t3);
+  }
+  info.appendChild(pill);
 
   wrap.appendChild(dia); wrap.appendChild(info);
 
@@ -3059,11 +3258,11 @@ window.salvarPerfil = async function(){
     return;
   }
   try{
+    const emailAnteriorDaCasa = casaAtual.emailContato;
     await updateDoc(doc(db, "Condominios", TENANT_ID, "casas", casaAtualId), { apelido, nomeResponsavel: nome, telefone, emailContato });
     casaAtual.apelido = apelido; casaAtual.nomeResponsavel = nome; casaAtual.telefone = telefone; casaAtual.emailContato = emailContato;
     if(ehSindico){
-      await setDoc(doc(db, "Condominios", TENANT_ID), { emailSindico: emailContato }, { merge:true });
-      condominioData.emailSindico = emailContato;
+      await ajustarEmailsSindico({ adicionar: emailContato, remover: emailAnteriorDaCasa });
     }
     document.getElementById("drawer-nome").textContent = nome || `Casa ${casaAtual.numero}`;
     renderizarBannerStatus();
@@ -3133,6 +3332,8 @@ window.abrirModal = function(id){
       document.getElementById("cd-foto-salao-preview").style.display = "block";
       document.getElementById("cd-foto-salao-icone").style.display = "none";
     }
+    locaisEdicao = locaisDoCondominio(condominioData);
+    renderizarLocaisConfig();
     definirSecaoConfig(null);     // abre com todas as seções fechadas
     atualizarResumosConfig();
   }
@@ -3210,7 +3411,71 @@ window.onFotoSalaoSelecionada = function(input){
 };
 
 /* ---------- Configurações em seções (abre uma por vez) ---------- */
-const SECOES_CONFIG = ["dados","local","aviso","lembrete","zelador","relatorio"];
+const SECOES_CONFIG = ["dados","local","locais","aviso","lembrete","zelador","relatorio"];
+let locaisEdicao = [];        // cópia editada na tela; só grava no "Salvar alterações"
+let localEmEdicao = null;     // id do local aberto no cadastro (null = novo)
+function renderizarLocaisConfig(){
+  const caixa = document.getElementById("cd-locais-lista");
+  caixa.innerHTML = "";
+  locaisEdicao.forEach(l=>{
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "local-linha" + (l.ativo ? "" : " inativo");
+    b.innerHTML = '<span class="ic"><i class="ti"></i></span><span class="txt"><p class="t1"><span class="n"></span><span class="pill-local"></span></p><p class="t2"></p></span><span class="v"><span class="n2"></span><small>Diária</small></span>';
+    b.querySelector(".ic i").classList.add(l.principal ? "ti-building-pavilion" : "ti-plus");
+    b.querySelector(".n").textContent = l.nome;
+    const pill = b.querySelector(".pill-local");
+    pill.textContent = l.principal ? "Principal" : "Acessório";
+    pill.classList.add(l.principal ? "princ" : "aces");
+    b.querySelector(".t2").textContent = l.principal ? "Sempre incluído no pedido" : (l.ativo ? "Opcional no pedido" : "Indisponível no momento");
+    b.querySelector(".n2").textContent = formatarReais(l.diaria);
+    b.onclick = ()=> abrirEdicaoLocal(l.id);
+    caixa.appendChild(b);
+  });
+}
+window.abrirEdicaoLocal = function(id){
+  const l = id ? locaisEdicao.find(x=> x.id === id) : null;
+  localEmEdicao = l ? l.id : null;
+  const principal = !!(l && l.principal);
+  document.getElementById("lc-titulo").textContent = l ? "Editar local" : "Novo local";
+  document.getElementById("lc-nome").value = l ? l.nome : "";
+  document.getElementById("lc-diaria").value = l ? (Number(l.diaria) || 0).toLocaleString("pt-BR", { minimumFractionDigits:2, maximumFractionDigits:2 }) : "";
+  document.getElementById("lc-ativo").checked = l ? l.ativo : true;
+  document.getElementById("lc-ativo-linha").style.display = principal ? "none" : "flex";
+  document.getElementById("lc-btn-excluir").style.display = (l && !principal) ? "flex" : "none";
+  document.getElementById("lc-nota").textContent = principal
+    ? "Local principal: entra em todo pedido de reserva."
+    : "Acessório: só aparece no pedido junto com o salão de festas.";
+  document.getElementById("modal-local").classList.add("show");
+};
+window.salvarEdicaoLocal = function(){
+  const nome = document.getElementById("lc-nome").value.replace(/\s+/g, " ").trim();
+  const diaria = lerReais(document.getElementById("lc-diaria").value || "0");
+  if(nome.length < 2){ showToast("Informe o nome do local."); document.getElementById("lc-nome").focus(); return; }
+  if(isNaN(diaria)){ showToast("Informe o valor da diária. Use 0,00 se não houver cobrança."); document.getElementById("lc-diaria").focus(); return; }
+  if(locaisEdicao.some(x=> x.id !== localEmEdicao && x.nome.toLowerCase() === nome.toLowerCase())){ showToast("Já existe um local com este nome."); return; }
+  const atual = localEmEdicao ? locaisEdicao.find(x=> x.id === localEmEdicao) : null;
+  if(atual){
+    atual.nome = nome; atual.diaria = diaria;
+    if(!atual.principal) atual.ativo = document.getElementById("lc-ativo").checked;
+  }else{
+    if(locaisEdicao.length >= 8){ showToast("Limite de 8 locais por condomínio."); return; }
+    locaisEdicao.push({ id: "l" + Date.now().toString(36), nome, diaria, ativo: document.getElementById("lc-ativo").checked, principal:false });
+  }
+  fecharModal("modal-local");
+  renderizarLocaisConfig();
+  atualizarResumosConfig();
+  showToast("Local anotado. Toque em Salvar alterações para gravar.");
+};
+window.excluirLocalEmEdicao = function(){
+  const l = locaisEdicao.find(x=> x.id === localEmEdicao);
+  if(!l || l.principal) return;
+  locaisEdicao = locaisEdicao.filter(x=> x.id !== l.id);
+  fecharModal("modal-local");
+  renderizarLocaisConfig();
+  atualizarResumosConfig();
+  showToast("Local removido. Toque em Salvar alterações para gravar.");
+};
 function definirSecaoConfig(nome){
   SECOES_CONFIG.forEach(n=>{
     const el = document.getElementById("cfg-sec-" + n);
@@ -3233,6 +3498,8 @@ function atualizarResumosConfig(){
   por("dados", v("cd-nome") || "Sem nome cadastrado", !v("cd-nome"));
   const temEnd = !!v("cd-endereco"), temMapa = !!v("cd-maps");
   por("local", temEnd && temMapa ? "Endereço e link do mapa" : temEnd ? "Só endereço, sem link do mapa" : temMapa ? "Só link do mapa, sem endereço" : "Não cadastrada");
+  const semCobranca = locaisEdicao.every(l=> !l.diaria);
+  por("locais", locaisEdicao.length > 1 ? `${locaisEdicao.length} locais cadastrados` : (semCobranca ? "Só o salão, sem cobrança" : `Só o salão · ${formatarReais(locaisEdicao[0].diaria)}`));
   por("aviso", (v("cd-aviso-titulo") || v("cd-aviso-texto")) ? "Com aviso publicado" : "Sem aviso");
   const falta = oQueFaltaNoLembrete();
   por("lembrete", falta ? `Desligado: falta ${falta}` : "Ligado", !!falta);
@@ -3270,7 +3537,14 @@ window.salvarCondominioSemLembrete = function(){
 window.salvarCondominio = async function(confirmouSemLembrete){
   const nome = document.getElementById("cd-nome").value.trim();
   const subtitulo = document.getElementById("cd-subtitulo").value.trim();
-  const emailSindico = document.getElementById("cd-email-sindico").value.trim();
+  const emailsDigitados = document.getElementById("cd-email-sindico").value.trim();
+  const emailSindico = listaDeEmails(emailsDigitados).join(", ");
+  if(emailsDigitados && !emailSindico){
+    showToast("Confira os e-mails dos síndicos. Para mais de um, separe por vírgula.");
+    definirSecaoConfig("dados");
+    document.getElementById("cd-email-sindico").focus();
+    return;
+  }
   const avisoTitulo = document.getElementById("cd-aviso-titulo").value.trim();
   const avisoTexto = document.getElementById("cd-aviso-texto").value.trim();
   const lembreteEmailAssunto = document.getElementById("cd-lembrete-assunto").value.trim();
@@ -3297,6 +3571,7 @@ window.salvarCondominio = async function(confirmouSemLembrete){
     return;
   }
   const dados = { nome, subtitulo, emailSindico, relatorioAutomatico, avisoTitulo, avisoTexto, lembreteEmailAssunto, lembreteEmailTexto, zeladorNome, zeladorApelido, zeladorWhatsapp, msgZeladorTexto, endereco, linkMaps };
+  dados.locais = locaisEdicao.map(l=> ({ id:l.id, nome:l.nome, diaria:l.diaria, ativo:l.ativo, principal:l.principal }));
   if(condominioData._novaFoto) dados.fotoBase64 = condominioData._novaFoto;
   if(condominioData._novaFotoSalao) dados.fotoSalao = condominioData._novaFotoSalao;
   try{
@@ -3388,10 +3663,13 @@ window.alternarPapelCasa = async function(casaId, papelAtual){
   try{
     const dados = { papel: novoPapel };
     if(novoPapel === "sindico") dados.emailContato = emailContato;
+    const emailAnteriorDaCasa = casa ? casa.emailContato : "";
     await updateDoc(doc(db, "Condominios", TENANT_ID, "casas", casaId), dados);
     if(novoPapel === "sindico"){
-      await setDoc(doc(db, "Condominios", TENANT_ID), { emailSindico: emailContato }, { merge:true });
-      condominioData.emailSindico = emailContato;
+      await ajustarEmailsSindico({ adicionar: emailContato, remover: emailAnteriorDaCasa });
+    }else{
+      // deixou de ser síndico: para de receber as notificações
+      await ajustarEmailsSindico({ remover: emailAnteriorDaCasa });
     }
     if(casa){ casa.papel = novoPapel; if(novoPapel === "sindico") casa.emailContato = emailContato; }
     if(casaId === casaAtualId){
@@ -3447,12 +3725,25 @@ window.abrirResetSenha = function(casaId){
   document.getElementById("rs-etapa-feito").style.display = "none";
   const b = document.getElementById("rs-btn-confirmar");
   b.disabled = false; b.textContent = "Resetar senha";
+  document.getElementById("rs-troca").checked = false;
+  document.getElementById("rs-celular-novo").value = "";
+  document.getElementById("rs-campo-celular").style.display = "none";
   document.getElementById("modal-reset-senha").classList.add("show");
+};
+window.aoMudarTrocaMorador = function(){
+  document.getElementById("rs-campo-celular").style.display = document.getElementById("rs-troca").checked ? "block" : "none";
 };
 
 window.confirmarResetSenha = async function(){
   const c = todasAsCasas.find(x=> x.id === casaResetId);
   if(!c) return;
+  const trocaDeMorador = document.getElementById("rs-troca").checked;
+  const celularNovo = document.getElementById("rs-celular-novo").value.trim();
+  if(trocaDeMorador && celularNovo && !celularValido(celularNovo)){
+    showToast("Informe o celular com DDD: (00) 00000-0000, ou deixe em branco.");
+    document.getElementById("rs-celular-novo").focus();
+    return;
+  }
   const b = document.getElementById("rs-btn-confirmar");
   b.disabled = true; b.textContent = "Resetando...";
   try{
@@ -3465,11 +3756,20 @@ window.confirmarResetSenha = async function(){
     const dados = await resp.json().catch(()=> ({}));
     if(!resp.ok || !dados.ok) throw new Error(dados.erro || "Não foi possível resetar a senha.");
     c.senhaTrocada = false;
+    if(trocaDeMorador){
+      // Casa mudou de morador: apaga os dados do anterior; o novo completa o cadastro no primeiro acesso
+      const emailAnterior = c.emailContato;
+      const eraSindico = c.papel === "sindico";
+      await updateDoc(doc(db, "Condominios", TENANT_ID, "casas", c.id), { nomeResponsavel:"", apelido:"", emailContato:"", telefone: celularNovo, papel:"morador" });
+      c.nomeResponsavel = ""; c.apelido = ""; c.emailContato = ""; c.telefone = celularNovo; c.papel = "morador";
+      // O novo morador não herda a função de síndico nem os e-mails de notificação
+      if(eraSindico && emailAnterior) await ajustarEmailsSindico({ remover: emailAnterior }).catch(()=>{});
+    }
     renderizarListaCasas();
     fecharModal("modal-reset-senha");
     // O servidor gera a nova senha inicial e devolve só nesta resposta
     // (versão antiga da função não devolve: nesse caso a senha voltou para 123456)
-    mostrarSenhaInicial({ numero: c.numero, telefone: c.telefone, nome: c.nomeResponsavel || c.apelido || "", senha: dados.senha || "123456", modo: "reset" });
+    mostrarSenhaInicial({ numero: c.numero, telefone: c.telefone, nome: c.nomeResponsavel || c.apelido || "", senha: dados.senha || "123456", modo: trocaDeMorador ? "troca" : "reset" });
   }catch(e){
     showToast(e.message || "Não foi possível resetar a senha.");
     b.disabled = false; b.textContent = "Resetar senha";
@@ -3520,7 +3820,7 @@ window.cadastrarNovaCasa = async function(){
       senhaTrocada: false, uid: novoUid, criadoEm: serverTimestamp()
     });
     if(papel === "sindico"){
-      await setDoc(doc(db, "Condominios", TENANT_ID), { emailSindico: emailContato }, { merge:true });
+      await ajustarEmailsSindico({ adicionar: emailContato });
     }
     todasAsCasas.push({ id: novoUid, numero, papel, apelido:"", nomeResponsavel:"", telefone: celular, emailContato, senhaTrocada: false, uid: novoUid });
     todasAsCasas.sort((a,b)=> (a.numero+"").localeCompare(b.numero+"", "pt-BR", {numeric:true}));
@@ -3727,7 +4027,7 @@ function atualizarAvisoRelatorioAuto(){
 window.abrirEnvioEmailRelatorio = function(){
   const box = document.getElementById("rel-email-box");
   const input = document.getElementById("rel-email-destino");
-  if(!input.value) input.value = (condominioData && condominioData.emailSindico) || (casaAtual && casaAtual.emailContato) || "";
+  if(!input.value) input.value = listaDeEmails(condominioData && condominioData.emailSindico)[0] || (casaAtual && casaAtual.emailContato) || "";
   box.style.display = box.style.display === "none" ? "block" : "none";
 };
 
