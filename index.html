@@ -11,8 +11,9 @@
   Cada condomínio é um "tenant" dentro do mesmo projeto Firebase do App Massagens.
   Este arquivo é ÚNICO para todos os condomínios. O condomínio é descoberto ao abrir:
   1) quem já está logado  2) link com ?c=codigo  3) guardado no aparelho
-  4) no endereço antigo (salao-festas-residencial-gramado), padrão Gramado; no endereço
-     oficial (agende-festas), tela genérica "Agende & Festas".
+  4) sem nenhum dos três: tela genérica "Agende & Festas".
+  O endereço antigo (salao-festas-residencial-gramado) só encaminha para o oficial
+  (agende-festas), já com ?c=residencial-jardins.
   NÃO duplique este arquivo para publicar outro condomínio.
 
   ANTES DE PUBLICAR, revise o arquivo firestore.rules.txt (entregue junto) e
@@ -23,6 +24,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+/* Endereço antigo (salao-festas-residencial-gramado): encaminha para o endereço oficial,
+   já no condomínio Gramado. Mantém o resto do link (ex.: ?aba=aprovacoes). */
+(function(){
+  if(location.hostname === "salao-festas-residencial-gramado.vercel.app"){
+    var p = new URLSearchParams(location.search);
+    if(!p.has("dev")) p.set("c", "residencial-jardins");   // o endereço antigo serve só ao Gramado
+    var q = p.toString().replace(/(^|&)dev=(&|$)/, "$1dev$2");
+    location.replace("https://agende-festas.vercel.app/" + (q ? "?" + q : "") + location.hash);
+  }
+})();
+</script>
 <title>Salão de Festas — Condomínio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -1176,7 +1189,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026030001";
+const VERSAO_APP = "2026030002";
 
 /* ===================================================================== */
 
