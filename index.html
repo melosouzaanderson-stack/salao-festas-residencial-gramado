@@ -589,6 +589,12 @@
   .dev-vazio{ font-size:16px; color:var(--muted); text-align:center; padding:24px 8px; margin:0; }
   .dev-condo{ display:flex; align-items:center; gap:12px; width:100%; text-align:left; background:#fff; border:1px solid var(--line); border-radius:16px; padding:14px; font-family:inherit; color:var(--deep); cursor:pointer; }
   .dev-condo:active{ transform:scale(.98); }
+  .dev-condo-linha{ display:flex; align-items:stretch; gap:8px; }
+  .dev-condo-linha .dev-condo{ flex:1; min-width:0; }
+  .dev-opcoes{ flex:none; width:52px; border:1px solid var(--line); border-radius:16px; background:#fff; color:var(--accent-d); font-size:22px; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .dev-opcoes:active{ transform:scale(.96); }
+  .dev-link-caixa{ background:var(--soft); border-radius:12px; padding:10px 12px; font-size:15px; color:#1E3A8A; word-break:break-all; margin:0 0 14px; user-select:all; }
+  .modal .btn-linha{ width:100%; margin-bottom:8px; display:flex; align-items:center; justify-content:center; gap:8px; }
   .dev-condo .ic{ flex:none; width:46px; height:46px; border-radius:14px; background:linear-gradient(135deg,var(--azul1),var(--azul2)); color:#fff; display:flex; align-items:center; justify-content:center; font-size:22px; }
   .dev-condo .txt{ flex:1; min-width:0; }
   .dev-condo .t1{ font-size:17px; font-weight:600; margin:0; }
@@ -1115,6 +1121,32 @@
   </div>
 </div>
 
+<!-- ===================== MODAL: OPÇÕES DO CONDOMÍNIO (desenvolvedor) ===================== -->
+<div class="modal-wrap" id="modal-dev-opcoes">
+  <div class="modal">
+    <button class="close-x" onclick="fecharModal('modal-dev-opcoes')"><i class="ti ti-x"></i></button>
+    <h3 id="do-nome">Condomínio</h3>
+    <p class="sub" id="do-resumo" style="margin:-8px 0 12px;"></p>
+    <div class="dev-link-caixa" id="do-link"></div>
+    <button class="btn btn-primary btn-linha" onclick="devOpcaoCopiarLink()"><i class="ti ti-copy"></i> Copiar link</button>
+    <button class="btn btn-whats btn-linha" onclick="devOpcaoEnviarLink()"><i class="ti ti-brand-whatsapp"></i> Enviar link pelo WhatsApp</button>
+    <button class="btn btn-ghost btn-linha" onclick="devOpcaoEntrar()"><i class="ti ti-settings"></i> Entrar e editar dados</button>
+    <button class="btn btn-danger btn-linha" id="do-btn-excluir" onclick="devOpcaoExcluir()"><i class="ti ti-trash"></i> Excluir condomínio</button>
+    <p class="sub" id="do-protegido" style="display:none;margin:4px 0 0;">Este condomínio é protegido e não pode ser excluído pelo painel.</p>
+  </div>
+</div>
+
+<!-- ===================== MODAL: EXCLUIR CONDOMÍNIO (desenvolvedor) ===================== -->
+<div class="modal-wrap" id="modal-dev-excluir" data-fixo="1" style="z-index:70;">
+  <div class="modal">
+    <h3>Excluir condomínio?</h3>
+    <div class="rs-aviso"><i class="ti ti-alert-triangle"></i> <span id="dx-aviso"></span></div>
+    <div class="field"><label id="dx-rotulo">Para confirmar, digite o nome do condomínio</label><input type="text" id="dx-nome" autocomplete="off" oninput="devAoDigitarConfirmacao()"></div>
+    <button class="btn btn-danger btn-linha" id="dx-btn" disabled onclick="devConfirmarExclusao()"><i class="ti ti-trash"></i> Excluir definitivamente</button>
+    <button class="btn btn-ghost btn-linha" onclick="fecharModal('modal-dev-excluir')">Cancelar</button>
+  </div>
+</div>
+
 <!-- ===================== MODAL: SENHA INICIAL DA CASA (síndico / dev) ===================== -->
 <div class="modal-wrap" id="modal-senha-inicial" data-fixo="1" style="z-index:70;">
   <div class="modal">
@@ -1270,7 +1302,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026030004";
+const VERSAO_APP = "2026030005";
 
 /* ===================================================================== */
 
@@ -1850,12 +1882,90 @@ async function carregarListaCondominiosDev(){
       const sindTxt = it.sindicos.length ? "Síndico: Casa " + it.sindicos.join(", ") : "Sem síndico";
       b.querySelector(".t2").textContent = `${casasTxt} · ${sindTxt}`;
       b.onclick = ()=>{ location.href = linkLocalDoCondominio(it.id); };
-      caixa.appendChild(b);
+      const linha = document.createElement("div");
+      linha.className = "dev-condo-linha";
+      const op = document.createElement("button");
+      op.className = "dev-opcoes";
+      op.setAttribute("aria-label", "Opções de " + it.nome);
+      op.innerHTML = '<i class="ti ti-dots-vertical"></i>';
+      op.onclick = ()=> devAbrirOpcoes(it);
+      linha.appendChild(b);
+      linha.appendChild(op);
+      caixa.appendChild(linha);
     });
   }catch(e){
     caixa.innerHTML = '<p class="dev-vazio">Não foi possível carregar os condomínios. Tente novamente.</p>';
   }
 }
+/* ---------- manutenção de um condomínio pelo painel ---------- */
+let devCondoAtual = null;   // { id, nome, casas, sindicos }
+function devAbrirOpcoes(it){
+  devCondoAtual = it;
+  const protegido = (it.id === TENANT_PADRAO);
+  document.getElementById("do-nome").textContent = it.nome;
+  document.getElementById("do-resumo").textContent = (it.casas === 1 ? "1 casa cadastrada" : `${it.casas} casas cadastradas`) + " · Código: " + it.id;
+  document.getElementById("do-link").textContent = linkDoCondominio(it.id);
+  document.getElementById("do-btn-excluir").style.display = protegido ? "none" : "flex";
+  document.getElementById("do-protegido").style.display = protegido ? "block" : "none";
+  document.getElementById("modal-dev-opcoes").classList.add("show");
+}
+window.devOpcaoCopiarLink = async function(){
+  if(!devCondoAtual) return;
+  try{ await navigator.clipboard.writeText(linkDoCondominio(devCondoAtual.id)); showToast("Link copiado."); }
+  catch(e){ showToast("Não foi possível copiar. Selecione o link e copie manualmente."); }
+};
+window.devOpcaoEnviarLink = function(){
+  if(!devCondoAtual) return;
+  const texto = `App do salão de festas do ${devCondoAtual.nome}:\n${linkDoCondominio(devCondoAtual.id)}`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, "_blank", "noopener");
+};
+window.devOpcaoEntrar = function(){
+  if(devCondoAtual) location.href = linkLocalDoCondominio(devCondoAtual.id);
+};
+window.devOpcaoExcluir = function(){
+  const it = devCondoAtual;
+  if(!it || it.id === TENANT_PADRAO) return;
+  fecharModal("modal-dev-opcoes");
+  document.getElementById("dx-aviso").textContent = `Isto apaga de vez o condomínio "${it.nome}": ${it.casas === 1 ? "1 casa" : it.casas + " casas"}, todas as reservas e os logins dos moradores. Não dá para desfazer.`;
+  document.getElementById("dx-rotulo").textContent = `Para confirmar, digite: ${it.nome}`;
+  document.getElementById("dx-nome").value = "";
+  const b = document.getElementById("dx-btn");
+  b.disabled = true; b.innerHTML = '<i class="ti ti-trash"></i> Excluir definitivamente';
+  document.getElementById("modal-dev-excluir").classList.add("show");
+};
+window.devAoDigitarConfirmacao = function(){
+  const ok = !!devCondoAtual && document.getElementById("dx-nome").value.trim() === devCondoAtual.nome.trim();
+  document.getElementById("dx-btn").disabled = !ok;
+};
+window.devConfirmarExclusao = async function(){
+  const it = devCondoAtual;
+  if(!it || it.id === TENANT_PADRAO) return;
+  if(document.getElementById("dx-nome").value.trim() !== it.nome.trim()) return;
+  const b = document.getElementById("dx-btn");
+  b.disabled = true; b.textContent = "Excluindo...";
+  try{
+    // A exclusão é feita no servidor: só ele consegue apagar também os logins das casas
+    const token = await auth.currentUser.getIdToken();
+    const resp = await fetch(URL_FN_RESETAR_SENHA, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify({ modo: "excluirCondominio", tenantId: it.id, confirmacao: it.nome })
+    });
+    const dados = await resp.json().catch(()=> ({}));
+    if(!resp.ok || !dados.ok){
+      if(dados.erro === "Dados incompletos.") throw new Error("A exclusão ainda não está publicada no servidor. Atualize a função de reset de senha.");
+      throw new Error(dados.erro || "Não foi possível excluir o condomínio.");
+    }
+    fecharModal("modal-dev-excluir");
+    devCondoAtual = null;
+    showToast(`Condomínio "${it.nome}" excluído.`);
+    await carregarListaCondominiosDev();
+  }catch(e){
+    showToast(e.message || "Não foi possível excluir o condomínio.");
+    b.disabled = false; b.innerHTML = '<i class="ti ti-trash"></i> Excluir definitivamente';
+  }
+};
+
 window.devVoltarLista = async function(){ mostrarVistaDev("lista"); await carregarListaCondominiosDev(); };
 window.devVoltarPasso1 = function(){ mostrarVistaDev("p1"); };
 
