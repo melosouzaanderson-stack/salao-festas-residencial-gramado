@@ -10,7 +10,9 @@
   ARQUITETURA MULTITENANT
   Cada condomínio é um "tenant" dentro do mesmo projeto Firebase do App Massagens.
   Este arquivo é ÚNICO para todos os condomínios. O condomínio é descoberto ao abrir:
-  1) quem já está logado  2) link com ?c=codigo  3) guardado no aparelho  4) padrão (Gramado).
+  1) quem já está logado  2) link com ?c=codigo  3) guardado no aparelho
+  4) no endereço antigo (salao-festas-residencial-gramado), padrão Gramado; no endereço
+     oficial (agende-festas), tela genérica "Agende & Festas".
   NÃO duplique este arquivo para publicar outro condomínio.
 
   ANTES DE PUBLICAR, revise o arquivo firestore.rules.txt (entregue junto) e
@@ -1109,9 +1111,14 @@ const firebaseConfig = {
   appId: "1:892386095601:web:509dfbf92b9de90471d450"
 };
 
-// Condomínio padrão: é o que abre no link puro (sem ?c=), para não mudar nada
-// para os moradores que já usam o app.
+// Endereço oficial do app (vale para todos os condomínios) e endereço antigo do Gramado.
+const URL_OFICIAL = "https://agende-festas.vercel.app/";
+const HOST_ANTIGO_GRAMADO = "salao-festas-residencial-gramado.vercel.app";
+// Condomínio padrão: no endereço ANTIGO, o link puro (sem ?c=) continua abrindo o Gramado,
+// para não mudar nada para os moradores que já usam o app. Nos outros endereços,
+// o link puro abre a tela genérica "Agende & Festas".
 const TENANT_PADRAO = "residencial-jardins";
+let SEM_CONDOMINIO = false;   // link puro fora do endereço antigo, sem condomínio guardado
 const CHAVE_TENANT_APARELHO = "salaoFestas.condominio";
 const tenantValido = (t)=> /^[a-z0-9-]{1,64}$/.test(String(t || ""));
 function lerTenantDoAparelho(){
@@ -1144,13 +1151,14 @@ function descobrirTenantInicial(){
   if(doLink){ ORIGEM_TENANT = "link"; return tenantValido(doLink) ? doLink : "codigo-invalido"; }
   const guardado = lerTenantDoAparelho();
   if(guardado){ ORIGEM_TENANT = "aparelho"; return guardado; }
+  if(location.hostname !== HOST_ANTIGO_GRAMADO) SEM_CONDOMINIO = true;
   return TENANT_PADRAO;
 }
 let TENANT_ID = descobrirTenantInicial();
 let condominioInexistente = false;
 
 // Entrada genérica (Agende & Festas): endereço com ?dev, usada pelo desenvolvedor
-const MODO_DEV_URL = (()=>{ try{ return new URLSearchParams(location.search).has("dev"); }catch(e){ return false; } })();
+const MODO_DEV_URL = SEM_CONDOMINIO || (()=>{ try{ return new URLSearchParams(location.search).has("dev"); }catch(e){ return false; } })();
 let painelDevAberto = false;
 let devSemCasa = false;   // desenvolvedor visitando um condomínio onde não tem casa (modo suporte)
 const CODIGOS_RESERVADOS = ["dev", "admin", "codigo-invalido", "condominios"];
@@ -1168,7 +1176,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026020002";
+const VERSAO_APP = "2026030001";
 
 /* ===================================================================== */
 
@@ -1302,7 +1310,10 @@ window.fazerLogin = async function(){
   msg.textContent = ""; msg.className = "login-msg";
   const porEmail = casa.includes("@");   // entrada do desenvolvedor
   if(!casa || !senha){ msg.textContent = porEmail || MODO_DEV_URL ? "Preencha e-mail e senha." : "Preencha casa e senha."; msg.classList.add("err"); return; }
-  if(MODO_DEV_URL && !porEmail){ msg.textContent = "Digite o e-mail do desenvolvedor."; msg.classList.add("err"); return; }
+  if(MODO_DEV_URL && !porEmail){
+    msg.textContent = SEM_CONDOMINIO ? "Abra o app pelo link do seu condomínio. Peça o link ao síndico." : "Digite o e-mail do desenvolvedor.";
+    msg.classList.add("err"); return;
+  }
   try{
     await signInWithEmailAndPassword(auth, porEmail ? casa.toLowerCase() : emailVirtualDaCasa(casa), senha);
     // onAuthStateChanged cuida do resto
@@ -1332,6 +1343,11 @@ function aplicarEntradaGenerica(){
   campo.setAttribute("autocapitalize", "none");
   campo.placeholder = "seu@email.com";
   atualizarModoEntrada();
+  if(SEM_CONDOMINIO){
+    const msg = document.getElementById("login-msg");
+    msg.textContent = "Morador: abra o app pelo link do seu condomínio. Peça o link ao síndico.";
+    msg.className = "login-msg";
+  }
 }
 
 window.abrirEsqueciSenha = async function(){
@@ -1494,6 +1510,7 @@ async function carregarDadosCondominioParaLogin(){
         // O condomínio guardado no aparelho não existe mais: volta ao padrão
         esquecerTenantDoAparelho();
         ORIGEM_TENANT = "padrao"; TENANT_ID = TENANT_PADRAO; _promessaCondominio = null;
+        if(location.hostname !== HOST_ANTIGO_GRAMADO){ location.replace(urlBaseDoApp()); return; }
         return carregarDadosCondominioParaLogin();
       }
       if(ORIGEM_TENANT === "link"){ condominioInexistente = true; mostrarCondominioInexistente(); }
@@ -1635,7 +1652,10 @@ function ajustarAppParaDev(){
   }
 }
 function urlBaseDoApp(){ return location.origin + location.pathname; }
-function linkDoCondominio(codigo){ return urlBaseDoApp() + "?c=" + encodeURIComponent(codigo); }
+// Link que vai para o síndico/moradores: sempre o endereço oficial
+function linkDoCondominio(codigo){ return URL_OFICIAL + "?c=" + encodeURIComponent(codigo); }
+// Navegação do desenvolvedor: fica no endereço em que ele já está logado
+function linkLocalDoCondominio(codigo){ return urlBaseDoApp() + "?c=" + encodeURIComponent(codigo); }
 window.voltarAoPainelDev = function(){ location.href = urlBaseDoApp() + "?dev"; };
 
 function mostrarVistaDev(vista){
@@ -1678,7 +1698,7 @@ async function carregarListaCondominiosDev(){
       const casasTxt = it.casas === 1 ? "1 casa" : `${it.casas} casas`;
       const sindTxt = it.sindicos.length ? "Síndico: Casa " + it.sindicos.join(", ") : "Sem síndico";
       b.querySelector(".t2").textContent = `${casasTxt} · ${sindTxt}`;
-      b.onclick = ()=>{ location.href = linkDoCondominio(it.id); };
+      b.onclick = ()=>{ location.href = linkLocalDoCondominio(it.id); };
       caixa.appendChild(b);
     });
   }catch(e){
@@ -1697,7 +1717,7 @@ let devNovo = null;   // dados do condomínio em criação / recém-criado
 function atualizarPreviaCodigoDev(){
   const cod = document.getElementById("dv-codigo").value;
   const el = document.getElementById("dv-previa");
-  el.textContent = location.host + location.pathname + "?c=";
+  el.textContent = URL_OFICIAL.replace(/^https?:\/\//, "") + "?c=";
   const b = document.createElement("b"); b.textContent = cod || "codigo"; el.appendChild(b);
 }
 window.devNovoCondominio = function(){
