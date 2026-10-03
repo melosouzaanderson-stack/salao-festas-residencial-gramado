@@ -716,6 +716,7 @@
           <button class="btn btn-primary" onclick="devNovoCondominio()"><i class="ti ti-plus"></i> Novo condomínio</button>
           <button class="btn btn-ghost" onclick="fazerLogout()"><i class="ti ti-logout"></i> Sair</button>
         </div>
+        <div class="login-version" id="dev-versao">v0000000000</div>
       </div>
     </div>
 
@@ -837,6 +838,7 @@
         <div class="home-secao"><h4>Sua próxima festa</h4><button onclick="abrirMinhasReservas()">Ver todas</button></div>
         <div id="home-proxima-lista"></div>
       </div>
+      <div class="login-version" id="home-versao">v0000000000</div>
     </div>
 
     <div class="back-row" id="back-row" style="display:none;" onclick="voltarInicio()">
@@ -1393,7 +1395,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026030007";
+const VERSAO_APP = "2026030008";
 
 /* ===================================================================== */
 
@@ -1418,6 +1420,8 @@ if (window.emailjs && EMAILJS_PUBLIC_KEY.indexOf("COLE_AQUI") === -1) {
 
 document.getElementById("login-versao").textContent = "v" + VERSAO_APP;
 document.getElementById("drawer-versao").textContent = "v" + VERSAO_APP;
+document.getElementById("dev-versao").textContent = "v" + VERSAO_APP;
+document.getElementById("home-versao").textContent = "v" + VERSAO_APP;
 
 /* ---------- estado global ---------- */
 let condominioData = null;
@@ -2337,7 +2341,9 @@ function renderizarBannerStatus(){
     const primeiroNome = casaAtual.nomeResponsavel.trim().split(" ")[0];
     tag.textContent = periodo.saudacao.toLowerCase();
     titulo.textContent = `Olá, ${primeiroNome}!`;
-    texto.textContent = `Casa ${casaAtual.numero} · que tal garantir a data da sua próxima festa?`;
+    texto.textContent = devSemCasa
+      ? "Modo suporte · você está vendo este condomínio como desenvolvedor."
+      : `Casa ${casaAtual.numero} · que tal garantir a data da sua próxima festa?`;
     btn.style.display = "none";
   }else{
     tag.textContent = periodo.saudacao.toLowerCase() + " · cadastro pendente";
