@@ -567,6 +567,8 @@
   .cfg-corpo{ display:none; padding:14px 12px 6px; border-top:1px solid var(--line); }
   .cfg-sec.aberta .cfg-corpo{ display:block; }
 
+  .icon-btn.btn-excluir-casa{ color:var(--red-ink); border-color:var(--red-bd); }
+
   /* ===== Locais, preços e áreas do pedido ===== */
   .local-linha{ display:flex; align-items:center; gap:12px; width:100%; text-align:left; background:#fff; border:1px solid var(--line); border-radius:14px; padding:12px; margin-bottom:8px; font-family:inherit; color:var(--deep); cursor:pointer; }
   .local-linha .ic{ flex:none; width:42px; height:42px; border-radius:12px; background:linear-gradient(135deg,var(--azul1),var(--azul2)); color:#fff; display:flex; align-items:center; justify-content:center; font-size:21px; }
@@ -1181,6 +1183,17 @@
   </div>
 </div>
 
+<!-- ===================== MODAL: EXCLUIR CASA (síndico / dev) ===================== -->
+<div class="modal-wrap" id="modal-excluir-casa" data-fixo="1" style="z-index:70;">
+  <div class="modal">
+    <h3 id="xc-titulo">Excluir casa?</h3>
+    <p class="sub" id="xc-responsavel" style="margin:-6px 0 14px;"></p>
+    <div class="rs-aviso"><i class="ti ti-alert-triangle"></i> <span id="xc-aviso"></span></div>
+    <button class="btn btn-danger btn-linha" id="xc-btn" onclick="confirmarExcluirCasa()"><i class="ti ti-trash"></i> Excluir casa</button>
+    <button class="btn btn-ghost btn-linha" onclick="fecharModal('modal-excluir-casa')">Cancelar</button>
+  </div>
+</div>
+
 <!-- ===================== MODAL: CADASTRO DE LOCAL (síndico / dev) ===================== -->
 <div class="modal-wrap" id="modal-local" data-fixo="1" style="z-index:70;">
   <div class="modal">
@@ -1380,7 +1393,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026030006";
+const VERSAO_APP = "2026030007";
 
 /* ===================================================================== */
 
@@ -1665,7 +1678,7 @@ window.abrirEsqueciSenha = async function(){
   if(!casa){ msg.textContent = "Digite o número da casa primeiro."; msg.className="login-msg err"; return; }
   try{
     await sendPasswordResetEmail(auth, emailVirtualDaCasa(casa));
-    msg.textContent = "Se essa casa tiver e-mail de recuperação configurado, você receberá instruções. Caso contrário, peça ao síndico para redefinir sua senha padrão.";
+    msg.textContent = "Se essa casa tiver e-mail de recuperação configurado, você receberá instruções. Caso contrário, peça ao síndico para gerar uma senha nova para a sua casa.";
     msg.className = "login-msg ok";
   }catch(e){
     msg.textContent = "Não foi possível iniciar a recuperação. Fale com o síndico.";
@@ -2494,7 +2507,7 @@ function abrirDetalheDia(iso, reserva){
     let html = `<span class="status-badge ${reserva.status}"><i class="ti ${iconeStatus(reserva.status)}"></i>${legendaStatus(reserva.status)}</span>`;
     if(vejoDetalhe){
       const casaNome = (todasAsCasas.find(c=>c.id===reserva.casaId)||{}).apelido || (todasAsCasas.find(c=>c.id===reserva.casaId)||{}).numero || "—";
-      html += `<p style="margin:14px 0 4px;font-size:13px;">Reservado por: <b>Casa ${reserva.casaNumero || ""} ${reserva.casaId===casaAtualId ? "(você)" : ""}</b></p>`;
+      html += `<p style="margin:14px 0 4px;font-size:13px;">Reservado por: <b>Casa ${reserva.casaNumero || ""} ${reserva.casaExcluida ? "(excluída)" : (reserva.casaId===casaAtualId ? "(você)" : "")}</b></p>`;
       if(reserva.observacao) html += `<p style="margin:0;font-size:13px;color:var(--muted);">${escaparHtml(reserva.observacao)}</p>`;
       if(Array.isArray(reserva.areas) && reserva.areas.length){
         html += `<div class="reserva-areas">` + reserva.areas.map(a=> `<div class="l"><span>${escaparHtml(a.nome)}</span><span>${formatarReais(a.diaria)}</span></div>`).join("")
@@ -3640,6 +3653,16 @@ function renderizarListaCasas(){
       btnChave.onclick = ()=> abrirResetSenha(c.id);
       div.appendChild(btnChave);
       btn.style.marginLeft = "0";
+      // botão de excluir a casa: só para o desenvolvedor (o síndico não vê)
+      if(ehDev){
+        const btnLixo = document.createElement("button");
+        btnLixo.className = "icon-btn btn-excluir-casa";
+        btnLixo.title = "Excluir casa";
+        btnLixo.setAttribute("aria-label", "Excluir a Casa " + c.numero);
+        btnLixo.innerHTML = `<i class="ti ti-trash"></i>`;
+        btnLixo.onclick = ()=> abrirExcluirCasa(c.id);
+        div.appendChild(btnLixo);
+      }
     }
     div.appendChild(btn);
 
@@ -3730,6 +3753,88 @@ window.abrirResetSenha = function(casaId){
   document.getElementById("rs-campo-celular").style.display = "none";
   document.getElementById("modal-reset-senha").classList.add("show");
 };
+/* ---------- excluir casa (cadastro + login), feito no servidor ---------- */
+let casaExcluirId = null;
+window.abrirExcluirCasa = async function(casaId){
+  const c = todasAsCasas.find(x=> x.id === casaId);
+  if(!c || !ehDev) return;
+  if(c.papel === "sindico"){
+    showToast("Esta casa é de síndico. Toque na seta para torná-la morador antes de excluir.");
+    return;
+  }
+  casaExcluirId = casaId;
+  document.getElementById("xc-titulo").textContent = `Excluir a Casa ${c.numero}?`;
+  document.getElementById("xc-responsavel").textContent = c.nomeResponsavel || c.apelido || "Sem responsável cadastrado";
+  const base = "Isto apaga o cadastro e o acesso desta casa. Não dá para desfazer.";
+  const aviso = document.getElementById("xc-aviso");
+  const b = document.getElementById("xc-btn");
+  aviso.textContent = base + " Conferindo as reservas desta casa...";
+  b.disabled = true; b.innerHTML = '<i class="ti ti-trash"></i> Excluir casa';
+  document.getElementById("modal-excluir-casa").classList.add("show");
+  // Mostra o que vai junto: as reservas da casa são apagadas com ela, para não sobrar reserva sem dono
+  let texto = base + " Reservas futuras e pedidos recusados desta casa são apagados. Festas já realizadas continuam nos relatórios, como casa excluída.";
+  try{
+    const snap = await getDocs(query(collection(db, "Condominios", TENANT_ID, "reservas"), where("casaId", "==", casaId)));
+    const agora = new Date();
+    const hoje = `${agora.getFullYear()}-${String(agora.getMonth()+1).padStart(2,"0")}-${String(agora.getDate()).padStart(2,"0")}`;
+    let total = 0, futuras = 0, realizadas = 0;
+    snap.forEach(d=>{
+      const r = d.data() || {};
+      total++;
+      const ativa = r.status === "pendente" || r.status === "confirmada";
+      if(ativa && String(r.data || "") >= hoje) futuras++;
+      else if(r.status === "confirmada") realizadas++; // data anterior a hoje: fica no histórico
+    });
+    if(total === 0){
+      texto = base + " Esta casa não tem reservas.";
+    }else{
+      const partes = [];
+      if(futuras) partes.push(futuras === 1 ? "1 reserva futura, e a data volta a ficar livre" : `${futuras} reservas futuras, e as datas voltam a ficar livres`);
+      const outras = total - futuras - realizadas;
+      if(outras) partes.push(outras === 1 ? "1 pedido recusado" : `${outras} pedidos recusados`);
+      texto = base;
+      if(partes.length) texto += " Também " + (futuras + outras === 1 ? "será apagado" : "serão apagados") + ": " + partes.join("; ") + ".";
+      if(realizadas) texto += (realizadas === 1 ? " 1 festa já realizada continua" : ` ${realizadas} festas já realizadas continuam`) + ` nos relatórios, como Casa ${c.numero} (excluída).`;
+    }
+  }catch(e){ /* sem a contagem, segue com o aviso geral */ }
+  if(casaExcluirId !== casaId) return;
+  aviso.textContent = texto;
+  b.disabled = false;
+};
+window.confirmarExcluirCasa = async function(){
+  const c = todasAsCasas.find(x=> x.id === casaExcluirId);
+  if(!c) return;
+  const b = document.getElementById("xc-btn");
+  b.disabled = true; b.textContent = "Excluindo...";
+  try{
+    const token = await auth.currentUser.getIdToken();
+    // "casaAlvo" (e não "casaId") de propósito: uma função antiga, sem a exclusão, recusa o pedido em vez de resetar a senha
+    const resp = await fetch(URL_FN_RESETAR_SENHA, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify({ modo: "excluirCasa", tenantId: TENANT_ID, casaAlvo: c.id })
+    });
+    const dados = await resp.json().catch(()=> ({}));
+    if(!resp.ok || !dados.ok){
+      if(dados.erro === "Dados incompletos.") throw new Error("A exclusão de casa ainda não está publicada no servidor. Atualize a função de reset de senha.");
+      throw new Error(dados.erro || "Não foi possível excluir a casa.");
+    }
+    todasAsCasas = todasAsCasas.filter(x=> x.id !== c.id);
+    renderizarListaCasas();
+    fecharModal("modal-excluir-casa");
+    casaExcluirId = null;
+    showToast(`Casa ${c.numero} excluída.`);
+    // As reservas da casa saíram junto: atualiza o calendário e as listas
+    if(dados.reservasApagadas || dados.festasMantidas){
+      cacheReservasMes.clear();
+      try{ await carregarReservasDoMes(); renderizarTudo(); }catch(e){}
+    }
+  }catch(e){
+    showToast(e.message || "Não foi possível excluir a casa.");
+    b.disabled = false; b.innerHTML = '<i class="ti ti-trash"></i> Excluir casa';
+  }
+};
+
 window.aoMudarTrocaMorador = function(){
   document.getElementById("rs-campo-celular").style.display = document.getElementById("rs-troca").checked ? "block" : "none";
 };
@@ -3928,10 +4033,11 @@ async function carregarRelatorio(inicioISO, fimISO, rotulo){
     const linhas = [];
     snap.forEach(d=>{
       const r = d.data();
-      const casa = todasAsCasas.find(c=> c.id === r.casaId);
+      // Festa de casa que foi excluída continua no relatório, identificada como "excluída"
+      const casa = r.casaExcluida ? null : todasAsCasas.find(c=> c.id === r.casaId);
       linhas.push({
-        casa: String(r.casaNumero || (casa ? casa.numero : "—")),
-        nome: (casa && (casa.nomeResponsavel || casa.apelido)) || "—",
+        casa: String(r.casaNumero || (casa ? casa.numero : "—")) + (r.casaExcluida ? " (excluída)" : ""),
+        nome: r.casaExcluida ? "Casa excluída" : ((casa && (casa.nomeResponsavel || casa.apelido)) || "—"),
         data: r.data,
         diaSemana: nomeDiaSemana(r.data)
       });
