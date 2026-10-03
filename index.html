@@ -624,7 +624,7 @@
   .dev-opcoes:active{ transform:scale(.96); }
   .dev-link-caixa{ background:var(--soft); border-radius:12px; padding:10px 12px; font-size:15px; color:#1E3A8A; word-break:break-all; margin:0 0 14px; user-select:all; }
   .modal .btn-linha{ width:100%; margin-bottom:8px; display:flex; align-items:center; justify-content:center; gap:8px; }
-  .dev-condo .ic{ flex:none; width:46px; height:46px; border-radius:14px; background:linear-gradient(135deg,var(--azul1),var(--azul2)); color:#fff; display:flex; align-items:center; justify-content:center; font-size:22px; }
+  .dev-condo .ic{ flex:none; width:52px; height:52px; border-radius:16px; background:linear-gradient(145deg,#60A5FA 0%,var(--azul1) 40%,var(--azul2) 100%); box-shadow:0 6px 14px rgba(29,78,216,.28), inset 0 1px 0 rgba(255,255,255,.35); border:1px solid rgba(255,255,255,.25); color:#fff; display:flex; align-items:center; justify-content:center; font-size:22px; }
   .dev-condo .txt{ flex:1; min-width:0; }
   .dev-condo .t1{ font-size:17px; font-weight:600; margin:0; }
   .dev-condo .t2{ font-size:15px; color:var(--muted); margin:2px 0 0; }
@@ -640,6 +640,56 @@
   .dev-resumo span{ color:var(--muted); }
   .dev-rodape{ margin-top:auto; display:flex; flex-direction:column; gap:10px; padding-top:8px; }
   .dev-rodape .btn{ width:100%; display:flex; align-items:center; justify-content:center; gap:8px; }
+  /* ---- cobrança dos condomínios (painel do desenvolvedor) ---- */
+  .dev-condo .ic svg{ width:30px; height:30px; }
+  .dev-condo-bloco{ display:flex; flex-direction:column; gap:8px; }
+  .cob-tag{ display:inline-flex; align-items:center; gap:5px; font-size:14px; font-weight:600; border-radius:999px; padding:4px 10px; border:1px solid transparent; margin-top:6px; }
+  .cob-tag.ok{ background:var(--green); color:var(--green-ink); border-color:#A9DDB9; }
+  .cob-tag.avencer{ background:var(--amber); color:var(--amber-ink); border-color:var(--amber-bd); }
+  .cob-tag.atraso{ background:var(--red); color:var(--red-ink); border-color:var(--red-bd); }
+  .cob-tag.neutra{ background:#EEF2F7; color:var(--muted); border-color:var(--line); }
+  .cob-rapidas{ display:flex; gap:8px; }
+  .cob-rap{ flex:1; min-height:48px; border-radius:14px; border:0; font-family:inherit; font-size:16px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:7px; cursor:pointer; }
+  .cob-rap i{ font-size:21px; }
+  .cob-rap.zap{ background:#1F7A44; color:#fff; }
+  .cob-rap.baixa{ background:var(--soft); color:var(--accent-d); border:2px solid #BFD3F5; }
+  .cob-rap:active{ transform:scale(.97); }
+  .cob-resumo{ background:linear-gradient(135deg,#1E293B,#0F172A); color:#fff; border-radius:18px; padding:16px; }
+  .cob-resumo .rot{ font-size:14px; opacity:.78; margin:0 0 2px; }
+  .cob-resumo .val{ font-family:'Fraunces', serif; font-size:28px; font-weight:600; margin:0 0 12px; }
+  .cob-resumo .linha{ display:flex; gap:8px; }
+  .cob-resumo .mini{ flex:1; min-width:0; background:rgba(255,255,255,.1); border-radius:12px; padding:9px 10px; }
+  .cob-resumo .mini p{ margin:0; font-size:13px; opacity:.82; }
+  .cob-resumo .mini b{ font-size:15px; white-space:nowrap; }
+  .cob-resumo .mini.atraso b{ color:#FCA5A5; }
+  .cob-resumo .mini.ok b{ color:#86EFAC; }
+  .dev-top .sub2{ display:block; font-family:'Work Sans', sans-serif; font-size:14px; color:var(--muted); font-weight:400; }
+  .cob-seg{ display:flex; background:#E9EFF8; border-radius:12px; padding:4px; gap:4px; }
+  .cob-seg button{ flex:1; border:0; background:none; font-family:inherit; font-size:16px; font-weight:500; padding:12px 4px; border-radius:9px; color:var(--muted); cursor:pointer; }
+  .cob-seg button.on{ background:#fff; color:var(--deep); font-weight:600; box-shadow:0 1px 4px rgba(15,23,42,.12); }
+  .cob-duas{ display:flex; gap:10px; }
+  .cob-duas .field{ flex:1; min-width:0; }
+  .cob-mes{ background:#fff; border:1px solid var(--line); border-radius:16px; padding:14px; display:flex; flex-direction:column; gap:10px; }
+  .cob-mes.atrasada{ border-color:var(--red-bd); background:#FFFAFA; }
+  .cob-mes .cab{ display:flex; align-items:center; gap:10px; }
+  .cob-mes .cab .m{ font-size:17px; font-weight:600; margin:0; }
+  .cob-mes .cab .v{ margin-left:auto; font-size:17px; font-weight:600; }
+  .cob-mes .det{ font-size:15px; color:var(--muted); margin:0; line-height:1.5; }
+  .cob-mes .det .cob-tag{ margin-top:0; }
+  .cob-mes .link{ align-self:flex-start; border:0; background:none; font-family:inherit; font-size:15px; font-weight:600; color:var(--accent-d); padding:6px 0; cursor:pointer; }
+  /* ---- aviso de mensalidade na tela inicial do síndico ---- */
+  .cob-aviso{ border:1px solid var(--amber-bd); background:var(--amber); color:var(--amber-ink); border-radius:18px; padding:16px; margin:14px 0; }
+  .cob-aviso.hoje{ border-color:var(--red-bd); background:var(--red); color:var(--red-ink); }
+  .cob-aviso .rot{ margin:0 0 4px; font-size:13px; font-weight:600; letter-spacing:.04em; }
+  .cob-aviso .tit{ margin:0 0 4px; font-size:19px; font-weight:600; }
+  .cob-aviso .txt{ margin:0 0 12px; font-size:16px; line-height:1.45; }
+  .cob-aviso .acoes{ display:flex; gap:8px; }
+  .cob-aviso .acoes button{ min-height:48px; border-radius:12px; font-family:inherit; font-size:16px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:7px; cursor:pointer; }
+  .cob-aviso .b-ciente{ flex:0 0 36%; border:0; background:var(--amber-ink); color:#fff; }
+  .cob-aviso .b-dados{ flex:1; background:#fff; border:2px solid var(--amber-bd); color:var(--amber-ink); }
+  .cob-aviso.hoje .b-ciente{ background:var(--red-ink); }
+  .cob-aviso.hoje .b-dados{ border-color:var(--red-bd); color:var(--red-ink); }
+  .cob-pix{ background:var(--soft); border-radius:12px; padding:12px; font-size:17px; color:#1E3A8A; word-break:break-all; user-select:all; margin:0 0 12px; }
 </style>
 </head>
 <body>
@@ -710,13 +760,46 @@
     <div class="dev-vista" id="dev-view-lista">
       <div class="dev-top"><div class="av"><i class="ti ti-shield-lock"></i></div><b>Painel do desenvolvedor</b></div>
       <div class="dev-corpo">
+        <div id="dev-resumo-cob" style="display:none;"></div>
         <p class="dev-secao">Condomínios cadastrados</p>
         <div id="dev-lista" style="display:flex;flex-direction:column;gap:12px;"></div>
         <div class="dev-rodape">
           <button class="btn btn-primary" onclick="devNovoCondominio()"><i class="ti ti-plus"></i> Novo condomínio</button>
+          <button class="btn btn-ghost" onclick="cobAbrirConfig()"><i class="ti ti-qrcode"></i> Meus dados de recebimento</button>
           <button class="btn btn-ghost" onclick="fazerLogout()"><i class="ti ti-logout"></i> Sair</button>
         </div>
         <div class="login-version" id="dev-versao">v0000000000</div>
+      </div>
+    </div>
+
+    <div class="dev-vista" id="dev-view-cob">
+      <div class="dev-top"><button class="volta" onclick="devVoltarLista()" aria-label="Voltar"><i class="ti ti-arrow-left"></i></button><b>Cobrança<span class="sub2" id="cob-sub"></span></b></div>
+      <div class="dev-corpo">
+        <button class="btn btn-ghost" style="display:flex;align-items:center;justify-content:center;gap:8px;" onclick="cobAbrirForm()"><i class="ti ti-edit"></i> Editar cadastro</button>
+        <p class="dev-secao">Mensalidades</p>
+        <div id="cob-lista" style="display:flex;flex-direction:column;gap:12px;"></div>
+      </div>
+    </div>
+
+    <div class="dev-vista" id="dev-view-cobform">
+      <div class="dev-top"><button class="volta" onclick="cobSairDoForm()" aria-label="Voltar"><i class="ti ti-arrow-left"></i></button><b>Cobrança<span class="sub2" id="cobf-sub"></span></b></div>
+      <div class="dev-corpo">
+        <div class="field"><label>Situação</label>
+          <div class="cob-seg" id="cobf-situacao">
+            <button type="button" data-v="cobrando" onclick="cobEscolherSituacao('cobrando')">Cobrando</button>
+            <button type="button" data-v="isento" onclick="cobEscolherSituacao('isento')">Isento</button>
+            <button type="button" data-v="pausado" onclick="cobEscolherSituacao('pausado')">Pausado</button>
+          </div>
+          <p class="dev-dica">Isento e Pausado não geram mensalidade nem aparecem como atraso.</p></div>
+        <div class="field"><label>Valor da mensalidade (R$) *</label><input type="text" id="cobf-valor" inputmode="decimal" autocomplete="off" placeholder="0,00"></div>
+        <div class="cob-duas">
+          <div class="field"><label>Dia do vencimento *</label><select id="cobf-dia"></select></div>
+          <div class="field"><label>Primeiro vencimento *</label><input type="date" id="cobf-primeiro" onchange="cobAoMudarPrimeiro()"></div>
+        </div>
+        <div class="field"><label>WhatsApp para cobrança</label><input type="text" id="cobf-whats" placeholder="(00) 00000-0000" inputmode="tel" autocomplete="off" oninput="mascararTelefoneZelador(this)">
+          <p class="dev-dica">Já vem com o celular do síndico. Pode trocar.</p></div>
+        <div class="field"><label>Observação (opcional)</label><input type="text" id="cobf-obs" maxlength="120" autocomplete="off" placeholder="Ex.: primeiros 2 meses grátis"></div>
+        <div class="dev-rodape"><button class="btn btn-primary" id="cobf-btn" onclick="cobSalvarForm()"><i class="ti ti-check"></i> Salvar cobrança</button></div>
       </div>
     </div>
 
@@ -812,6 +895,16 @@
           <i class="ti ti-bell"></i> <span id="home-status-proxima-reserva-texto"></span>
         </div>
         <button class="home-banner-btn" id="home-status-btn" style="display:none;" onclick="abrirModal('modal-perfil')">Completar cadastro</button>
+      </div>
+
+      <div class="cob-aviso" id="home-aviso-cobranca" style="display:none;">
+        <p class="rot"><i class="ti ti-receipt-2"></i> MENSALIDADE DO APP</p>
+        <p class="tit" id="hac-titulo"></p>
+        <p class="txt" id="hac-texto"></p>
+        <div class="acoes">
+          <button class="b-ciente" onclick="cobCiente()"><i class="ti ti-check"></i> Ciente</button>
+          <button class="b-dados" onclick="cobVerDadosPagamento()"><i class="ti ti-qrcode"></i> Dados do pagamento</button>
+        </div>
       </div>
 
       <div class="home-banner aviso-condo anima a4" id="home-aviso-condo" style="display:none;">
@@ -1221,11 +1314,63 @@
     <h3 id="do-nome">Condomínio</h3>
     <p class="sub" id="do-resumo" style="margin:-8px 0 12px;"></p>
     <div class="dev-link-caixa" id="do-link"></div>
-    <button class="btn btn-primary btn-linha" onclick="devOpcaoCopiarLink()"><i class="ti ti-copy"></i> Copiar link</button>
+    <button class="btn btn-primary btn-linha" onclick="devOpcaoCobranca()"><i class="ti ti-receipt-2"></i> Cobrança</button>
+    <button class="btn btn-ghost btn-linha" onclick="devOpcaoCopiarLink()"><i class="ti ti-copy"></i> Copiar link</button>
     <button class="btn btn-whats btn-linha" onclick="devOpcaoEnviarLink()"><i class="ti ti-brand-whatsapp"></i> Enviar link pelo WhatsApp</button>
     <button class="btn btn-ghost btn-linha" onclick="devOpcaoEntrar()"><i class="ti ti-settings"></i> Entrar e editar dados</button>
     <button class="btn btn-danger btn-linha" id="do-btn-excluir" onclick="devOpcaoExcluir()"><i class="ti ti-trash"></i> Excluir condomínio</button>
     <p class="sub" id="do-protegido" style="display:none;margin:4px 0 0;">Este condomínio é protegido e não pode ser excluído pelo painel.</p>
+  </div>
+</div>
+
+<!-- ===================== MODAL: BAIXA DE MENSALIDADE (desenvolvedor) ===================== -->
+<div class="modal-wrap" id="modal-cob-baixa" data-fixo="1" style="z-index:70;">
+  <div class="modal">
+    <h3>Mensalidade recebida?</h3>
+    <p class="sub" id="cb-sub" style="margin:-8px 0 14px;"></p>
+    <div class="cob-duas">
+      <div class="field"><label>Recebido em *</label><input type="date" id="cb-data"></div>
+      <div class="field"><label>Valor (R$) *</label><input type="text" id="cb-valor" inputmode="decimal" autocomplete="off"></div>
+    </div>
+    <div class="field"><label>Forma</label>
+      <div class="cob-seg" id="cb-forma">
+        <button type="button" data-v="pix" onclick="cobEscolherForma('pix')">Pix</button>
+        <button type="button" data-v="boleto" onclick="cobEscolherForma('boleto')">Boleto</button>
+        <button type="button" data-v="outro" onclick="cobEscolherForma('outro')">Outro</button>
+      </div></div>
+    <div class="field"><label>Observação (opcional)</label><input type="text" id="cb-obs" maxlength="120" autocomplete="off" placeholder="Ex.: pagou com atraso"></div>
+    <button class="btn btn-primary btn-linha" id="cb-btn" onclick="cobConfirmarBaixa()"><i class="ti ti-check"></i> Confirmar recebimento</button>
+    <button class="btn btn-ghost btn-linha" onclick="fecharModal('modal-cob-baixa')">Cancelar</button>
+  </div>
+</div>
+
+<!-- ===================== MODAL: DADOS DE RECEBIMENTO (desenvolvedor) ===================== -->
+<div class="modal-wrap" id="modal-cob-config" data-fixo="1" style="z-index:70;">
+  <div class="modal">
+    <h3>Meus dados de recebimento</h3>
+    <p class="sub" style="margin:-8px 0 14px;">Aparecem na mensagem de cobrança e no aviso que o síndico vê.</p>
+    <div class="field"><label>Chave Pix</label><input type="text" id="cc-pix" maxlength="120" autocomplete="off" placeholder="E-mail, celular, CPF/CNPJ ou chave aleatória"></div>
+    <div class="field"><label>Nome de quem recebe</label><input type="text" id="cc-nome" maxlength="80" autocomplete="off" placeholder="Como aparece no Pix"></div>
+    <div class="field"><label>WhatsApp do suporte</label><input type="text" id="cc-whats" placeholder="(00) 00000-0000" inputmode="tel" autocomplete="off" oninput="mascararTelefoneZelador(this)"></div>
+    <button class="btn btn-primary btn-linha" id="cc-btn" onclick="cobSalvarConfig()"><i class="ti ti-check"></i> Salvar</button>
+    <button class="btn btn-ghost btn-linha" onclick="fecharModal('modal-cob-config')">Cancelar</button>
+  </div>
+</div>
+
+<!-- ===================== MODAL: DADOS DO PAGAMENTO (síndico) ===================== -->
+<div class="modal-wrap" id="modal-cob-pagamento">
+  <div class="modal">
+    <button class="close-x" onclick="fecharModal('modal-cob-pagamento')"><i class="ti ti-x"></i></button>
+    <h3>Mensalidade do app</h3>
+    <p class="dev-resumo" id="cp-resumo" style="margin:0 0 14px;"></p>
+    <div id="cp-com-pix">
+      <p class="sub" style="margin:0 0 6px;">Chave Pix</p>
+      <div class="cob-pix" id="cp-pix"></div>
+      <button class="btn btn-primary btn-linha" onclick="cobCopiarPix()"><i class="ti ti-copy"></i> Copiar chave Pix</button>
+    </div>
+    <p class="sub" id="cp-sem-pix" style="display:none;margin:0 0 12px;">Peça os dados de pagamento ao suporte do app.</p>
+    <button class="btn btn-whats btn-linha" id="cp-suporte" style="display:none;" onclick="cobFalarComSuporte()"><i class="ti ti-brand-whatsapp"></i> Falar com o suporte</button>
+    <button class="btn btn-ghost btn-linha" onclick="fecharModal('modal-cob-pagamento')">Fechar</button>
   </div>
 </div>
 
@@ -1308,7 +1453,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
-  getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, query, where,
+  getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, getDocs, query, where,
   orderBy, onSnapshot, serverTimestamp,
   initializeFirestore, persistentLocalCache, persistentMultipleTabManager, getDocFromCache, getDocsFromCache,
   runTransaction
@@ -1395,7 +1540,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026030009";
+const VERSAO_APP = "2026030012";
 
 /* ===================================================================== */
 
@@ -1478,7 +1623,15 @@ async function ajustarEmailsSindico({ adicionar, remover }){
   let lista = listaDeEmails(atual);
   const r = String(remover || "").trim().toLowerCase();
   const a = String(adicionar || "").trim().toLowerCase();
-  if(r && r !== a) lista = lista.filter(e=> e !== r);
+  if(r && r !== a){
+    // Só tira o e-mail da lista se nenhuma OUTRA casa de síndico usa o mesmo e-mail
+    let outroSindicoUsa = false;
+    try{
+      const cs = await getDocs(collection(db, "Condominios", TENANT_ID, "casas"));
+      cs.forEach(d=>{ const v = d.data() || {}; if(v.papel === "sindico" && String(v.emailContato || "").trim().toLowerCase() === r) outroSindicoUsa = true; });
+    }catch(e){ outroSindicoUsa = true; /* na dúvida, mantém o e-mail */ }
+    if(!outroSindicoUsa) lista = lista.filter(e=> e !== r);
+  }
   if(a && emailValido(a) && !lista.includes(a)) lista.push(a);
   const novo = lista.join(", ");
   await setDoc(doc(db, "Condominios", TENANT_ID), { emailSindico: novo }, { merge:true });
@@ -1989,7 +2142,7 @@ function linkLocalDoCondominio(codigo){ return urlBaseDoApp() + "?c=" + encodeUR
 window.voltarAoPainelDev = function(){ location.href = urlBaseDoApp() + "?dev"; };
 
 function mostrarVistaDev(vista){
-  ["lista","p1","p2","pronto"].forEach(n=>{
+  ["lista","p1","p2","pronto","cob","cobform"].forEach(n=>{
     document.getElementById("dev-view-" + n).style.display = (n === vista) ? "flex" : "none";
   });
   window.scrollTo(0, 0);
@@ -2007,27 +2160,52 @@ async function carregarListaCondominiosDev(){
   const caixa = document.getElementById("dev-lista");
   caixa.innerHTML = '<p class="dev-vazio">Carregando…</p>';
   try{
-    const snap = await getDocs(collection(db, "Condominios"));
+    // Logo depois do login o banco pode ainda não ter recebido a identidade nova:
+    // se a leitura for recusada, renova a identidade e tenta de novo (até 3 vezes).
+    let snap = null, ultimoErro = null;
+    for(let tentativa = 0; tentativa < 3 && !snap; tentativa++){
+      try{
+        if(tentativa > 0){
+          await new Promise(r=> setTimeout(r, 700 * tentativa));
+          try{ if(auth.currentUser) await auth.currentUser.getIdToken(true); }catch(e){ /* segue para a nova tentativa */ }
+        }
+        snap = await getDocs(collection(db, "Condominios"));
+      }catch(e){ ultimoErro = e; }
+    }
+    if(!snap) throw ultimoErro || new Error("sem resposta");
     const itens = await Promise.all(snap.docs.map(async d=>{
-      let casas = 0; const sindicos = [];
+      let casas = 0; const sindicos = []; let telSindico = "";
       try{
         const cs = await getDocs(collection(db, "Condominios", d.id, "casas"));
         casas = cs.size;
-        cs.forEach(c=>{ const v = c.data(); if(v.papel === "sindico") sindicos.push(String(v.numero)); });
+        cs.forEach(c=>{ const v = c.data(); if(v.papel === "sindico"){ sindicos.push(String(v.numero)); if(!telSindico && v.telefone) telSindico = v.telefone; } });
       }catch(e){ /* mostra o condomínio mesmo sem a contagem */ }
-      return { id: d.id, nome: (d.data().nome || d.id), casas, sindicos };
+      return { id: d.id, nome: (d.data().nome || d.id), casas, sindicos, telSindico };
     }));
-    itens.sort((a,b)=> a.nome.localeCompare(b.nome, "pt-BR"));
+    // Cobrança: só o desenvolvedor lê. Se as regras novas ainda não foram publicadas, o painel segue sem ela.
+    await cobCarregarTudo();
+    const hojeCob = hojeISO();
+    itens.forEach(it=>{ it.cob = cobDados[it.id] || null; it.sit = cobSituacao(it.cob, hojeCob); });
+    itens.sort((a,b)=> (a.sit.rank - b.sit.rank) || (a.sit.ordem - b.sit.ordem) || a.nome.localeCompare(b.nome, "pt-BR"));
+    devItens = itens;
+    cobRenderizarResumo(itens, hojeCob);
     caixa.innerHTML = "";
     if(!itens.length){ caixa.innerHTML = '<p class="dev-vazio">Nenhum condomínio cadastrado ainda.</p>'; return; }
     itens.forEach(it=>{
       const b = document.createElement("button");
       b.className = "dev-condo";
-      b.innerHTML = '<div class="ic"><i class="ti ti-building-community"></i></div><div class="txt"><p class="t1"></p><p class="t2"></p></div><div class="entrar">Entrar<i class="ti ti-chevron-right"></i></div>';
+      b.innerHTML = '<div class="ic">' + ICONE_PREDIO + '</div><div class="txt"><p class="t1"></p><p class="t2"></p></div><div class="entrar">Entrar<i class="ti ti-chevron-right"></i></div>';
       b.querySelector(".t1").textContent = it.nome;
       const casasTxt = it.casas === 1 ? "1 casa" : `${it.casas} casas`;
       const sindTxt = it.sindicos.length ? "Síndico: Casa " + it.sindicos.join(", ") : "Sem síndico";
       b.querySelector(".t2").textContent = `${casasTxt} · ${sindTxt}`;
+      if(cobDisponivel){
+        const tag = document.createElement("span");
+        tag.className = "cob-tag " + it.sit.classe;
+        tag.innerHTML = `<i class="ti ${it.sit.icone}"></i> `;
+        tag.appendChild(document.createTextNode(it.sit.texto));
+        b.querySelector(".txt").appendChild(tag);
+      }
       b.onclick = ()=>{ location.href = linkLocalDoCondominio(it.id); };
       const linha = document.createElement("div");
       linha.className = "dev-condo-linha";
@@ -2038,10 +2216,32 @@ async function carregarListaCondominiosDev(){
       op.onclick = ()=> devAbrirOpcoes(it);
       linha.appendChild(b);
       linha.appendChild(op);
-      caixa.appendChild(linha);
+      const bloco = document.createElement("div");
+      bloco.className = "dev-condo-bloco";
+      bloco.appendChild(linha);
+      // Atalhos no card: aparecem quando há mensalidade atrasada ou a vencer
+      if(cobDisponivel && (it.sit.tipo === "atraso" || it.sit.tipo === "avencer")){
+        const rap = document.createElement("div");
+        rap.className = "cob-rapidas";
+        const bz = document.createElement("button");
+        bz.className = "cob-rap zap";
+        bz.setAttribute("aria-label", "Cobrar " + it.nome + " pelo WhatsApp");
+        bz.innerHTML = '<i class="ti ti-brand-whatsapp"></i> Cobrar';
+        bz.onclick = ()=> cobCobrarPeloWhats(it, it.sit.m);
+        const bb = document.createElement("button");
+        bb.className = "cob-rap baixa";
+        bb.setAttribute("aria-label", "Dar baixa na mensalidade de " + it.nome);
+        bb.innerHTML = '<i class="ti ti-circle-check"></i> Dar baixa';
+        bb.onclick = ()=> cobAbrirBaixa(it, it.sit.m);
+        rap.appendChild(bz); rap.appendChild(bb);
+        bloco.appendChild(rap);
+      }
+      caixa.appendChild(bloco);
     });
   }catch(e){
-    caixa.innerHTML = '<p class="dev-vazio">Não foi possível carregar os condomínios. Tente novamente.</p>';
+    console.error("Painel: erro ao listar condomínios", e);
+    caixa.innerHTML = '<p class="dev-vazio">Não foi possível carregar os condomínios.</p><button class="btn btn-ghost" onclick="devVoltarLista()"><i class="ti ti-refresh"></i> Tentar de novo</button><p class="login-version" id="dev-erro-detalhe"></p>';
+    document.getElementById("dev-erro-detalhe").textContent = "Detalhe: " + ((e && (e.code || e.message)) || "desconhecido");
   }
 }
 /* ---------- manutenção de um condomínio pelo painel ---------- */
@@ -2103,6 +2303,8 @@ window.devConfirmarExclusao = async function(){
       if(dados.erro === "Dados incompletos.") throw new Error("A exclusão ainda não está publicada no servidor. Atualize a função de reset de senha.");
       throw new Error(dados.erro || "Não foi possível excluir o condomínio.");
     }
+    // A cobrança do condomínio fica fora dele (só o desenvolvedor lê): apaga junto
+    try{ await deleteDoc(doc(db, "Cobrancas", it.id)); }catch(e){ /* sem cobrança cadastrada ou regras antigas */ }
     fecharModal("modal-dev-excluir");
     devCondoAtual = null;
     showToast(`Condomínio "${it.nome}" excluído.`);
@@ -2114,6 +2316,416 @@ window.devConfirmarExclusao = async function(){
 };
 
 window.devVoltarLista = async function(){ mostrarVistaDev("lista"); await carregarListaCondominiosDev(); };
+
+/* =====================================================================
+   COBRANÇA DOS CONDOMÍNIOS (mensalidade do app)
+   - Cobrancas/{condominio}: cadastro e pagamentos. Só o desenvolvedor lê e grava.
+   - Cobrancas/_config: chave Pix e contato do desenvolvedor.
+   - Condominios/{condominio}/cobranca/aviso: cópia resumida que o síndico lê
+     (para o aviso de vencimento). Só o desenvolvedor grava.
+   O app não recebe pagamento: o desenvolvedor dá baixa no que entrou.
+   ===================================================================== */
+const ICONE_PREDIO = '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 27h24"/><path d="M7 27V8.5a1.5 1.5 0 0 1 1.5-1.5h8A1.5 1.5 0 0 1 18 8.5V27"/><path d="M18 14h5.5a1.5 1.5 0 0 1 1.5 1.5V27"/><path d="M10.5 11h1M13.5 11h1M10.5 15h1M13.5 15h1M10.5 19h1M13.5 19h1M21 18h1M21 22h1"/><path d="M11 27v-4h3v4"/></svg>';
+const COB_DIAS_AVISO = 3;            // o síndico é avisado a partir de 3 dias antes
+const COB_NOMES_MES = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+let cobDisponivel = false;           // false enquanto as regras novas do banco não estiverem publicadas
+let cobDados = {};                   // { condominio: cadastro }
+let cobConfig = { chavePix:"", recebedor:"", whatsSuporte:"" };
+let devItens = [];
+let cobCondo = null;                 // condomínio aberto na tela de cobrança
+let cobBaixaAlvo = null;             // { it, m }
+let cobFormSituacao = "cobrando";
+let cobFormaBaixa = "pix";
+
+function cobDiasEntre(deIso, ateIso){
+  return Math.round((new Date(ateIso + "T00:00:00") - new Date(deIso + "T00:00:00")) / 86400000);
+}
+function cobNomeMes(ref, maiuscula){
+  const [y, m] = String(ref).split("-").map(Number);
+  const nome = (COB_NOMES_MES[m - 1] || "") + " de " + y;
+  return maiuscula ? nome.charAt(0).toUpperCase() + nome.slice(1) : nome;
+}
+// Monta as mensalidades a partir do primeiro vencimento, uma por mês, até a próxima ainda não vencida.
+function cobMensalidades(cob, hoje){
+  if(!cob || cob.situacao !== "cobrando" || !/^\d{4}-\d{2}-\d{2}$/.test(cob.primeiroVencimento || "") || !(Number(cob.valor) > 0)) return [];
+  let [y, m] = cob.primeiroVencimento.split("-").map(Number);
+  const dia = Math.min(28, Math.max(1, Number(cob.diaVencimento) || 1));
+  const pag = cob.pagamentos || {};
+  const lista = [];
+  for(let i = 0; i < 600; i++){
+    const ref = `${y}-${String(m).padStart(2, "0")}`;
+    const venc = (i === 0) ? cob.primeiroVencimento : `${ref}-${String(dia).padStart(2, "0")}`;
+    const p = pag[ref] || null;
+    lista.push({ ref, venc, pago: !!p, pagamento: p, valor: p ? (Number(p.valor) || 0) : Number(cob.valor), dias: cobDiasEntre(hoje, venc) });
+    if(venc > hoje && !p) break;
+    m++; if(m > 12){ m = 1; y++; }
+  }
+  return lista;
+}
+// Situação do condomínio para a etiqueta e a ordenação do painel
+function cobSituacao(cob, hoje){
+  if(!cob) return { tipo:"sem", rank:3, ordem:0, classe:"neutra", icone:"ti-minus", texto:"Sem cobrança" };
+  if(cob.situacao === "isento") return { tipo:"isento", rank:3, ordem:0, classe:"neutra", icone:"ti-heart", texto:"Isento" };
+  if(cob.situacao === "pausado") return { tipo:"pausado", rank:3, ordem:0, classe:"neutra", icone:"ti-player-pause", texto:"Pausado" };
+  const aberta = cobMensalidades(cob, hoje).find(x=> !x.pago);
+  if(!aberta) return { tipo:"sem", rank:3, ordem:0, classe:"neutra", icone:"ti-minus", texto:"Cadastro incompleto" };
+  if(aberta.dias < 0){
+    const n = -aberta.dias;
+    return { tipo:"atraso", rank:0, ordem:-n, classe:"atraso", icone:"ti-alert-triangle", texto: n === 1 ? "Atrasado há 1 dia" : `Atrasado há ${n} dias`, m:aberta };
+  }
+  if(aberta.dias <= COB_DIAS_AVISO){
+    const n = aberta.dias;
+    return { tipo:"avencer", rank:1, ordem:n, classe:"avencer", icone:"ti-clock", texto: n === 0 ? "Vence hoje" : n === 1 ? "Vence amanhã" : `Vence em ${n} dias`, m:aberta };
+  }
+  return { tipo:"ok", rank:2, ordem:0, classe:"ok", icone:"ti-circle-check", texto:"Em dia", m:aberta };
+}
+async function cobCarregarTudo(){
+  cobDados = {}; cobDisponivel = false;
+  try{
+    const snap = await getDocs(collection(db, "Cobrancas"));
+    snap.forEach(d=>{
+      if(d.id === "_config") cobConfig = Object.assign({ chavePix:"", recebedor:"", whatsSuporte:"" }, d.data() || {});
+      else cobDados[d.id] = d.data() || {};
+    });
+    cobDisponivel = true;
+  }catch(e){ console.warn("Cobrança indisponível (regras do banco ainda não publicadas?)", e && e.code); }
+}
+function cobRenderizarResumo(itens, hoje){
+  const el = document.getElementById("dev-resumo-cob");
+  const mes = hoje.slice(0, 7);
+  let previsto = 0, recebido = 0, aVencer = 0, atrasado = 0, temCobranca = false;
+  itens.forEach(it=>{
+    cobMensalidades(it.cob, hoje).forEach(m=>{
+      temCobranca = true;
+      if(m.venc.slice(0, 7) === mes){
+        previsto += m.valor;
+        if(m.pago) recebido += m.valor;
+        else if(m.venc >= hoje) aVencer += m.valor;
+      }
+      if(!m.pago && m.venc < hoje) atrasado += m.valor;
+    });
+  });
+  if(!cobDisponivel || !temCobranca){ el.style.display = "none"; el.innerHTML = ""; return; }
+  el.style.display = "block";
+  el.innerHTML = `<div class="cob-resumo"><p class="rot">Mensalidades de ${COB_NOMES_MES[Number(mes.slice(5)) - 1]}</p><p class="val">${formatarReais(previsto)}</p>
+    <div class="linha"><div class="mini ok"><p>Recebido</p><b>${formatarReais(recebido)}</b></div><div class="mini"><p>A vencer</p><b>${formatarReais(aVencer)}</b></div><div class="mini atraso"><p>Atrasado</p><b>${formatarReais(atrasado)}</b></div></div></div>`;
+}
+// Cópia resumida para o síndico: sem observações nem detalhes dos pagamentos
+function cobEspelho(cob){
+  return {
+    situacao: cob.situacao || "cobrando",
+    valor: Number(cob.valor) || 0,
+    diaVencimento: Number(cob.diaVencimento) || 1,
+    primeiroVencimento: cob.primeiroVencimento || "",
+    pagos: Object.keys(cob.pagamentos || {}),
+    chavePix: cobConfig.chavePix || "",
+    recebedor: cobConfig.recebedor || "",
+    whatsSuporte: cobConfig.whatsSuporte || ""
+  };
+}
+async function cobGravar(tenantId, cob){
+  await setDoc(doc(db, "Cobrancas", tenantId), cob);
+  await setDoc(doc(db, "Condominios", tenantId, "cobranca", "aviso"), cobEspelho(cob));
+  cobDados[tenantId] = cob;
+}
+function cobSemRegras(){
+  if(cobDisponivel) return false;
+  showToast("A cobrança ainda não está liberada no banco. Publique as regras novas do Firestore.");
+  return true;
+}
+
+/* ---------- tela de cobrança de um condomínio ---------- */
+window.devOpcaoCobranca = function(){
+  const it = devCondoAtual;
+  if(!it || cobSemRegras()) return;
+  fecharModal("modal-dev-opcoes");
+  cobCondo = it;
+  if(cobDados[it.id]) cobMostrarMensalidades(); else cobAbrirForm();
+};
+function cobMostrarMensalidades(){
+  const it = cobCondo; if(!it) return;
+  const cob = cobDados[it.id] || {};
+  const hoje = hojeISO();
+  const rotSit = cob.situacao === "isento" ? "Isento" : cob.situacao === "pausado" ? "Pausado" : `${formatarReais(cob.valor)} · dia ${cob.diaVencimento}`;
+  document.getElementById("cob-sub").textContent = `${it.nome} · ${rotSit}`;
+  const caixa = document.getElementById("cob-lista");
+  caixa.innerHTML = "";
+  const todas = cobMensalidades(cob, hoje);
+  if(!todas.length){
+    caixa.innerHTML = `<p class="dev-vazio">${cob.situacao === "cobrando" ? "Complete o cadastro para gerar as mensalidades." : "Sem mensalidades: este condomínio não está sendo cobrado."}</p>`;
+    mostrarVistaDev("cob");
+    return;
+  }
+  // Abertas primeiro (da mais antiga para a mais nova), depois as pagas (da mais recente para a mais antiga)
+  const abertas = todas.filter(m=> !m.pago);
+  const pagas = todas.filter(m=> m.pago).reverse().slice(0, 24);
+  abertas.concat(pagas).forEach(m=>{
+    const card = document.createElement("div");
+    card.className = "cob-mes" + (!m.pago && m.dias < 0 ? " atrasada" : "");
+    const cab = document.createElement("div"); cab.className = "cab";
+    cab.innerHTML = `<p class="m">${cobNomeMes(m.ref, true)}</p><span class="v">${formatarReais(m.valor)}</span>`;
+    card.appendChild(cab);
+    const det = document.createElement("p"); det.className = "det";
+    if(m.pago){
+      const forma = { pix:"Pix", boleto:"Boleto", outro:"Outro" }[m.pagamento.forma] || "";
+      det.innerHTML = `Recebido em ${formatarDataBR(m.pagamento.recebidoEm)}${forma ? " · " + forma : ""} · <span class="cob-tag ok">Pago</span>`;
+      if(m.pagamento.obs){ const o = document.createElement("span"); o.textContent = " · " + m.pagamento.obs; det.appendChild(o); }
+    }else if(m.dias < 0){
+      const n = -m.dias;
+      det.innerHTML = `Venceu em ${formatarDataBR(m.venc)} · <span class="cob-tag atraso">${n === 1 ? "Atrasado há 1 dia" : "Atrasado há " + n + " dias"}</span>`;
+    }else if(m.dias <= COB_DIAS_AVISO){
+      det.innerHTML = `Vence em ${formatarDataBR(m.venc)} · <span class="cob-tag avencer">${m.dias === 0 ? "Vence hoje" : m.dias === 1 ? "Vence amanhã" : "Vence em " + m.dias + " dias"}</span>`;
+    }else{
+      det.innerHTML = `Vence em ${formatarDataBR(m.venc)} · <span class="cob-tag neutra">Próxima</span>`;
+    }
+    card.appendChild(det);
+    if(m.pago){
+      const lk = document.createElement("button"); lk.className = "link";
+      lk.innerHTML = '<i class="ti ti-arrow-back-up"></i> Desfazer baixa';
+      lk.onclick = ()=> cobDesfazerBaixa(it, m);
+      card.appendChild(lk);
+    }else{
+      const ac = document.createElement("div"); ac.className = "cob-rapidas";
+      const bz = document.createElement("button"); bz.className = "cob-rap zap";
+      bz.innerHTML = '<i class="ti ti-brand-whatsapp"></i> Cobrar';
+      bz.onclick = ()=> cobCobrarPeloWhats(it, m);
+      const bb = document.createElement("button"); bb.className = "cob-rap baixa";
+      bb.innerHTML = '<i class="ti ti-circle-check"></i> Dar baixa';
+      bb.onclick = ()=> cobAbrirBaixa(it, m);
+      if(m.dias <= COB_DIAS_AVISO) ac.appendChild(bz);   // cobrança só faz sentido perto do vencimento ou depois dele
+      ac.appendChild(bb);
+      card.appendChild(ac);
+    }
+    caixa.appendChild(card);
+  });
+  mostrarVistaDev("cob");
+}
+
+/* ---------- cadastro da cobrança ---------- */
+window.cobEscolherSituacao = function(v){
+  cobFormSituacao = v;
+  document.querySelectorAll("#cobf-situacao button").forEach(b=> b.classList.toggle("on", b.dataset.v === v));
+};
+window.cobAoMudarPrimeiro = function(){
+  // Sugere o dia do vencimento a partir da data escolhida (máximo 28, para existir em todos os meses)
+  const iso = document.getElementById("cobf-primeiro").value;
+  if(/^\d{4}-\d{2}-\d{2}$/.test(iso)) document.getElementById("cobf-dia").value = String(Math.min(28, Number(iso.slice(8))));
+};
+window.cobAbrirForm = function(){
+  const it = cobCondo; if(!it) return;
+  const cob = cobDados[it.id] || null;
+  document.getElementById("cobf-sub").textContent = it.nome;
+  const sel = document.getElementById("cobf-dia");
+  if(!sel.options.length){ for(let d = 1; d <= 28; d++){ const o = document.createElement("option"); o.value = String(d); o.textContent = String(d); sel.appendChild(o); } }
+  cobEscolherSituacao(cob ? (cob.situacao || "cobrando") : "cobrando");
+  document.getElementById("cobf-valor").value = cob && cob.valor ? Number(cob.valor).toLocaleString("pt-BR", { minimumFractionDigits:2, maximumFractionDigits:2 }) : "";
+  sel.value = String(cob && cob.diaVencimento ? cob.diaVencimento : 10);
+  document.getElementById("cobf-primeiro").value = cob ? (cob.primeiroVencimento || "") : "";
+  const campoWhats = document.getElementById("cobf-whats");
+  campoWhats.value = cob ? (cob.whatsapp || "") : (it.telSindico || "");
+  mascararTelefoneZelador(campoWhats);
+  document.getElementById("cobf-obs").value = cob ? (cob.observacao || "") : "";
+  mostrarVistaDev("cobform");
+};
+window.cobSairDoForm = function(){
+  if(cobCondo && cobDados[cobCondo.id]) cobMostrarMensalidades(); else devVoltarLista();
+};
+window.cobSalvarForm = async function(){
+  const it = cobCondo; if(!it) return;
+  const valor = lerReais(document.getElementById("cobf-valor").value);
+  const dia = Number(document.getElementById("cobf-dia").value);
+  const primeiro = document.getElementById("cobf-primeiro").value;
+  const whats = document.getElementById("cobf-whats").value.trim();
+  if(cobFormSituacao === "cobrando"){
+    if(!(valor > 0)){ showToast("Informe o valor da mensalidade."); document.getElementById("cobf-valor").focus(); return; }
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(primeiro)){ showToast("Informe a data do primeiro vencimento."); document.getElementById("cobf-primeiro").focus(); return; }
+  }
+  if(whats && !celularValido(whats)){ showToast("Informe o WhatsApp com DDD: (00) 00000-0000, ou deixe em branco."); return; }
+  const anterior = cobDados[it.id] || {};
+  const cob = {
+    situacao: cobFormSituacao,
+    valor: valor > 0 ? valor : (Number(anterior.valor) || 0),
+    diaVencimento: dia >= 1 && dia <= 28 ? dia : 10,
+    primeiroVencimento: /^\d{4}-\d{2}-\d{2}$/.test(primeiro) ? primeiro : (anterior.primeiroVencimento || ""),
+    whatsapp: whats,
+    observacao: document.getElementById("cobf-obs").value.trim(),
+    pagamentos: anterior.pagamentos || {},
+    atualizadoEm: new Date().toISOString()
+  };
+  const b = document.getElementById("cobf-btn");
+  b.disabled = true;
+  try{
+    await cobGravar(it.id, cob);
+    showToast("Cobrança salva.");
+    cobMostrarMensalidades();
+  }catch(e){
+    showToast("Não foi possível salvar a cobrança. Confira se as regras do banco foram publicadas.");
+  }finally{ b.disabled = false; }
+};
+
+/* ---------- baixa (recebimento) ---------- */
+window.cobEscolherForma = function(v){
+  cobFormaBaixa = v;
+  document.querySelectorAll("#cb-forma button").forEach(b=> b.classList.toggle("on", b.dataset.v === v));
+};
+function cobAbrirBaixa(it, m){
+  if(!it || !m) return;
+  cobBaixaAlvo = { it, m };
+  document.getElementById("cb-sub").textContent = `${it.nome} · ${cobNomeMes(m.ref, true)}`;
+  document.getElementById("cb-data").value = hojeISO();
+  document.getElementById("cb-valor").value = Number(m.valor).toLocaleString("pt-BR", { minimumFractionDigits:2, maximumFractionDigits:2 });
+  document.getElementById("cb-obs").value = "";
+  cobEscolherForma("pix");
+  const b = document.getElementById("cb-btn");
+  b.disabled = false; b.innerHTML = '<i class="ti ti-check"></i> Confirmar recebimento';
+  document.getElementById("modal-cob-baixa").classList.add("show");
+}
+window.cobConfirmarBaixa = async function(){
+  const alvo = cobBaixaAlvo; if(!alvo) return;
+  const data = document.getElementById("cb-data").value;
+  const valor = lerReais(document.getElementById("cb-valor").value);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(data)){ showToast("Informe a data do recebimento."); return; }
+  if(!(valor > 0)){ showToast("Informe o valor recebido."); return; }
+  const cob = JSON.parse(JSON.stringify(cobDados[alvo.it.id] || {}));
+  cob.pagamentos = cob.pagamentos || {};
+  cob.pagamentos[alvo.m.ref] = { recebidoEm: data, valor, forma: cobFormaBaixa, obs: document.getElementById("cb-obs").value.trim() };
+  cob.atualizadoEm = new Date().toISOString();
+  const b = document.getElementById("cb-btn");
+  b.disabled = true; b.textContent = "Gravando...";
+  try{
+    await cobGravar(alvo.it.id, cob);
+    fecharModal("modal-cob-baixa");
+    cobBaixaAlvo = null;
+    showToast(`Baixa de ${cobNomeMes(alvo.m.ref)} registrada.`);
+    await cobAtualizarTelaAtual();
+  }catch(e){
+    showToast("Não foi possível registrar a baixa.");
+    b.disabled = false; b.innerHTML = '<i class="ti ti-check"></i> Confirmar recebimento';
+  }
+};
+async function cobDesfazerBaixa(it, m){
+  if(!confirm(`Desfazer a baixa de ${cobNomeMes(m.ref)} do ${it.nome}?`)) return;
+  const cob = JSON.parse(JSON.stringify(cobDados[it.id] || {}));
+  if(cob.pagamentos) delete cob.pagamentos[m.ref];
+  cob.atualizadoEm = new Date().toISOString();
+  try{
+    await cobGravar(it.id, cob);
+    showToast("Baixa desfeita.");
+    await cobAtualizarTelaAtual();
+  }catch(e){ showToast("Não foi possível desfazer a baixa."); }
+}
+// Depois de uma baixa: fica na tela em que o desenvolvedor estava (lista do painel ou cobrança do condomínio)
+async function cobAtualizarTelaAtual(){
+  const naCobranca = document.getElementById("dev-view-cob").style.display === "flex";
+  if(naCobranca) cobMostrarMensalidades(); else await carregarListaCondominiosDev();
+}
+
+/* ---------- cobrar pelo WhatsApp ---------- */
+function cobCobrarPeloWhats(it, m){
+  if(!it || !m) return;
+  const cob = cobDados[it.id] || {};
+  const numero = String(cob.whatsapp || it.telSindico || "").replace(/\D/g, "");
+  if(numero.length < 10){ showToast("Cadastre o WhatsApp para cobrança deste condomínio."); return; }
+  const linhas = [
+    "Olá! Tudo bem?", "",
+    `Passando para lembrar da mensalidade do *Agende & Festas* do *${it.nome}*.`, "",
+    `Referência: ${cobNomeMes(m.ref)}`,
+    `Valor: ${formatarReais(m.valor)}`,
+    `Vencimento: ${formatarDataBR(m.venc)}`
+  ];
+  if(cobConfig.chavePix) linhas.push("", `Chave Pix: ${cobConfig.chavePix}` + (cobConfig.recebedor ? ` (${cobConfig.recebedor})` : ""));
+  linhas.push("", "Se já pagou, pode desconsiderar. Obrigado!");
+  const destino = numero.startsWith("55") ? numero : "55" + numero;
+  window.open(`https://wa.me/${destino}?text=${encodeURIComponent(linhas.join("\n"))}`, "_blank", "noopener");
+  if(!cobConfig.chavePix) showToast("Dica: cadastre a sua chave Pix em \"Meus dados de recebimento\".");
+}
+
+/* ---------- dados de recebimento do desenvolvedor ---------- */
+window.cobAbrirConfig = function(){
+  if(cobSemRegras()) return;
+  document.getElementById("cc-pix").value = cobConfig.chavePix || "";
+  document.getElementById("cc-nome").value = cobConfig.recebedor || "";
+  const w = document.getElementById("cc-whats"); w.value = cobConfig.whatsSuporte || ""; mascararTelefoneZelador(w);
+  document.getElementById("modal-cob-config").classList.add("show");
+};
+window.cobSalvarConfig = async function(){
+  const whats = document.getElementById("cc-whats").value.trim();
+  if(whats && !celularValido(whats)){ showToast("Informe o WhatsApp com DDD: (00) 00000-0000, ou deixe em branco."); return; }
+  const nova = { chavePix: document.getElementById("cc-pix").value.trim(), recebedor: document.getElementById("cc-nome").value.trim(), whatsSuporte: whats };
+  const b = document.getElementById("cc-btn");
+  b.disabled = true;
+  try{
+    await setDoc(doc(db, "Cobrancas", "_config"), nova);
+    cobConfig = nova;
+    // Atualiza a cópia que os síndicos leem em cada condomínio com cobrança
+    for(const id of Object.keys(cobDados)){
+      try{ await setDoc(doc(db, "Condominios", id, "cobranca", "aviso"), cobEspelho(cobDados[id])); }catch(e){ /* condomínio removido */ }
+    }
+    fecharModal("modal-cob-config");
+    showToast("Dados de recebimento salvos.");
+  }catch(e){ showToast("Não foi possível salvar os dados de recebimento."); }
+  finally{ b.disabled = false; }
+};
+
+/* ---------- aviso de vencimento na tela inicial do síndico ---------- */
+let cobAvisoAtual = null;   // { ref, venc, valor, chavePix, recebedor, whatsSuporte }
+function cobChaveCiente(){ return "salaoFestas.cienteMensalidade." + TENANT_ID; }
+async function verificarAvisoCobranca(){
+  const el = document.getElementById("home-aviso-cobranca");
+  el.style.display = "none"; cobAvisoAtual = null;
+  if(!(ehSindico || ehDev)) return;
+  try{
+    const s = await getDoc(doc(db, "Condominios", TENANT_ID, "cobranca", "aviso"));
+    if(!s.exists()) return;
+    const e = s.data() || {};
+    const pagamentos = {}; (e.pagos || []).forEach(r=>{ pagamentos[r] = { valor: e.valor }; });
+    const hoje = hojeISO();
+    // Mensalidade mais antiga em aberto: se o desenvolvedor já deu baixa, ela não está mais aqui
+    const aberta = cobMensalidades(Object.assign({}, e, { pagamentos }), hoje).find(x=> !x.pago);
+    if(!aberta || aberta.dias < 0 || aberta.dias > COB_DIAS_AVISO) return;
+    let ciente = "";
+    try{ ciente = localStorage.getItem(cobChaveCiente()) || ""; }catch(err){}
+    cobAvisoAtual = { ref: aberta.ref, venc: aberta.venc, valor: aberta.valor, dias: aberta.dias, chavePix: e.chavePix || "", recebedor: e.recebedor || "", whatsSuporte: e.whatsSuporte || "" };
+    if(ciente === aberta.ref + "|" + hoje) return;   // "Ciente" vale só para o dia
+    el.classList.toggle("hoje", aberta.dias === 0);
+    document.getElementById("hac-titulo").textContent = aberta.dias === 0 ? "Vence hoje" : aberta.dias === 1 ? "Vence amanhã" : `Vence em ${aberta.dias} dias`;
+    document.getElementById("hac-texto").textContent = `${formatarReais(aberta.valor)} com vencimento em ${formatarDataBR(aberta.venc)}.`;
+    el.style.display = "block";
+  }catch(e){ /* sem cobrança cadastrada, ou regras antigas: não mostra nada */ }
+}
+window.cobCiente = function(){
+  if(cobAvisoAtual){ try{ localStorage.setItem(cobChaveCiente(), cobAvisoAtual.ref + "|" + hojeISO()); }catch(e){} }
+  document.getElementById("home-aviso-cobranca").style.display = "none";
+  showToast("Combinado. O aviso volta amanhã, se a mensalidade continuar em aberto.");
+};
+window.cobVerDadosPagamento = function(){
+  const a = cobAvisoAtual; if(!a) return;
+  const r = document.getElementById("cp-resumo");
+  r.innerHTML = "";
+  [["Referência", cobNomeMes(a.ref)], ["Valor", formatarReais(a.valor)], ["Vencimento", formatarDataBR(a.venc)], ["Recebedor", a.recebedor]].forEach(([rot, val])=>{
+    if(!val) return;
+    const sp = document.createElement("span"); sp.textContent = rot + ": ";
+    const b = document.createElement("b"); b.textContent = val;
+    r.appendChild(sp); r.appendChild(b); r.appendChild(document.createElement("br"));
+  });
+  document.getElementById("cp-com-pix").style.display = a.chavePix ? "block" : "none";
+  document.getElementById("cp-sem-pix").style.display = a.chavePix ? "none" : "block";
+  document.getElementById("cp-pix").textContent = a.chavePix;
+  document.getElementById("cp-suporte").style.display = a.whatsSuporte ? "flex" : "none";
+  document.getElementById("modal-cob-pagamento").classList.add("show");
+};
+window.cobCopiarPix = async function(){
+  if(!cobAvisoAtual) return;
+  try{ await navigator.clipboard.writeText(cobAvisoAtual.chavePix); showToast("Chave Pix copiada."); }
+  catch(e){ showToast("Não foi possível copiar. Selecione a chave e copie manualmente."); }
+};
+window.cobFalarComSuporte = function(){
+  const a = cobAvisoAtual; if(!a || !a.whatsSuporte) return;
+  const n = a.whatsSuporte.replace(/\D/g, "");
+  const nome = (condominioData && condominioData.nome) || "condomínio";
+  const texto = `Olá! Sou síndico(a) do ${nome}. Quero falar sobre a mensalidade de ${cobNomeMes(a.ref)} do Agende & Festas.`;
+  window.open(`https://wa.me/${n.startsWith("55") ? n : "55" + n}?text=${encodeURIComponent(texto)}`, "_blank", "noopener");
+};
 window.devVoltarPasso1 = function(){ mostrarVistaDev("p1"); };
 
 function codigoDoNome(nome){
@@ -2280,6 +2892,7 @@ async function iniciarApp(){
   carregarMinhasReservas();
   escutarPendentesEmTempoReal();
   if(ehSindico || ehDev) verificarReservaProxima();
+  if(ehSindico || ehDev) verificarAvisoCobranca();
   // Link do e-mail de novo pedido (?aba=aprovacoes) abre direto nas aprovações
   if((ehSindico || ehDev) && new URLSearchParams(location.search).get("aba") === "aprovacoes"){
     abrirAprovacoesDireto();
