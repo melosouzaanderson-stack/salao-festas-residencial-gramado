@@ -552,6 +552,21 @@
   .btn-whats i{ font-size:22px; }
   .convite-nota{ font-size:15px; color:#475569; text-align:center; margin:10px 0 0; }
 
+  /* ===== Configurações em seções ===== */
+  .cfg-sec{ border:1px solid var(--line); border-radius:14px; background:#fff; margin-bottom:10px; overflow:hidden; }
+  .cfg-sec.aberta{ border-color:#93B4EE; }
+  .cfg-cab{ display:flex; align-items:center; gap:12px; width:100%; min-height:66px; padding:12px; background:none; border:0; text-align:left; font-family:inherit; color:var(--deep); cursor:pointer; }
+  .cfg-cab .ic{ flex:none; width:42px; height:42px; border-radius:12px; background:var(--soft); color:var(--accent-d); display:flex; align-items:center; justify-content:center; font-size:21px; }
+  .cfg-sec.aberta .cfg-cab .ic{ background:linear-gradient(135deg,var(--azul1),var(--azul2)); color:#fff; }
+  .cfg-cab .txt{ flex:1; min-width:0; display:flex; flex-direction:column; }
+  .cfg-cab .t1{ font-size:17px; font-weight:600; }
+  .cfg-cab .t2{ font-size:14px; color:var(--muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .cfg-sec.alerta .cfg-cab .t2{ color:var(--red-ink); font-weight:500; }
+  .cfg-cab .seta{ flex:none; font-size:20px; color:var(--muted); transition:transform .2s ease; }
+  .cfg-sec.aberta .cfg-cab .seta{ transform:rotate(90deg); }
+  .cfg-corpo{ display:none; padding:14px 12px 6px; border-top:1px solid var(--line); }
+  .cfg-sec.aberta .cfg-corpo{ display:block; }
+
   /* ===== Senha inicial por casa ===== */
   .senha-caixa{ background:var(--soft); border:2px dashed #93B4EE; border-radius:16px; padding:14px; text-align:center; margin:0 0 14px; }
   .senha-caixa .rot{ font-size:15px; color:var(--muted); margin:0 0 4px; }
@@ -914,7 +929,15 @@
 <div class="modal-wrap" id="modal-condominio">
   <div class="modal">
     <button class="close-x" onclick="fecharModal('modal-condominio')"><i class="ti ti-x"></i></button>
-    <h3>Configurações do condomínio</h3>
+    <h3>Configurações</h3>
+    <p class="sub" style="margin:-8px 0 14px;">Toque em uma seção para abrir. O botão Salvar grava todas de uma vez.</p>
+    <div class="cfg-sec" id="cfg-sec-dados">
+      <button type="button" class="cfg-cab" onclick="alternarSecaoConfig('dados')" aria-expanded="false">
+        <span class="ic"><i class="ti ti-building"></i></span>
+        <span class="txt"><span class="t1">Dados do condomínio</span><span class="t2" id="cfg-res-dados"></span></span>
+        <i class="ti ti-chevron-right seta"></i>
+      </button>
+      <div class="cfg-corpo">
     <div class="avatar-edit" onclick="document.getElementById('cd-foto-input').click()">
       <img id="cd-foto-preview" style="display:none;">
       <i class="ti ti-building" id="cd-foto-icone" style="font-size:30px;color:var(--muted);"></i>
@@ -924,14 +947,6 @@
     <div class="field"><label>Nome do condomínio</label><input type="text" id="cd-nome"></div>
     <div class="field"><label>Subtítulo</label><input type="text" id="cd-subtitulo"></div>
     <div class="field"><label>E-mail do síndico (recebe notificações)</label><input type="text" id="cd-email-sindico"></div>
-    <label class="auto-switch" for="cd-relatorio-auto">
-      <span class="txt"><b>Relatório mensal automático</b><span>Todo 1º dia útil do mês, às 8h, o relatório das festas do mês anterior vai para o e-mail do síndico. Se não houve festa, nada é enviado.</span></span>
-      <input type="checkbox" id="cd-relatorio-auto" role="switch">
-      <span class="trilho" aria-hidden="true"></span>
-    </label>
-    <div class="field"><label>Título do aviso na tela inicial</label><input type="text" id="cd-aviso-titulo" placeholder="ex: Bem-vindo(a)!"></div>
-    <div class="field"><label>Texto do aviso na tela inicial</label><textarea id="cd-aviso-texto" rows="3" placeholder="ex: Manutenção da piscina dia 15."></textarea></div>
-
     <div class="field">
       <label>Foto do salão (marca d'água no botão "Reserva do Salão")</label>
       <div style="display:flex;align-items:center;gap:12px;">
@@ -943,7 +958,43 @@
       </div>
       <input type="file" id="cd-foto-salao-input" accept="image/*" style="display:none;" onchange="onFotoSalaoSelecionada(this)">
     </div>
-
+      </div>
+    </div>
+    <div class="cfg-sec" id="cfg-sec-local">
+      <button type="button" class="cfg-cab" onclick="alternarSecaoConfig('local')" aria-expanded="false">
+        <span class="ic"><i class="ti ti-map-pin"></i></span>
+        <span class="txt"><span class="t1">Localização</span><span class="t2" id="cfg-res-local"></span></span>
+        <i class="ti ti-chevron-right seta"></i>
+      </button>
+      <div class="cfg-corpo">
+    <div class="field"><label for="cd-endereco">Endereço escrito</label><textarea id="cd-endereco" rows="2" maxlength="200" placeholder="Ex.: Av. Berlim, 123 – Jardim Europa, Goiânia - GO"></textarea></div>
+    <div class="field">
+      <label for="cd-maps">Link do Google Maps</label>
+      <input type="url" id="cd-maps" maxlength="300" autocomplete="off" inputmode="url" placeholder="Ex.: https://maps.app.goo.gl/..." oninput="atualizarStatusMaps()">
+      <div class="maps-status" id="cd-maps-status"></div>
+    </div>
+    <button class="btn btn-ghost" type="button" onclick="testarLinkMaps()"><i class="ti ti-map"></i> Testar no mapa</button>
+    <div class="dica-maps"><b>Como pegar o link</b><br>1. Abra o Google Maps e procure o condomínio.<br>2. Toque em "Compartilhar".<br>3. Toque em "Copiar link" e cole aqui.</div>
+      </div>
+    </div>
+    <div class="cfg-sec" id="cfg-sec-aviso">
+      <button type="button" class="cfg-cab" onclick="alternarSecaoConfig('aviso')" aria-expanded="false">
+        <span class="ic"><i class="ti ti-speakerphone"></i></span>
+        <span class="txt"><span class="t1">Aviso da tela inicial</span><span class="t2" id="cfg-res-aviso"></span></span>
+        <i class="ti ti-chevron-right seta"></i>
+      </button>
+      <div class="cfg-corpo">
+    <div class="field"><label>Título do aviso na tela inicial</label><input type="text" id="cd-aviso-titulo" placeholder="ex: Bem-vindo(a)!"></div>
+    <div class="field"><label>Texto do aviso na tela inicial</label><textarea id="cd-aviso-texto" rows="3" placeholder="ex: Manutenção da piscina dia 15."></textarea></div>
+      </div>
+    </div>
+    <div class="cfg-sec" id="cfg-sec-lembrete">
+      <button type="button" class="cfg-cab" onclick="alternarSecaoConfig('lembrete')" aria-expanded="false">
+        <span class="ic"><i class="ti ti-bell"></i></span>
+        <span class="txt"><span class="t1">Lembrete ao síndico</span><span class="t2" id="cfg-res-lembrete"></span></span>
+        <i class="ti ti-chevron-right seta"></i>
+      </button>
+      <div class="cfg-corpo">
     <div class="field">
       <label>Assunto do e-mail de lembrete ao síndico</label>
       <input type="text" id="cd-lembrete-assunto" placeholder="ex: Reserva se aproxima — prepare o salão" oninput="atualizarAlertaLembrete()">
@@ -954,23 +1005,19 @@
       <p style="font-size:13px;color:var(--muted);margin:6px 0 0;">O síndico recebe este lembrete por e-mail antes de cada festa confirmada. Precisa de assunto e de texto.</p>
       <div class="rs-aviso" id="cd-lembrete-alerta" style="display:none;margin:10px 0 0;"><i class="ti ti-alert-triangle"></i> <span id="cd-lembrete-alerta-texto"></span></div>
     </div>
-
-    <p class="config-subtitulo">Localização (vai no convite dos moradores)</p>
-    <div class="field"><label for="cd-endereco">Endereço escrito</label><textarea id="cd-endereco" rows="2" maxlength="200" placeholder="Ex.: Av. Berlim, 123 – Jardim Europa, Goiânia - GO"></textarea></div>
-    <div class="field">
-      <label for="cd-maps">Link do Google Maps</label>
-      <input type="url" id="cd-maps" maxlength="300" autocomplete="off" inputmode="url" placeholder="Ex.: https://maps.app.goo.gl/..." oninput="atualizarStatusMaps()">
-      <div class="maps-status" id="cd-maps-status"></div>
+      </div>
     </div>
-    <button class="btn btn-ghost" type="button" onclick="testarLinkMaps()"><i class="ti ti-map"></i> Testar no mapa</button>
-    <div class="dica-maps"><b>Como pegar o link</b><br>1. Abra o Google Maps e procure o condomínio.<br>2. Toque em "Compartilhar".<br>3. Toque em "Copiar link" e cole aqui.</div>
-
-    <p class="config-subtitulo">Zelador</p>
+    <div class="cfg-sec" id="cfg-sec-zelador">
+      <button type="button" class="cfg-cab" onclick="alternarSecaoConfig('zelador')" aria-expanded="false">
+        <span class="ic"><i class="ti ti-user-cog"></i></span>
+        <span class="txt"><span class="t1">Zelador</span><span class="t2" id="cfg-res-zelador"></span></span>
+        <i class="ti ti-chevron-right seta"></i>
+      </button>
+      <div class="cfg-corpo">
     <div class="field"><label>Nome</label><input type="text" id="cd-zelador-nome" placeholder="Nome completo"></div>
     <div class="field"><label>Apelido (opcional)</label><input type="text" id="cd-zelador-apelido" placeholder="Como é chamado"></div>
     <div class="field"><label>Whatsapp</label><input type="text" id="cd-zelador-whatsapp" placeholder="(00) 00000-0000" oninput="mascararTelefoneZelador(this)"></div>
 
-    <p class="config-subtitulo">Mensagens padrão</p>
     <div class="field">
       <label>Aviso ao zelador</label>
       <textarea id="cd-msg-zelador" rows="4"></textarea>
@@ -979,6 +1026,22 @@
       <span class="var-chip">{dia_semana}</span><span class="var-chip">{data}</span><span class="var-chip">{morador}</span><span class="var-chip">{zelador}</span>
     </div>
     <p style="font-size:11px;color:var(--muted);margin:0 0 6px;">Essas variáveis são substituídas automaticamente. Em {zelador}, usamos o apelido cadastrado — se estiver vazio, usamos o nome.</p>
+      </div>
+    </div>
+    <div class="cfg-sec" id="cfg-sec-relatorio">
+      <button type="button" class="cfg-cab" onclick="alternarSecaoConfig('relatorio')" aria-expanded="false">
+        <span class="ic"><i class="ti ti-report"></i></span>
+        <span class="txt"><span class="t1">Relatório mensal</span><span class="t2" id="cfg-res-relatorio"></span></span>
+        <i class="ti ti-chevron-right seta"></i>
+      </button>
+      <div class="cfg-corpo">
+    <label class="auto-switch" for="cd-relatorio-auto">
+      <span class="txt"><b>Relatório mensal automático</b><span>Todo 1º dia útil do mês, às 8h, o relatório das festas do mês anterior vai para o e-mail do síndico. Se não houve festa, nada é enviado.</span></span>
+      <input type="checkbox" id="cd-relatorio-auto" role="switch">
+      <span class="trilho" aria-hidden="true"></span>
+    </label>
+      </div>
+    </div>
 
     <button class="btn btn-primary" onclick="salvarCondominio()">Salvar alterações</button>
     <div class="lock-note"><i class="ti ti-lock"></i><span>Visível apenas para síndico e desenvolvedor</span></div>
@@ -1207,7 +1270,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026030003";
+const VERSAO_APP = "2026030004";
 
 /* ===================================================================== */
 
@@ -2960,6 +3023,8 @@ window.abrirModal = function(id){
       document.getElementById("cd-foto-salao-preview").style.display = "block";
       document.getElementById("cd-foto-salao-icone").style.display = "none";
     }
+    definirSecaoConfig(null);     // abre com todas as seções fechadas
+    atualizarResumosConfig();
   }
   if(id === "modal-casas") renderizarListaCasas();
   if(id === "modal-relatorio"){ atualizarAvisoRelatorioAuto(); definirPeriodoRelatorio("mes-anterior"); }
@@ -3034,6 +3099,39 @@ window.onFotoSalaoSelecionada = function(input){
   reader.readAsDataURL(file);
 };
 
+/* ---------- Configurações em seções (abre uma por vez) ---------- */
+const SECOES_CONFIG = ["dados","local","aviso","lembrete","zelador","relatorio"];
+function definirSecaoConfig(nome){
+  SECOES_CONFIG.forEach(n=>{
+    const el = document.getElementById("cfg-sec-" + n);
+    const aberta = (n === nome);
+    el.classList.toggle("aberta", aberta);
+    el.querySelector(".cfg-cab").setAttribute("aria-expanded", aberta ? "true" : "false");
+  });
+}
+window.alternarSecaoConfig = function(nome){
+  const jaAberta = document.getElementById("cfg-sec-" + nome).classList.contains("aberta");
+  definirSecaoConfig(jaAberta ? null : nome);
+  if(!jaAberta) document.getElementById("cfg-sec-" + nome).scrollIntoView({ block:"nearest", behavior:"smooth" });
+};
+function atualizarResumosConfig(){
+  const v = (id)=> document.getElementById(id).value.trim();
+  const por = (nome, texto, alerta)=>{
+    document.getElementById("cfg-res-" + nome).textContent = texto;
+    document.getElementById("cfg-sec-" + nome).classList.toggle("alerta", !!alerta);
+  };
+  por("dados", v("cd-nome") || "Sem nome cadastrado", !v("cd-nome"));
+  const temEnd = !!v("cd-endereco"), temMapa = !!v("cd-maps");
+  por("local", temEnd && temMapa ? "Endereço e link do mapa" : temEnd ? "Só endereço, sem link do mapa" : temMapa ? "Só link do mapa, sem endereço" : "Não cadastrada");
+  por("aviso", (v("cd-aviso-titulo") || v("cd-aviso-texto")) ? "Com aviso publicado" : "Sem aviso");
+  const falta = oQueFaltaNoLembrete();
+  por("lembrete", falta ? `Desligado: falta ${falta}` : "Ligado", !!falta);
+  const zel = v("cd-zelador-apelido") || v("cd-zelador-nome");
+  por("zelador", zel ? zel + (v("cd-zelador-whatsapp") ? "" : " · sem WhatsApp") : "Não cadastrado");
+  por("relatorio", document.getElementById("cd-relatorio-auto").checked ? "Ligado · 1º dia útil do mês" : "Desligado");
+}
+["input","change"].forEach(ev=> document.getElementById("modal-condominio").addEventListener(ev, atualizarResumosConfig));
+
 // O lembrete só é enviado quando o condomínio tem assunto E texto cadastrados
 function oQueFaltaNoLembrete(){
   const semAssunto = !document.getElementById("cd-lembrete-assunto").value.trim();
@@ -3050,6 +3148,7 @@ window.atualizarAlertaLembrete = function(){
 };
 window.voltarParaPreencherLembrete = function(){
   fecharModal("modal-sem-lembrete");
+  definirSecaoConfig("lembrete");
   const assunto = document.getElementById("cd-lembrete-assunto");
   (assunto.value.trim() ? document.getElementById("cd-lembrete-texto") : assunto).focus();
 };
@@ -3076,6 +3175,7 @@ window.salvarCondominio = async function(confirmouSemLembrete){
   const linkMaps = mapsDigitado ? linkMapsValido(mapsDigitado) : "";
   if(mapsDigitado && !linkMaps){
     showToast("O link da localização precisa ser do Google Maps.");
+    definirSecaoConfig("local");
     document.getElementById("cd-maps").focus();
     return;
   }
