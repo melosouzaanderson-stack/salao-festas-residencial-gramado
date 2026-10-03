@@ -1395,7 +1395,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026030008";
+const VERSAO_APP = "2026030009";
 
 /* ===================================================================== */
 
@@ -1786,7 +1786,10 @@ window.salvarCadastroObrigatorio = async function(){
 };
 
 window.fazerLogout = async function(){
+  // Desenvolvedor: ao sair, volta para a entrada genérica (e não para o condomínio que estava visitando)
+  const eraDev = ehDev;
   await signOut(auth);
+  if(eraDev){ location.href = urlBaseDoApp() + "?dev"; return; }
   location.reload();
 };
 
