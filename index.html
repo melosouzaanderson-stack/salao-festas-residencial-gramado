@@ -653,6 +653,10 @@
   .cob-rap i{ font-size:21px; }
   .cob-rap.zap{ background:#1F7A44; color:#fff; }
   .cob-rap.baixa{ background:var(--soft); color:var(--accent-d); border:2px solid #BFD3F5; }
+  .cob-rap.acordo{ background:#fff; color:var(--accent-d); border:2px solid #BFD3F5; }
+  .cob-rapidas.tres .cob-rap{ font-size:15px; gap:5px; padding:0 4px; }
+  .cob-rapidas.tres .cob-rap i{ font-size:19px; }
+  .cob-acordo-info{ font-size:15px; color:var(--muted); margin:0; line-height:1.5; }
   .cob-rap:active{ transform:scale(.97); }
   .cob-resumo{ background:linear-gradient(135deg,#1E293B,#0F172A); color:#fff; border-radius:18px; padding:16px; }
   .cob-resumo .rot{ font-size:14px; opacity:.78; margin:0 0 2px; }
@@ -776,6 +780,8 @@
       <div class="dev-top"><button class="volta" onclick="devVoltarLista()" aria-label="Voltar"><i class="ti ti-arrow-left"></i></button><b>Cobrança<span class="sub2" id="cob-sub"></span></b></div>
       <div class="dev-corpo">
         <button class="btn btn-ghost" style="display:flex;align-items:center;justify-content:center;gap:8px;" onclick="cobAbrirForm()"><i class="ti ti-edit"></i> Editar cadastro</button>
+        <button class="btn btn-ghost" id="cob-btn-acordo" style="display:none;align-items:center;justify-content:center;gap:8px;" onclick="cobAbrirAcordo(cobCondo)"><i class="ti ti-mail-forward"></i> Enviar resumo do acordo</button>
+        <p class="cob-acordo-info" id="cob-acordo-info" style="display:none;"></p>
         <p class="dev-secao">Mensalidades</p>
         <div id="cob-lista" style="display:flex;flex-direction:column;gap:12px;"></div>
       </div>
@@ -1344,6 +1350,18 @@
   </div>
 </div>
 
+<!-- ===================== MODAL: ENVIAR RESUMO DO ACORDO (desenvolvedor) ===================== -->
+<div class="modal-wrap" id="modal-cob-acordo" data-fixo="1" style="z-index:70;">
+  <div class="modal">
+    <h3>Enviar resumo do acordo?</h3>
+    <p class="sub" id="ca-sub" style="margin:-8px 0 14px;"></p>
+    <p class="dev-resumo" id="ca-resumo" style="margin:0 0 14px;"></p>
+    <div class="rs-aviso" id="ca-aviso" style="display:none;"><i class="ti ti-alert-triangle"></i> <span id="ca-aviso-texto"></span></div>
+    <button class="btn btn-primary btn-linha" id="ca-btn" onclick="cobEnviarAcordo()"><i class="ti ti-send"></i> Enviar e-mail</button>
+    <button class="btn btn-ghost btn-linha" onclick="fecharModal('modal-cob-acordo')">Cancelar</button>
+  </div>
+</div>
+
 <!-- ===================== MODAL: DADOS DE RECEBIMENTO (desenvolvedor) ===================== -->
 <div class="modal-wrap" id="modal-cob-config" data-fixo="1" style="z-index:70;">
   <div class="modal">
@@ -1540,7 +1558,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026030012";
+const VERSAO_APP = "2026030013";
 
 /* ===================================================================== */
 
@@ -2180,7 +2198,7 @@ async function carregarListaCondominiosDev(){
         casas = cs.size;
         cs.forEach(c=>{ const v = c.data(); if(v.papel === "sindico"){ sindicos.push(String(v.numero)); if(!telSindico && v.telefone) telSindico = v.telefone; } });
       }catch(e){ /* mostra o condomínio mesmo sem a contagem */ }
-      return { id: d.id, nome: (d.data().nome || d.id), casas, sindicos, telSindico };
+      return { id: d.id, nome: (d.data().nome || d.id), casas, sindicos, telSindico, emailSindico: String(d.data().emailSindico || "").trim() };
     }));
     // Cobrança: só o desenvolvedor lê. Se as regras novas ainda não foram publicadas, o painel segue sem ela.
     await cobCarregarTudo();
@@ -2219,10 +2237,17 @@ async function carregarListaCondominiosDev(){
       const bloco = document.createElement("div");
       bloco.className = "dev-condo-bloco";
       bloco.appendChild(linha);
-      // Atalhos no card: aparecem quando há mensalidade atrasada ou a vencer
-      if(cobDisponivel && (it.sit.tipo === "atraso" || it.sit.tipo === "avencer")){
+      // Atalhos no card: cobrar e dar baixa (mensalidade atrasada ou a vencer) e o e-mail do acordo (toda cobrança ativa)
+      const temPendencia = it.sit.tipo === "atraso" || it.sit.tipo === "avencer";
+      if(cobDisponivel && (temPendencia || it.sit.tipo === "ok")){
         const rap = document.createElement("div");
-        rap.className = "cob-rapidas";
+        rap.className = "cob-rapidas" + (temPendencia ? " tres" : "");
+        const ba = document.createElement("button");
+        ba.className = "cob-rap acordo";
+        ba.setAttribute("aria-label", "Enviar o resumo do acordo comercial para " + it.nome);
+        ba.innerHTML = '<i class="ti ti-mail-forward"></i> ' + (temPendencia ? "Acordo" : "Enviar acordo por e-mail");
+        ba.onclick = ()=> cobAbrirAcordo(it);
+        if(!temPendencia){ rap.appendChild(ba); bloco.appendChild(rap); caixa.appendChild(bloco); return; }
         const bz = document.createElement("button");
         bz.className = "cob-rap zap";
         bz.setAttribute("aria-label", "Cobrar " + it.nome + " pelo WhatsApp");
@@ -2233,7 +2258,7 @@ async function carregarListaCondominiosDev(){
         bb.setAttribute("aria-label", "Dar baixa na mensalidade de " + it.nome);
         bb.innerHTML = '<i class="ti ti-circle-check"></i> Dar baixa';
         bb.onclick = ()=> cobAbrirBaixa(it, it.sit.m);
-        rap.appendChild(bz); rap.appendChild(bb);
+        rap.appendChild(bz); rap.appendChild(bb); rap.appendChild(ba);
         bloco.appendChild(rap);
       }
       caixa.appendChild(bloco);
@@ -2448,6 +2473,13 @@ function cobMostrarMensalidades(){
   const hoje = hojeISO();
   const rotSit = cob.situacao === "isento" ? "Isento" : cob.situacao === "pausado" ? "Pausado" : `${formatarReais(cob.valor)} · dia ${cob.diaVencimento}`;
   document.getElementById("cob-sub").textContent = `${it.nome} · ${rotSit}`;
+  const podeAcordo = cob.situacao === "cobrando" && Number(cob.valor) > 0 && !!cob.primeiroVencimento;
+  document.getElementById("cob-btn-acordo").style.display = podeAcordo ? "flex" : "none";
+  const info = document.getElementById("cob-acordo-info");
+  if(cob.acordoEnviadoEm){
+    info.textContent = `Resumo do acordo enviado em ${formatarDataBR(cob.acordoEnviadoEm)}` + (cob.acordoEnviadoPara ? ` para ${cob.acordoEnviadoPara}.` : ".");
+    info.style.display = "block";
+  }else{ info.style.display = "none"; }
   const caixa = document.getElementById("cob-lista");
   caixa.innerHTML = "";
   const todas = cobMensalidades(cob, hoje);
@@ -2552,6 +2584,7 @@ window.cobSalvarForm = async function(){
     pagamentos: anterior.pagamentos || {},
     atualizadoEm: new Date().toISOString()
   };
+  if(anterior.acordoEnviadoEm){ cob.acordoEnviadoEm = anterior.acordoEnviadoEm; cob.acordoEnviadoPara = anterior.acordoEnviadoPara || ""; }
   const b = document.getElementById("cobf-btn");
   b.disabled = true;
   try{
@@ -2639,6 +2672,65 @@ function cobCobrarPeloWhats(it, m){
   window.open(`https://wa.me/${destino}?text=${encodeURIComponent(linhas.join("\n"))}`, "_blank", "noopener");
   if(!cobConfig.chavePix) showToast("Dica: cadastre a sua chave Pix em \"Meus dados de recebimento\".");
 }
+
+/* ---------- resumo do acordo comercial por e-mail (enviado pelo servidor) ---------- */
+let cobAcordoAlvo = null;
+function cobAbrirAcordo(it){
+  if(!it || cobSemRegras()) return;
+  const cob = cobDados[it.id] || null;
+  if(!cob || cob.situacao !== "cobrando" || !(Number(cob.valor) > 0) || !cob.primeiroVencimento){
+    showToast("Cadastre a cobrança deste condomínio antes de enviar o resumo."); return;
+  }
+  cobAcordoAlvo = it;
+  document.getElementById("ca-sub").textContent = it.nome;
+  const r = document.getElementById("ca-resumo");
+  r.innerHTML = "";
+  [["Para", it.emailSindico || "Nenhum e-mail de síndico cadastrado"],
+   ["Mensalidade", formatarReais(cob.valor)],
+   ["Primeiro vencimento", formatarDataBR(cob.primeiroVencimento)],
+   ["Demais vencimentos", "Todo dia " + cob.diaVencimento],
+   ["Chave Pix", cobConfig.chavePix || "Não cadastrada"]].forEach(([rot, val])=>{
+    const sp = document.createElement("span"); sp.textContent = rot + ": ";
+    const b = document.createElement("b"); b.textContent = val;
+    r.appendChild(sp); r.appendChild(b); r.appendChild(document.createElement("br"));
+  });
+  const avisos = [];
+  if(!it.emailSindico) avisos.push("Cadastre o e-mail do síndico nas configurações do condomínio.");
+  if(!cobConfig.chavePix) avisos.push("Sem chave Pix: o e-mail vai dizer que os dados de pagamento serão enviados pelo suporte.");
+  if(cob.acordoEnviadoEm) avisos.push(`Já enviado em ${formatarDataBR(cob.acordoEnviadoEm)}. Enviar de novo manda outro e-mail.`);
+  document.getElementById("ca-aviso").style.display = avisos.length ? "block" : "none";
+  document.getElementById("ca-aviso-texto").textContent = avisos.join(" ");
+  const b = document.getElementById("ca-btn");
+  b.disabled = !it.emailSindico; b.innerHTML = '<i class="ti ti-send"></i> Enviar e-mail';
+  document.getElementById("modal-cob-acordo").classList.add("show");
+}
+window.cobAbrirAcordo = cobAbrirAcordo;
+window.cobEnviarAcordo = async function(){
+  const it = cobAcordoAlvo; if(!it) return;
+  const b = document.getElementById("ca-btn");
+  b.disabled = true; b.textContent = "Enviando...";
+  try{
+    const token = await auth.currentUser.getIdToken();
+    const resp = await fetch(URL_FN_RELATORIO_EMAIL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify({ modo: "acordoComercial", tenantId: it.id })
+    });
+    const dados = await resp.json().catch(()=> ({}));
+    if(!resp.ok || !dados.ok){
+      if(dados.erro === "Dados incompletos.") throw new Error("O envio do acordo ainda não está publicado no servidor. Atualize a função de e-mail.");
+      throw new Error(dados.erro || "Não foi possível enviar o e-mail.");
+    }
+    if(cobDados[it.id]){ cobDados[it.id].acordoEnviadoEm = dados.em; cobDados[it.id].acordoEnviadoPara = dados.para; }
+    fecharModal("modal-cob-acordo");
+    cobAcordoAlvo = null;
+    showToast("Resumo do acordo enviado para " + dados.para + ".");
+    if(document.getElementById("dev-view-cob").style.display === "flex") cobMostrarMensalidades();
+  }catch(e){
+    showToast(e.message || "Não foi possível enviar o e-mail.");
+    b.disabled = false; b.innerHTML = '<i class="ti ti-send"></i> Enviar e-mail';
+  }
+};
 
 /* ---------- dados de recebimento do desenvolvedor ---------- */
 window.cobAbrirConfig = function(){
