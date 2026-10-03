@@ -552,6 +552,12 @@
   .btn-whats i{ font-size:22px; }
   .convite-nota{ font-size:15px; color:#475569; text-align:center; margin:10px 0 0; }
 
+  /* ===== Senha inicial por casa ===== */
+  .senha-caixa{ background:var(--soft); border:2px dashed #93B4EE; border-radius:16px; padding:14px; text-align:center; margin:0 0 14px; }
+  .senha-caixa .rot{ font-size:15px; color:var(--muted); margin:0 0 4px; }
+  .senha-caixa .num{ font-size:38px; font-weight:600; letter-spacing:6px; color:var(--accent-d); margin:0; user-select:all; }
+  .tag-espera{ display:inline-block; background:var(--amber); color:var(--amber-ink); border:1px solid var(--amber-bd); border-radius:999px; padding:3px 10px; font-size:13px; font-weight:600; margin-top:4px; }
+
   /* ===== Entrada genérica e painel do desenvolvedor ===== */
   .login-hero.marca{ background:linear-gradient(135deg,var(--azul1),var(--azul2)); }
   .login-hero.marca .ph{ color:#fff; }
@@ -685,7 +691,7 @@
         <div class="field"><label>Número da casa do síndico *</label><input type="text" id="dv-casa" maxlength="4" inputmode="numeric" autocomplete="off" placeholder="Ex.: 03"></div>
         <div class="field"><label>Celular com DDD (WhatsApp) *</label><input type="text" id="dv-celular" placeholder="(00) 00000-0000" inputmode="tel" autocomplete="off" oninput="mascararTelefoneZelador(this)"></div>
         <div class="field"><label>E-mail do síndico *</label><input type="email" id="dv-email" maxlength="120" autocomplete="off" autocapitalize="none" placeholder="Recebe os pedidos de reserva"></div>
-        <div class="dev-info"><i class="ti ti-key"></i><span>Senha inicial: 123456. No primeiro acesso o síndico cria a própria senha e completa o cadastro.</span></div>
+        <div class="dev-info"><i class="ti ti-key"></i><span>O app gera uma senha inicial só para esta casa. No primeiro acesso o síndico cria a própria senha e completa o cadastro.</span></div>
         <div class="dev-rodape"><button class="btn btn-primary" id="dv-btn-criar" onclick="devCriarCondominio()"><i class="ti ti-check"></i> Criar condomínio</button></div>
       </div>
     </div>
@@ -695,7 +701,7 @@
       <div class="dev-corpo">
         <div class="dev-ok"><i class="ti ti-check"></i></div>
         <p class="dev-h" style="text-align:center;">Condomínio criado!</p>
-        <div class="card"><p class="dev-resumo"><span>Condomínio:</span> <b id="dv-ok-nome"></b><br><span>Síndico:</span> <b id="dv-ok-casa"></b><br><span>Senha inicial:</span> <b>123456</b></p>
+        <div class="card"><p class="dev-resumo"><span>Condomínio:</span> <b id="dv-ok-nome"></b><br><span>Síndico:</span> <b id="dv-ok-casa"></b><br><span>Senha inicial:</span> <b id="dv-ok-senha"></b></p>
           <div class="dev-previa" id="dv-ok-link"></div></div>
         <div class="dev-rodape">
           <button class="btn btn-whats" onclick="devEnviarAoSindico()"><i class="ti ti-brand-whatsapp"></i> Enviar ao síndico</button>
@@ -999,7 +1005,7 @@
     <h3>Casas cadastradas</h3>
     <div id="lista-casas"></div>
     <div style="height:14px;"></div>
-    <p class="sub" style="margin:0 0 10px;">Cadastrar nova casa (senha inicial padrão: 123456)</p>
+    <p class="sub" style="margin:0 0 10px;">Cadastrar nova casa (o app gera uma senha inicial só para ela)</p>
     <div class="field"><label>Número da casa</label><input type="text" id="nc-numero" placeholder="ex: 16" inputmode="numeric"></div>
     <div class="field"><label>Papel</label>
       <select id="nc-papel" onchange="onMudarPapelNovaCasa()"><option value="morador">Morador</option><option value="sindico">Síndico</option></select>
@@ -1032,7 +1038,7 @@
     <div id="rs-etapa-confirmar">
       <h3 id="rs-titulo">Resetar senha?</h3>
       <p class="sub" id="rs-responsavel" style="margin:-6px 0 14px;"></p>
-      <div class="rs-aviso"><i class="ti ti-alert-triangle"></i> A senha volta para <b>123456</b>. O morador será desconectado dos aparelhos e terá que criar uma senha nova no próximo login.</div>
+      <div class="rs-aviso"><i class="ti ti-alert-triangle"></i> O app gera uma <b>nova senha inicial</b> para a casa. O morador será desconectado dos aparelhos e terá que criar uma senha nova no próximo login.</div>
       <button class="btn btn-primary" id="rs-btn-confirmar" style="width:100%;margin-bottom:8px;" onclick="confirmarResetSenha()">Resetar senha</button>
       <button class="btn btn-ghost" style="width:100%;" onclick="fecharModal('modal-reset-senha')">Cancelar</button>
     </div>
@@ -1043,6 +1049,18 @@
       <p class="sub" id="rs-sem-telefone" style="margin:0 0 12px;display:none;">Esta casa não tem telefone cadastrado. Avise o morador de outra forma.</p>
       <button class="btn btn-ghost" style="width:100%;" onclick="fecharModal('modal-reset-senha')">Fechar</button>
     </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL: SENHA INICIAL DA CASA (síndico / dev) ===================== -->
+<div class="modal-wrap" id="modal-senha-inicial" data-fixo="1" style="z-index:70;">
+  <div class="modal">
+    <h3 id="si-titulo">Casa cadastrada</h3>
+    <div class="senha-caixa"><p class="rot" id="si-rotulo">Senha inicial</p><p class="num" id="si-senha">------</p></div>
+    <div class="rs-aviso"><i class="ti ti-alert-triangle"></i> <span id="si-aviso"></span></div>
+    <button class="btn btn-whats" id="si-btn-whats" style="width:100%;margin-bottom:8px;" onclick="enviarSenhaInicialWhatsApp()"><i class="ti ti-brand-whatsapp"></i> Enviar ao morador</button>
+    <button class="btn btn-ghost" id="si-btn-copiar" style="width:100%;margin-bottom:8px;" onclick="copiarSenhaInicial()"><i class="ti ti-copy"></i> Copiar senha</button>
+    <button class="btn btn-ghost" style="width:100%;" onclick="fecharSenhaInicial()">Concluir</button>
   </div>
 </div>
 
@@ -1189,7 +1207,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026030002";
+const VERSAO_APP = "2026030003";
 
 /* ===================================================================== */
 
@@ -1229,6 +1247,63 @@ let reservasDoMes = [];
 let todasAsCasas = [];
 let diaSelecionadoISO = null;
 
+/* ---------- senha inicial de cada casa ---------- */
+// Número da casa (2 dígitos ou mais) + 4 dígitos aleatórios. Ex.: Casa 7 -> 07 + 4831.
+// Vale só até o primeiro acesso, quando o morador cria a própria senha.
+function gerarSenhaInicial(numeroCasa){
+  const prefixo = String(numeroCasa || "").replace(/\D/g, "").padStart(2, "0");
+  const obvias = ["0123","1234","2345","3456","4567","5678","6789","9876","8765","7654","6543","5432","4321","3210"];
+  let parte;
+  do{
+    const a = new Uint32Array(1);
+    crypto.getRandomValues(a);
+    parte = String(a[0] % 10000).padStart(4, "0");
+  }while(/^(\d)\1{3}$/.test(parte) || obvias.includes(parte));
+  return prefixo + parte;
+}
+let senhaInicialAtual = null;   // só em memória, enquanto a tela está aberta
+function mostrarSenhaInicial(info){
+  // info: { numero, telefone, nome, senha, modo: "nova" | "reset" }
+  senhaInicialAtual = info;
+  const temCelular = celularValido(info.telefone);
+  document.getElementById("si-titulo").textContent = info.modo === "reset" ? "Senha resetada" : `Casa ${info.numero} cadastrada`;
+  document.getElementById("si-rotulo").textContent = (info.modo === "reset" ? "Nova senha inicial da Casa " : "Senha inicial da Casa ") + info.numero;
+  document.getElementById("si-senha").textContent = info.senha;
+  document.getElementById("si-aviso").textContent = temCelular
+    ? "Envie agora. Esta senha não fica guardada e não aparece de novo. Se perder, use \"Resetar senha\"."
+    : "Esta casa não tem celular cadastrado. Copie a senha e entregue ao morador. Ela não aparece de novo.";
+  document.getElementById("si-btn-whats").style.display = temCelular ? "flex" : "none";
+  document.getElementById("si-btn-copiar").className = temCelular ? "btn btn-ghost" : "btn btn-primary";
+  document.getElementById("modal-senha-inicial").classList.add("show");
+}
+window.fecharSenhaInicial = function(){
+  senhaInicialAtual = null;
+  document.getElementById("si-senha").textContent = "------";
+  fecharModal("modal-senha-inicial");
+};
+window.copiarSenhaInicial = async function(){
+  if(!senhaInicialAtual) return;
+  try{ await navigator.clipboard.writeText(senhaInicialAtual.senha); showToast("Senha copiada."); }
+  catch(e){ showToast("Não foi possível copiar. Anote a senha que está na tela."); }
+};
+window.enviarSenhaInicialWhatsApp = function(){
+  const i = senhaInicialAtual;
+  if(!i) return;
+  let tel = (i.telefone || "").replace(/\D/g, "");
+  if(!tel) return;
+  if(!tel.startsWith("55")) tel = "55" + tel;
+  const condo = (condominioData && condominioData.nome) || "condomínio";
+  const link = linkDoCondominio(TENANT_ID);
+  const abertura = i.modo === "reset"
+    ? `Olá${i.nome ? ", " + i.nome : ""}! A senha da Casa ${i.numero} no app do salão de festas do *${condo}* foi redefinida.`
+    : `Olá! Seu acesso ao app do salão de festas do *${condo}* está pronto.`;
+  const fecho = i.modo === "reset"
+    ? "No próximo acesso, o app vai pedir para você criar uma senha nova."
+    : "No primeiro acesso você cria a sua própria senha e completa o seu cadastro. Qualquer dúvida, fale com o síndico.";
+  const texto = `${abertura}\n\nAcesse: ${link}\n\nCasa: *${i.numero}*\nSenha inicial: *${i.senha}*\n\n${fecho}`;
+  window.open(`https://wa.me/${tel}?text=${encodeURIComponent(texto)}`, "_blank", "noopener");
+};
+
 /* ---------- utilidades ---------- */
 function showToast(msg){
   const t = document.getElementById("toast");
@@ -1242,7 +1317,7 @@ function fecharModal(id){ document.getElementById(id).classList.remove("show"); 
 // Fecha qualquer modal ao tocar fora dele (na área escura de fundo)
 document.querySelectorAll(".modal-wrap").forEach(overlay=>{
   overlay.addEventListener("click", (e)=>{
-    if(e.target === overlay) overlay.classList.remove("show");
+    if(e.target === overlay && !overlay.dataset.fixo) overlay.classList.remove("show");
   });
 });
 function abrirMenu(){ document.getElementById("overlay").classList.add("show"); document.getElementById("drawer").classList.add("show"); }
@@ -1792,7 +1867,8 @@ window.devCriarCondominio = async function(){
   btn.disabled = true; btn.textContent = "Criando...";
   try{
     // 1) Login do síndico, na sessão SECUNDÁRIA (não derruba a sessão do desenvolvedor)
-    const cred = await createUserWithEmailAndPassword(authSecundario, emailLogin, "123456");
+    const senhaInicial = gerarSenhaInicial(numero);
+    const cred = await createUserWithEmailAndPassword(authSecundario, emailLogin, senhaInicial);
     const novoUid = cred.user.uid;
     await signOut(authSecundario);
     // 2) Condomínio, já com o lembrete padrão (o síndico pode editar depois)
@@ -1806,7 +1882,8 @@ window.devCriarCondominio = async function(){
       numero, papel: "sindico", apelido: "", nomeResponsavel: "", telefone: celular,
       emailContato: email, senhaTrocada: false, uid: novoUid, criadoEm: serverTimestamp()
     });
-    devNovo = { nome, subtitulo, codigo, numero, celular, email };
+    devNovo = { nome, subtitulo, codigo, numero, celular, email, senha: senhaInicial };
+    document.getElementById("dv-ok-senha").textContent = senhaInicial;
     document.getElementById("dv-ok-nome").textContent = nome;
     document.getElementById("dv-ok-casa").textContent = "Casa " + numero;
     document.getElementById("dv-ok-link").textContent = linkDoCondominio(codigo);
@@ -1823,7 +1900,7 @@ window.devCriarCondominio = async function(){
 };
 window.devEnviarAoSindico = function(){
   if(!devNovo || !devNovo.numero) return;
-  const texto = `Olá! O app do salão de festas do ${devNovo.nome} está pronto.\n\nAcesse: ${linkDoCondominio(devNovo.codigo)}\n\nEntre com a *Casa ${devNovo.numero}* e a senha inicial *123456*. No primeiro acesso você cria a sua própria senha e completa o cadastro.`;
+  const texto = `Olá! O app do salão de festas do ${devNovo.nome} está pronto.\n\nAcesse: ${linkDoCondominio(devNovo.codigo)}\n\nEntre com a *Casa ${devNovo.numero}* e a senha inicial *${devNovo.senha}*. No primeiro acesso você cria a sua própria senha e completa o cadastro.`;
   const tel = devNovo.celular.replace(/\D/g, "");
   window.open(`https://wa.me/55${tel}?text=${encodeURIComponent(texto)}`, "_blank", "noopener");
 };
@@ -3049,7 +3126,8 @@ function renderizarListaCasas(){
       <p class="t2">${c.nomeResponsavel || "sem responsável cadastrado"}</p>
       <p class="t2" style="font-size:11.5px;">${celularValido(c.telefone)
         ? `<i class="ti ti-brand-whatsapp"></i> ${formatarCelular(c.telefone)}`
-        : `<span style="color:var(--red-ink);"><i class="ti ti-phone-off"></i> sem celular</span>`}</p>`;
+        : `<span style="color:var(--red-ink);"><i class="ti ti-phone-off"></i> sem celular</span>`}</p>
+      ${c.senhaTrocada === false ? '<span class="tag-espera">Aguardando 1º acesso</span>' : ""}`;
     info.style.cursor = "pointer";
     info.title = "Editar celular";
     info.onclick = ()=> abrirEditarCelular(c.id);
@@ -3177,13 +3255,11 @@ window.confirmarResetSenha = async function(){
     const dados = await resp.json().catch(()=> ({}));
     if(!resp.ok || !dados.ok) throw new Error(dados.erro || "Não foi possível resetar a senha.");
     c.senhaTrocada = false;
-    showToast(`Senha da Casa ${c.numero} resetada para 123456.`);
-    document.getElementById("rs-feito-texto").textContent = `A Casa ${c.numero} já pode entrar com a senha 123456 e vai criar uma senha nova no primeiro acesso.`;
-    const tel = (c.telefone || "").replace(/\D/g,"");
-    document.getElementById("rs-btn-whats").style.display = tel ? "block" : "none";
-    document.getElementById("rs-sem-telefone").style.display = tel ? "none" : "block";
-    document.getElementById("rs-etapa-confirmar").style.display = "none";
-    document.getElementById("rs-etapa-feito").style.display = "block";
+    renderizarListaCasas();
+    fecharModal("modal-reset-senha");
+    // O servidor gera a nova senha inicial e devolve só nesta resposta
+    // (versão antiga da função não devolve: nesse caso a senha voltou para 123456)
+    mostrarSenhaInicial({ numero: c.numero, telefone: c.telefone, nome: c.nomeResponsavel || c.apelido || "", senha: dados.senha || "123456", modo: "reset" });
   }catch(e){
     showToast(e.message || "Não foi possível resetar a senha.");
     b.disabled = false; b.textContent = "Resetar senha";
@@ -3197,7 +3273,7 @@ window.avisarMoradorReset = function(){
   if(!tel) return;
   if(!tel.startsWith("55")) tel = "55" + tel;
   const nome = c.nomeResponsavel || c.apelido || `morador(a) da Casa ${c.numero}`;
-  const texto = `Olá, ${nome}! A senha da Casa ${c.numero} no app do salão de festas foi redefinida para 123456. No próximo acesso, o app vai pedir para você criar uma senha nova.`;
+  const texto = `Olá, ${nome}! A senha da Casa ${c.numero} no app do salão de festas foi redefinida. Peça a nova senha inicial ao síndico. No próximo acesso, o app vai pedir para você criar uma senha nova.`;
   window.open(`https://wa.me/${tel}?text=${encodeURIComponent(texto)}`, "_blank");
 };
 
@@ -3222,7 +3298,8 @@ window.cadastrarNovaCasa = async function(){
   const emailLogin = emailVirtualDaCasa(numero);
   try{
     // Cria o login na sessão SECUNDÁRIA, sem afetar sua sessão de síndico/dev.
-    const cred = await createUserWithEmailAndPassword(authSecundario, emailLogin, "123456");
+    const senhaInicial = gerarSenhaInicial(numero);
+    const cred = await createUserWithEmailAndPassword(authSecundario, emailLogin, senhaInicial);
     const novoUid = cred.user.uid;
     await signOut(authSecundario); // encerra a sessão secundária imediatamente
 
@@ -3235,10 +3312,10 @@ window.cadastrarNovaCasa = async function(){
     if(papel === "sindico"){
       await setDoc(doc(db, "Condominios", TENANT_ID), { emailSindico: emailContato }, { merge:true });
     }
-    todasAsCasas.push({ id: novoUid, numero, papel, apelido:"", nomeResponsavel:"", telefone: celular, emailContato });
+    todasAsCasas.push({ id: novoUid, numero, papel, apelido:"", nomeResponsavel:"", telefone: celular, emailContato, senhaTrocada: false, uid: novoUid });
     todasAsCasas.sort((a,b)=> (a.numero+"").localeCompare(b.numero+"", "pt-BR", {numeric:true}));
     renderizarListaCasas();
-    showToast(`Casa ${numero} cadastrada com senha padrão 123456.`);
+    mostrarSenhaInicial({ numero, telefone: celular, nome: "", senha: senhaInicial, modo: "nova" });
     document.getElementById("nc-numero").value = "";
     document.getElementById("nc-email").value = "";
     document.getElementById("nc-celular").value = "";
