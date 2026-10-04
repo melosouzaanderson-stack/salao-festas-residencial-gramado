@@ -573,6 +573,35 @@
   .local-linha{ display:flex; align-items:center; gap:12px; width:100%; text-align:left; background:#fff; border:1px solid var(--line); border-radius:14px; padding:12px; margin-bottom:8px; font-family:inherit; color:var(--deep); cursor:pointer; }
   .local-linha .ic{ flex:none; width:42px; height:42px; border-radius:12px; background:linear-gradient(135deg,var(--azul1),var(--azul2)); color:#fff; display:flex; align-items:center; justify-content:center; font-size:21px; }
   .local-linha.inativo{ opacity:.6; }
+  /* ---- vários salões ---- */
+  .salao-bar{ display:flex; align-items:center; gap:10px; width:100%; text-align:left; background:#fff; border:1px solid var(--line); border-radius:14px; padding:10px 12px; margin:0 0 12px; font-family:inherit; color:var(--deep); cursor:pointer; }
+  .salao-bar .ic{ flex:none; width:40px; height:40px; border-radius:11px; color:#fff; display:flex; align-items:center; justify-content:center; font-size:19px; }
+  .salao-bar b{ font-size:17px; flex:1; min-width:0; }
+  .salao-bar .tr{ flex:none; font-size:15px; font-weight:600; color:var(--accent-d); display:flex; align-items:center; gap:4px; }
+  .salao-cor-0{ background:linear-gradient(135deg,#60A5FA,#1D4ED8); } .salao-cor-1{ background:linear-gradient(135deg,#34D399,#047857); }
+  .salao-cor-2{ background:linear-gradient(135deg,#FBBF24,#B45309); } .salao-cor-3{ background:linear-gradient(135deg,#C084FC,#6D28D9); }
+  .salao-cor-4{ background:linear-gradient(135deg,#FB7185,#BE123C); } .salao-cor-5{ background:linear-gradient(135deg,#22D3EE,#0E7490); }
+  .salao-card{ display:block; width:100%; text-align:left; background:#fff; border:1px solid var(--line); border-radius:18px; overflow:hidden; margin:0 0 12px; padding:0; font-family:inherit; color:var(--deep); cursor:pointer; }
+  .salao-card .foto{ height:88px; display:flex; align-items:flex-end; padding:10px 14px; color:#fff; font-family:'Fraunces', serif; font-size:21px; font-weight:600; text-shadow:0 1px 4px rgba(0,0,0,.4); background-size:cover; background-position:center; }
+  .salao-card .inf{ padding:10px 14px 12px; display:flex; align-items:center; gap:10px; font-size:15px; color:var(--muted); line-height:1.4; }
+  .salao-card .inf b{ color:var(--deep); font-size:16px; }
+  .salao-card .inf .ir{ margin-left:auto; flex:none; font-weight:600; color:var(--accent-d); display:flex; align-items:center; gap:2px; font-size:16px; }
+  .salao-card.off{ opacity:.62; cursor:default; }
+  .salao-card.off .foto{ background:#94A3B8 !important; }
+  .salao-card:active{ transform:scale(.99); }
+  .salao-tag{ display:inline-flex; align-items:center; gap:5px; font-size:14px; font-weight:600; color:var(--accent-d); background:var(--soft); border:1px solid #BFD3F5; border-radius:999px; padding:2px 10px; margin-top:4px; }
+  .salao-linha{ display:flex; align-items:center; gap:12px; width:100%; text-align:left; background:#fff; border:2px solid var(--line); border-radius:14px; padding:10px 12px; margin:0 0 8px; font-family:inherit; color:var(--deep); cursor:pointer; }
+  .salao-linha.sel{ border-color:var(--accent); background:#F4F8FF; }
+  .salao-linha .ic{ flex:none; width:42px; height:42px; border-radius:12px; color:#fff; display:flex; align-items:center; justify-content:center; font-size:20px; }
+  .salao-linha .t1{ font-size:16px; font-weight:600; margin:0; }
+  .salao-linha .t2{ font-size:14px; color:var(--muted); margin:2px 0 0; }
+  .salao-linha .st{ margin-left:auto; flex:none; font-size:13px; font-weight:600; border-radius:999px; padding:3px 9px; }
+  .salao-linha .st.on{ background:var(--green); color:var(--green-ink); } .salao-linha .st.off{ background:#EEF2F7; color:var(--muted); }
+  .salao-sel-titulo{ font-size:15px; font-weight:600; color:var(--muted); margin:14px 0 8px; }
+  .umadia-card{ display:flex; gap:12px; align-items:flex-start; background:#fff; border:1px solid var(--line); border-radius:14px; padding:12px; margin:0 0 10px; font-size:16px; line-height:1.4; }
+  .umadia-card .dia{ flex:none; width:54px; border-radius:12px; background:var(--amber); border:1px solid var(--amber-bd); color:var(--amber-ink); text-align:center; padding:6px 0; font-weight:700; font-size:20px; line-height:1.1; }
+  .umadia-card .dia small{ display:block; font-size:11px; }
+  .umadia-card .dia.ok{ background:var(--green); border-color:#A9DDB9; color:var(--green-ink); }
   .local-linha .txt{ flex:1; min-width:0; }
   .local-linha .t1{ margin:0; font-size:16px; font-weight:600; }
   .local-linha .t2{ margin:2px 0 0; font-size:14px; color:var(--muted); }
@@ -765,7 +794,7 @@
   <div class="dev-wrap">
 
     <div class="dev-vista" id="dev-view-lista">
-      <div class="dev-top"><div class="av"><i class="ti ti-shield-lock"></i></div><b>Painel do desenvolvedor</b></div>
+      <div class="dev-top"><div class="av"><i class="ti ti-shield-lock"></i></div><b>Painel de gestão</b></div>
       <div class="dev-corpo">
         <div id="dev-resumo-cob" style="display:none;"></div>
         <p class="dev-secao">Condomínios cadastrados</p>
@@ -840,7 +869,7 @@
     </div>
 
     <div class="dev-vista" id="dev-view-pronto">
-      <div class="dev-top"><div class="av"><i class="ti ti-shield-lock"></i></div><b>Painel do desenvolvedor</b></div>
+      <div class="dev-top"><div class="av"><i class="ti ti-shield-lock"></i></div><b>Painel de gestão</b></div>
       <div class="dev-corpo">
         <div class="dev-ok"><i class="ti ti-check"></i></div>
         <p class="dev-h" style="text-align:center;">Condomínio criado!</p>
@@ -949,6 +978,10 @@
 
     <!-- ===== TELA AGENDA ===== -->
     <div class="screen" id="screen-agenda">
+      <button type="button" class="salao-bar" id="agenda-salao-bar" style="display:none;" onclick="abrirEscolhaSalao()">
+        <span class="ic" id="agenda-salao-ic"><i class="ti ti-confetti"></i></span><b id="agenda-salao-nome"></b>
+        <span class="tr"><i class="ti ti-arrows-exchange"></i> Trocar salão</span>
+      </button>
       <div class="cal-head">
         <button onclick="mudarMes(-1)" aria-label="Mês anterior"><i class="ti ti-chevron-left"></i></button>
         <span class="mes" id="cal-mes-label">—</span>
@@ -994,13 +1027,47 @@
   <div class="drawer-item" id="menu-config-condominio" style="display:none;" onclick="abrirModal('modal-condominio')"><i class="ti ti-building"></i> Condomínio</div>
   <div class="drawer-item" id="menu-casas" style="display:none;" onclick="abrirModal('modal-casas')"><i class="ti ti-users"></i> Casas cadastradas</div>
   <div class="drawer-item" id="menu-relatorio" style="display:none;" onclick="abrirModal('modal-relatorio')"><i class="ti ti-report"></i> Festas realizadas</div>
-  <div class="drawer-item" id="menu-painel-dev" style="display:none;" onclick="voltarAoPainelDev()"><i class="ti ti-shield-lock"></i> Painel do desenvolvedor</div>
+  <div class="drawer-item" id="menu-painel-dev" style="display:none;" onclick="voltarAoPainelDev()"><i class="ti ti-shield-lock"></i> Painel de gestão</div>
   <div class="drawer-item danger" onclick="fazerLogout()"><i class="ti ti-logout"></i> Sair</div>
   <p style="font-size:10px; opacity:.5; margin-top:24px;" id="drawer-versao">v0000000000</p>
 </div>
 
 <!-- ===================== MODAL: NOVA RESERVA ===================== -->
 <!-- ===================== MODAL: RESERVA É PARA VOCÊ? (síndico/dev) ===================== -->
+<!-- ===================== MODAL: QUAL SALÃO? (condomínio com vários salões) ===================== -->
+<div class="modal-wrap" id="modal-saloes">
+  <div class="modal">
+    <button class="close-x" onclick="fecharModal('modal-saloes')"><i class="ti ti-x"></i></button>
+    <h3>Qual salão você quer?</h3>
+    <p class="sub" style="margin:-8px 0 14px;">Cada salão tem a sua agenda.</p>
+    <div id="sl-lista"></div>
+  </div>
+</div>
+
+<!-- ===================== MODAL: UMA RESERVA POR DIA ===================== -->
+<div class="modal-wrap" id="modal-uma-por-dia" style="z-index:72;">
+  <div class="modal">
+    <h3 id="ud-titulo">Você já tem uma reserva neste dia</h3>
+    <p class="sub" style="margin:-6px 0 12px;font-size:16px;">Só é permitida <b>uma reserva por dia</b> para cada casa.</p>
+    <div class="umadia-card"><div class="dia" id="ud-dia"></div><div><b id="ud-salao"></b><br><span id="ud-data"></span><br><span class="pill" id="ud-status"></span></div></div>
+    <p class="sub" id="ud-dica" style="margin:0 0 14px;"></p>
+    <button class="btn btn-primary btn-linha" id="ud-btn-ver" onclick="fecharModal('modal-uma-por-dia'); abrirMinhasReservas()"><i class="ti ti-ticket"></i> Ver minha reserva</button>
+    <button class="btn btn-ghost btn-linha" onclick="fecharModal('modal-uma-por-dia')">Entendi</button>
+  </div>
+</div>
+
+<!-- ===================== MODAL: DESATIVAR SALÃO (síndico / dev) ===================== -->
+<div class="modal-wrap" id="modal-desativar-salao" data-fixo="1" style="z-index:72;">
+  <div class="modal">
+    <h3 id="ds-titulo">Desativar o salão?</h3>
+    <p class="sub" style="margin:-6px 0 12px;font-size:16px;">Os moradores deixam de conseguir pedir este salão. O cadastro e o histórico ficam guardados.</p>
+    <div class="rs-aviso" id="ds-aviso" style="display:none;"><i class="ti ti-alert-triangle"></i> <b>Este salão tem reservas que continuam valendo.</b> Desativar não cancela nenhuma delas.</div>
+    <div id="ds-lista"></div>
+    <button class="btn btn-primary btn-linha" id="ds-btn" onclick="confirmarDesativarSalao()">Desativar</button>
+    <button class="btn btn-ghost btn-linha" onclick="cancelarDesativarSalao()">Cancelar</button>
+  </div>
+</div>
+
 <div class="modal-wrap" id="modal-para-quem">
   <div class="modal">
     <p class="sub" id="pq-data-label" style="margin:0 0 4px;">—</p>
@@ -1138,9 +1205,22 @@
         <i class="ti ti-chevron-right seta"></i>
       </button>
       <div class="cfg-corpo">
+        <div id="cd-saloes-bloco" style="display:none;">
+          <div id="cd-saloes-lista"></div>
+          <button class="btn btn-ghost" type="button" style="width:100%;margin-bottom:4px;" onclick="novoSalaoEdicao()"><i class="ti ti-plus"></i> Novo salão</button>
+          <p class="salao-sel-titulo" id="cd-salao-titulo"></p>
+          <label class="auto-switch" for="cd-salao-ativo">
+            <span class="txt"><b>Disponível para reserva</b><span>Desligue para parar os pedidos novos sem apagar o salão.</span></span>
+            <input type="checkbox" id="cd-salao-ativo" role="switch" onchange="aoMudarSalaoAtivo()">
+            <span class="trilho" aria-hidden="true"></span>
+          </label>
+          <div class="field" id="cd-salao-motivo-campo" style="display:none;"><label>Motivo (aparece para o morador)</label><input type="text" id="cd-salao-motivo" maxlength="60" autocomplete="off" placeholder="Ex.: Em reforma até novembro"></div>
+          <div class="field"><label>Dica de localização</label><input type="text" id="cd-salao-dica" maxlength="120" autocomplete="off" placeholder="Ex.: Térreo da Torre A, ao lado da piscina"><p style="font-size:13px;color:var(--muted);margin:6px 0 0;">Aparece no convite que o morador manda aos convidados.</p></div>
+        </div>
         <div id="cd-locais-lista"></div>
         <p style="font-size:14px;color:var(--muted);margin:4px 0 12px;line-height:1.45;">O salão é o local principal e entra em todo pedido. Os demais são acessórios, pedidos junto com o salão. Com só o salão cadastrado, o pedido de reserva fica igual ao de hoje.</p>
         <button class="btn btn-ghost" type="button" style="width:100%;margin-bottom:8px;" onclick="abrirEdicaoLocal(null)"><i class="ti ti-plus"></i> Adicionar local</button>
+        <button class="btn btn-danger" type="button" id="cd-salao-excluir" style="display:none;width:100%;margin-bottom:8px;align-items:center;justify-content:center;gap:8px;" onclick="excluirSalaoEdicao()"><i class="ti ti-trash"></i> Excluir este salão</button>
       </div>
     </div>
     <div class="cfg-sec" id="cfg-sec-aviso">
@@ -1324,6 +1404,7 @@
     <p class="sub" id="do-resumo" style="margin:-8px 0 12px;"></p>
     <div class="dev-link-caixa" id="do-link"></div>
     <button class="btn btn-primary btn-linha" onclick="devOpcaoCobranca()"><i class="ti ti-receipt-2"></i> Cobrança</button>
+    <button class="btn btn-ghost btn-linha" id="do-btn-saloes" onclick="devOpcaoSaloes()"><i class="ti ti-building-pavilion"></i> <span id="do-saloes-texto">Vários salões: desligado</span></button>
     <button class="btn btn-ghost btn-linha" onclick="devOpcaoCopiarLink()"><i class="ti ti-copy"></i> Copiar link</button>
     <button class="btn btn-whats btn-linha" onclick="devOpcaoEnviarLink()"><i class="ti ti-brand-whatsapp"></i> Enviar link pelo WhatsApp</button>
     <button class="btn btn-ghost btn-linha" onclick="devOpcaoEntrar()"><i class="ti ti-settings"></i> Entrar e editar dados</button>
@@ -1565,7 +1646,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026030014";
+const VERSAO_APP = "2026040001";
 
 /* ===================================================================== */
 
@@ -1621,6 +1702,47 @@ function locaisDoCondominio(dados){
   principal.ativo = true;
   return [principal, ...limpos.filter(l=> l !== principal).map(l=> ({ ...l, principal:false }))];
 }
+/* ---------- vários salões no mesmo condomínio ----------
+   O salão 1 continua sendo o "local principal" de sempre (campo locais) e as reservas dele
+   continuam com o identificador igual à data. Os demais salões ficam em saloesExtras e as
+   reservas deles levam o campo salaoId. Com um salão só, nada muda. */
+const SALAO_PADRAO_ID = "salao";
+let salaoAtualId = SALAO_PADRAO_ID;       // salão cuja agenda está na tela
+function saloesDoCondominio(dados){
+  const locais = locaisDoCondominio(dados);
+  const d = dados || {};
+  const limpar = (t, n)=> String(t || "").replace(/\s+/g, " ").trim().slice(0, n);
+  const lista = [{
+    id: SALAO_PADRAO_ID, idLocal: locais[0].id, nome: locais[0].nome, diaria: locais[0].diaria,
+    ativo: d.salaoAtivo !== false, motivo: limpar(d.salaoMotivo, 60), dica: limpar(d.salaoDica, 120), acessorios: locais.slice(1)
+  }];
+  (Array.isArray(d.saloesExtras) ? d.saloesExtras : []).forEach(x=>{
+    if(!x || !x.id || !x.nome || !/^[A-Za-z0-9]{1,20}$/.test(String(x.id)) || x.id === SALAO_PADRAO_ID) return;
+    lista.push({
+      id: String(x.id), idLocal: String(x.id), nome: String(x.nome).slice(0, 40), diaria: Math.max(0, Number(x.diaria) || 0),
+      ativo: x.ativo !== false, motivo: limpar(x.motivo, 60), dica: limpar(x.dica, 120),
+      acessorios: (Array.isArray(x.acessorios) ? x.acessorios : []).filter(a=> a && a.id && a.nome).map(a=> ({
+        id: String(a.id), nome: String(a.nome).slice(0, 40), diaria: Math.max(0, Number(a.diaria) || 0), ativo: a.ativo !== false, principal:false }))
+    });
+  });
+  return lista;
+}
+function temVariosSaloes(){ return saloesDoCondominio(condominioData).length > 1; }
+function salaoDaReserva(r){ return (r && r.salaoId) || SALAO_PADRAO_ID; }
+function salaoPorId(id){ const l = saloesDoCondominio(condominioData); return l.find(x=> x.id === id) || null; }
+function salaoAtual(){ return salaoPorId(salaoAtualId) || saloesDoCondominio(condominioData)[0]; }
+function nomeDoSalaoDaReserva(r){ const x = salaoPorId(salaoDaReserva(r)); return (r && r.salaoNome) || (x ? x.nome : "Salão"); }
+function idDaReserva(iso, salaoId){ return salaoId === SALAO_PADRAO_ID ? `${iso}` : `${iso}__${salaoId}`; }
+function corDoSalao(id){ const i = saloesDoCondominio(condominioData).findIndex(x=> x.id === id); return "salao-cor-" + (Math.max(0, i) % 6); }
+// Garante que o salão da tela existe; morador nunca fica parado em salão desativado
+function ajustarSalaoAtual(){
+  const lista = saloesDoCondominio(condominioData);
+  const atual = lista.find(x=> x.id === salaoAtualId);
+  if(atual && (atual.ativo || ehSindico || ehDev)) return;
+  salaoAtualId = (lista.find(x=> x.ativo) || lista[0]).id;
+}
+function reservaEstaAtiva(r){ return r && (r.status === "pendente" || r.status === "confirmada"); }
+
 function formatarReais(n){
   return "R$ " + (Number(n) || 0).toLocaleString("pt-BR", { minimumFractionDigits:2, maximumFractionDigits:2 });
 }
@@ -1780,7 +1902,15 @@ function montarMensagemZelador(reserva, iso){
   const casa = todasAsCasas.find(c=>c.id===reserva.casaId) || {};
   const morador = casa.apelido || `Casa ${reserva.casaNumero || ""}`;
   const zelador = condominioData.zeladorApelido || condominioData.zeladorNome || "zelador";
+  // Com vários salões o zelador precisa saber qual preparar: usa {salao} no texto, ou acrescenta no fim
+  const nomeSalaoMsg = nomeDoSalaoDaReserva(reserva);
+  if(temVariosSaloes() && !template.includes("{salao}")){
+    return (template + " Local: " + nomeSalaoMsg + ".")
+      .replaceAll("{dia_semana}", nomeDiaSemana(iso)).replaceAll("{data}", formatarDataBR(iso))
+      .replaceAll("{morador}", morador).replaceAll("{zelador}", zelador);
+  }
   return template
+    .replaceAll("{salao}", nomeSalaoMsg)
     .replaceAll("{dia_semana}", nomeDiaSemana(iso))
     .replaceAll("{data}", formatarDataBR(iso))
     .replaceAll("{morador}", morador)
@@ -2285,6 +2415,7 @@ function devAbrirOpcoes(it){
   document.getElementById("do-resumo").textContent = (it.casas === 1 ? "1 casa cadastrada" : `${it.casas} casas cadastradas`) + " · Código: " + it.id;
   document.getElementById("do-link").textContent = linkDoCondominio(it.id);
   document.getElementById("do-btn-excluir").style.display = protegido ? "none" : "flex";
+  document.getElementById("do-saloes-texto").textContent = "Vários salões: " + ((cobDados[it.id] || {}).multiSalao === true ? "ligado" : "desligado");
   document.getElementById("do-protegido").style.display = protegido ? "block" : "none";
   document.getElementById("modal-dev-opcoes").classList.add("show");
 }
@@ -2396,7 +2527,7 @@ function cobMensalidades(cob, hoje){
 }
 // Situação do condomínio para a etiqueta e a ordenação do painel
 function cobSituacao(cob, hoje){
-  if(!cob) return { tipo:"sem", rank:3, ordem:0, classe:"neutra", icone:"ti-minus", texto:"Sem cobrança" };
+  if(!cob || !cob.situacao) return { tipo:"sem", rank:3, ordem:0, classe:"neutra", icone:"ti-minus", texto:"Sem cobrança" };
   if(cob.situacao === "isento") return { tipo:"isento", rank:3, ordem:0, classe:"neutra", icone:"ti-heart", texto:"Isento" };
   if(cob.situacao === "pausado") return { tipo:"pausado", rank:3, ordem:0, classe:"neutra", icone:"ti-player-pause", texto:"Pausado" };
   const aberta = cobMensalidades(cob, hoje).find(x=> !x.pago);
@@ -2445,7 +2576,8 @@ function cobRenderizarResumo(itens, hoje){
 // Cópia resumida para o síndico: sem observações nem detalhes dos pagamentos
 function cobEspelho(cob){
   return {
-    situacao: cob.situacao || "cobrando",
+    situacao: cob.situacao || "",
+    multiSalao: cob.multiSalao === true,
     valor: Number(cob.valor) || 0,
     diaVencimento: Number(cob.diaVencimento) || 1,
     primeiroVencimento: cob.primeiroVencimento || "",
@@ -2466,13 +2598,30 @@ function cobSemRegras(){
   return true;
 }
 
+/* ---------- liberação de vários salões (por condomínio, só o desenvolvedor liga) ---------- */
+window.devOpcaoSaloes = async function(){
+  const it = devCondoAtual;
+  if(!it || cobSemRegras()) return;
+  const ligar = !((cobDados[it.id] || {}).multiSalao === true);
+  if(!confirm(ligar
+    ? `Liberar vários salões para o ${it.nome}? O síndico passa a ver o botão "Novo salão" nas configurações.`
+    : `Desligar vários salões para o ${it.nome}? Os salões já cadastrados continuam funcionando; só não dá para criar novos.`)) return;
+  try{
+    await setDoc(doc(db, "Cobrancas", it.id), { multiSalao: ligar }, { merge:true });
+    await setDoc(doc(db, "Condominios", it.id, "cobranca", "aviso"), { multiSalao: ligar }, { merge:true });
+    cobDados[it.id] = Object.assign({}, cobDados[it.id] || {}, { multiSalao: ligar });
+    document.getElementById("do-saloes-texto").textContent = "Vários salões: " + (ligar ? "ligado" : "desligado");
+    showToast(ligar ? "Vários salões liberados para este condomínio." : "Vários salões desligados para este condomínio.");
+  }catch(e){ showToast("Não foi possível alterar. Tente novamente."); }
+};
+
 /* ---------- tela de cobrança de um condomínio ---------- */
 window.devOpcaoCobranca = function(){
   const it = devCondoAtual;
   if(!it || cobSemRegras()) return;
   fecharModal("modal-dev-opcoes");
   cobCondo = it;
-  if(cobDados[it.id]) cobMostrarMensalidades(); else cobAbrirForm();
+  if(cobDados[it.id] && cobDados[it.id].situacao) cobMostrarMensalidades(); else cobAbrirForm();
 };
 function cobMostrarMensalidades(){
   const it = cobCondo; if(!it) return;
@@ -2552,7 +2701,7 @@ window.cobAoMudarPrimeiro = function(){
 };
 window.cobAbrirForm = function(){
   const it = cobCondo; if(!it) return;
-  const cob = cobDados[it.id] || null;
+  const cob = (cobDados[it.id] && cobDados[it.id].situacao) ? cobDados[it.id] : null;
   document.getElementById("cobf-sub").textContent = it.nome;
   const sel = document.getElementById("cobf-dia");
   if(!sel.options.length){ for(let d = 1; d <= 28; d++){ const o = document.createElement("option"); o.value = String(d); o.textContent = String(d); sel.appendChild(o); } }
@@ -2567,7 +2716,7 @@ window.cobAbrirForm = function(){
   mostrarVistaDev("cobform");
 };
 window.cobSairDoForm = function(){
-  if(cobCondo && cobDados[cobCondo.id]) cobMostrarMensalidades(); else devVoltarLista();
+  if(cobCondo && cobDados[cobCondo.id] && cobDados[cobCondo.id].situacao) cobMostrarMensalidades(); else devVoltarLista();
 };
 window.cobSalvarForm = async function(){
   const it = cobCondo; if(!it) return;
@@ -2592,6 +2741,7 @@ window.cobSalvarForm = async function(){
     atualizadoEm: new Date().toISOString()
   };
   if(anterior.acordoEnviadoEm){ cob.acordoEnviadoEm = anterior.acordoEnviadoEm; cob.acordoEnviadoPara = anterior.acordoEnviadoPara || ""; }
+  if(anterior.multiSalao === true) cob.multiSalao = true;
   const b = document.getElementById("cobf-btn");
   b.disabled = true;
   try{
@@ -3032,6 +3182,7 @@ async function iniciarApp(){
    NAVEGAÇÃO ENTRE ABAS
    ===================================================================== */
 window.mudarTab = function(nome){
+  if(nome === "agenda"){ ajustarSalaoAtual(); atualizarBarraSalao(); }
   document.querySelectorAll(".tab").forEach(t=> t.classList.toggle("active", t.dataset.tab === nome));
   document.querySelectorAll(".screen").forEach(s=> s.classList.remove("active"));
   document.getElementById("screen-" + nome).classList.add("active");
@@ -3039,7 +3190,67 @@ window.mudarTab = function(nome){
   if(nome === "aprovacoes") renderizarAprovacoes();
 };
 
+/* ---------- escolha do salão (só em condomínio com dois ou mais) ---------- */
+function datasLivresNoMes(salaoId){
+  const hoje = new Date();
+  const listaMes = cacheReservasMes.get(chaveMes(hoje.getFullYear(), hoje.getMonth()));
+  if(!listaMes) return null;
+  const ocupados = new Set(listaMes.filter(r=> reservaEstaAtiva(r) && salaoDaReserva(r) === salaoId).map(r=> r.data));
+  const ultimo = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).getDate();
+  let livres = 0;
+  for(let d = hoje.getDate(); d <= ultimo; d++){ if(!ocupados.has(isoDeData(hoje.getFullYear(), hoje.getMonth(), d))) livres++; }
+  return livres;
+}
+window.abrirEscolhaSalao = function(){
+  const caixa = document.getElementById("sl-lista");
+  caixa.innerHTML = "";
+  const nomesMes = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+  saloesDoCondominio(condominioData).forEach(s=>{
+    const podeAbrir = s.ativo || ehSindico || ehDev;
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "salao-card" + (s.ativo ? "" : " off");
+    b.innerHTML = '<div class="foto"></div><div class="inf"><span class="txt"></span><span class="ir"></span></div>';
+    const foto = b.querySelector(".foto");
+    foto.classList.add(corDoSalao(s.id));
+    foto.textContent = s.nome;
+    if(s.id === SALAO_PADRAO_ID && condominioData.fotoSalao && s.ativo){
+      foto.style.backgroundImage = `linear-gradient(rgba(15,23,42,.05), rgba(15,23,42,.55)), url(${condominioData.fotoSalao})`;
+    }
+    const txt = b.querySelector(".txt");
+    if(s.ativo){
+      const forte = document.createElement("b"); forte.textContent = s.diaria > 0 ? formatarReais(s.diaria) : "Sem cobrança";
+      txt.appendChild(forte);
+      if(s.diaria > 0) txt.appendChild(document.createTextNode(" a diária"));
+      const livres = datasLivresNoMes(s.id);
+      if(livres !== null){ txt.appendChild(document.createElement("br")); txt.appendChild(document.createTextNode(`${livres} ${livres === 1 ? "data livre" : "datas livres"} em ${nomesMes[new Date().getMonth()]}`)); }
+    }else{
+      const forte = document.createElement("b"); forte.textContent = "Indisponível no momento";
+      txt.appendChild(forte);
+      if(s.motivo){ txt.appendChild(document.createElement("br")); txt.appendChild(document.createTextNode(s.motivo)); }
+    }
+    if(podeAbrir){
+      b.querySelector(".ir").innerHTML = 'Ver agenda<i class="ti ti-chevron-right"></i>';
+      b.onclick = ()=> escolherSalao(s.id);
+    }else{
+      b.disabled = true;
+    }
+    caixa.appendChild(b);
+  });
+  document.getElementById("modal-saloes").classList.add("show");
+};
+window.escolherSalao = function(id){
+  salaoAtualId = id;
+  fecharModal("modal-saloes");
+  document.getElementById("tabs-nav").style.display = "flex";
+  document.getElementById("back-row").style.display = "flex";
+  mudarTab("agenda");
+  renderizarCalendario();
+  renderizarProximasReservas();
+};
+
 window.abrirReservaSalao = function(){
+  if(temVariosSaloes()){ abrirEscolhaSalao(); return; }
   document.getElementById("tabs-nav").style.display = "flex";
   document.getElementById("back-row").style.display = "flex";
   mudarTab("agenda");
@@ -3103,7 +3314,7 @@ window.renderizarBannerStatus = renderizarBannerStatus;
    ===================================================================== */
 /* A reserva que vale para o dia: confirmada tem prioridade, depois pendente; recusadas não bloqueiam */
 function reservaAtivaDoDia(iso){
-  const doDia = reservasDoMes.filter(r=> r.data === iso);
+  const doDia = reservasDoMes.filter(r=> r.data === iso && salaoDaReserva(r) === salaoAtualId);
   return doDia.find(r=> r.status === "confirmada")
       || doDia.find(r=> r.status === "pendente")
       || doDia[0];
@@ -3183,7 +3394,18 @@ async function carregarReservasDoMes(opcoes = {}){
   preCarregarMesesVizinhos();
 }
 
+function atualizarBarraSalao(){
+  const bar = document.getElementById("agenda-salao-bar");
+  if(!bar) return;
+  if(!temVariosSaloes()){ bar.style.display = "none"; return; }
+  const s = salaoAtual();
+  document.getElementById("agenda-salao-nome").textContent = s.nome + (s.ativo ? "" : " (desativado)");
+  document.getElementById("agenda-salao-ic").className = "ic " + corDoSalao(s.id);
+  bar.style.display = "flex";
+}
 function renderizarCalendario(){
+  ajustarSalaoAtual();
+  atualizarBarraSalao();
   const y = mesVisivel.getFullYear();
   const m = mesVisivel.getMonth();
   const nomesMes = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
@@ -3241,12 +3463,27 @@ function abrirDetalheDia(iso, reserva){
     if(passado){
       conteudo.innerHTML = `<p class="sub" style="margin:0;">Data já passou.</p>`;
     }else{
+      const variosSaloes = temVariosSaloes();
+      const salaoTela = salaoAtual();
+      if(variosSaloes && !salaoTela.ativo){
+        // Salão desativado: não aceita pedido novo (as reservas que já existem continuam valendo)
+        conteudo.innerHTML = `<span class="pill recusada"><i class="ti ti-player-pause"></i>Salão indisponível</span><p class="sub" style="margin:0;"></p>`;
+        conteudo.querySelector(".sub").textContent = `O ${salaoTela.nome} não está aceitando pedidos no momento.` + (salaoTela.motivo ? " " + salaoTela.motivo + "." : "");
+        document.getElementById("modal-detalhe-dia").classList.add("show");
+        return;
+      }
       conteudo.innerHTML = `<span class="pill livre"><i class="ti ti-circle-check"></i>Data livre</span><p class="sub" style="margin:0 0 16px;">Esse dia está livre para reserva do salão.</p>`;
+      if(variosSaloes) conteudo.querySelector(".sub").textContent = `Esse dia está livre no ${salaoTela.nome}.`;
       const btn = document.createElement("button");
       btn.className = "btn btn-primary";
       btn.textContent = "Pedir esse dia";
       btn.onclick = ()=>{
         fecharModal("modal-detalhe-dia");
+        // Uma reserva por dia para cada casa: se já tem pedido ou reserva em outro salão, avisa e para
+        if(variosSaloes && !(ehSindico || ehDev)){
+          const conflito = conflitoDaCasaNoDia(casaAtualId, iso, idDaReserva(iso, salaoAtualId));
+          if(conflito){ abrirAvisoUmaPorDia(conflito, null); return; }
+        }
         if(ehSindico || ehDev) abrirPopupParaQuem(iso);
         else abrirNovaReserva(iso);
       };
@@ -3255,6 +3492,7 @@ function abrirDetalheDia(iso, reserva){
   }else{
     const vejoDetalhe = ehSindico || ehDev || reserva.casaId === casaAtualId;
     let html = `<span class="status-badge ${reserva.status}"><i class="ti ${iconeStatus(reserva.status)}"></i>${legendaStatus(reserva.status)}</span>`;
+    if(temVariosSaloes() || reserva.salaoId) html += `<p style="margin:12px 0 0;"><span class="salao-tag"><i class="ti ti-confetti"></i>${escaparHtml(nomeDoSalaoDaReserva(reserva))}</span></p>`;
     if(vejoDetalhe){
       const casaNome = (todasAsCasas.find(c=>c.id===reserva.casaId)||{}).apelido || (todasAsCasas.find(c=>c.id===reserva.casaId)||{}).numero || "—";
       html += `<p style="margin:14px 0 4px;font-size:13px;">Reservado por: <b>Casa ${reserva.casaNumero || ""} ${reserva.casaExcluida ? "(excluída)" : (reserva.casaId===casaAtualId ? "(você)" : "")}</b></p>`;
@@ -3372,7 +3610,42 @@ window.escolherParaQuem = function(opcao){
 };
 
 // Locais que podem entrar no pedido: o principal (salão) e os acessórios disponíveis
-function locaisDoPedido(){ return locaisDoCondominio(condominioData).filter(l=> l.principal || l.ativo); }
+function locaisDoPedido(){
+  const s = salaoAtual();
+  if(s.id === SALAO_PADRAO_ID) return locaisDoCondominio(condominioData).filter(l=> l.principal || l.ativo);
+  return [{ id:s.id, nome:s.nome, diaria:s.diaria, ativo:true, principal:true }, ...s.acessorios.filter(a=> a.ativo)];
+}
+/* ---------- uma reserva por dia para cada casa (só em condomínio com vários salões) ---------- */
+function conflitoDaCasaNoDia(casaId, iso, idIgnorado){
+  const fontes = [].concat(reservasDoMes || [], (casaId === casaAtualId && minhasReservasTodas) ? minhasReservasTodas : []);
+  return fontes.find(r=> r.casaId === casaId && r.data === iso && reservaEstaAtiva(r) && r.id !== idIgnorado) || null;
+}
+async function conflitoDaCasaNoServidor(casaId, iso, idIgnorado){
+  try{
+    const snap = await getDocs(query(collection(db, "Condominios", TENANT_ID, "reservas"), where("casaId", "==", casaId)));
+    let achou = null;
+    snap.forEach(d=>{ const r = { id:d.id, ...d.data() }; if(!achou && r.data === iso && reservaEstaAtiva(r) && r.id !== idIgnorado) achou = r; });
+    return achou;
+  }catch(e){ return conflitoDaCasaNoDia(casaId, iso, idIgnorado); }
+}
+function abrirAvisoUmaPorDia(r, numeroDeOutraCasa){
+  const [, m, d] = r.data.split("-");
+  document.getElementById("ud-titulo").textContent = numeroDeOutraCasa ? `A Casa ${numeroDeOutraCasa} já tem uma reserva neste dia` : "Você já tem uma reserva neste dia";
+  const dia = document.getElementById("ud-dia");
+  dia.className = "dia" + (r.status === "confirmada" ? " ok" : "");
+  dia.innerHTML = `${d}<small>${MESES_CURTOS[parseInt(m, 10) - 1].toUpperCase()}</small>`;
+  document.getElementById("ud-salao").textContent = nomeDoSalaoDaReserva(r);
+  const ds = nomeDiaSemana(r.data);
+  document.getElementById("ud-data").textContent = ds.charAt(0).toUpperCase() + ds.slice(1) + ", " + formatarDataBR(r.data);
+  const st = document.getElementById("ud-status");
+  st.className = "pill " + r.status;
+  st.innerHTML = `<i class="ti ${iconeStatus(r.status)}"></i>${legendaStatus(r.status)}`;
+  document.getElementById("ud-dica").textContent = numeroDeOutraCasa
+    ? "Para reservar outro salão neste dia, recuse ou cancele antes a reserva que já existe."
+    : `Para pedir outro salão neste dia, cancele antes ${r.status === "pendente" ? "o pedido" : "a reserva"} do ${nomeDoSalaoDaReserva(r)}.`;
+  document.getElementById("ud-btn-ver").style.display = numeroDeOutraCasa ? "none" : "flex";
+  document.getElementById("modal-uma-por-dia").classList.add("show");
+}
 let areasMarcadas = new Set();
 function atualizarTotalDasAreas(){
   const escolhidas = locaisDoPedido().filter(l=> l.principal || areasMarcadas.has(l.id));
@@ -3438,8 +3711,22 @@ async function enviarPedidoReserva(areasEscolhidas){
     casaNumeroEscolhida = c ? c.numero : casaAtual.numero;
   }
 
-  const reservaId = `${diaSelecionadoISO}`;
+  const variosSaloes = temVariosSaloes();
+  const salaoPedido = salaoAtual();
+  const reservaId = idDaReserva(diaSelecionadoISO, salaoPedido.id);
   const refReserva = doc(db, "Condominios", TENANT_ID, "reservas", reservaId);
+  if(variosSaloes){
+    if(!salaoPedido.ativo){ fecharModal("modal-nova-reserva"); showToast("Este salão não está aceitando pedidos no momento."); return; }
+    // Uma reserva por dia para cada casa, conferida no servidor na hora do pedido
+    const conflito = await conflitoDaCasaNoServidor(casaIdEscolhida, diaSelecionadoISO, reservaId);
+    if(conflito){
+      fecharModal("modal-nova-reserva");
+      abrirAvisoUmaPorDia(conflito, casaIdEscolhida !== casaAtualId ? casaNumeroEscolhida : null);
+      return;
+    }
+  }
+  // Com um salão só, o registro é idêntico ao de sempre; os campos do salão só entram com vários salões
+  const camposDoSalao = !variosSaloes ? {} : (salaoPedido.id === SALAO_PADRAO_ID ? { salaoNome: salaoPedido.nome } : { salaoId: salaoPedido.id, salaoNome: salaoPedido.nome });
   try{
     // Confere NO SERVIDOR, no mesmo instante da gravação, se a data continua livre
     await runTransaction(db, async (tx)=>{
@@ -3455,6 +3742,7 @@ async function enviarPedidoReserva(areasEscolhidas){
         status: "pendente",
         criadoPor: casaAtualId,
         criadoEm: serverTimestamp(),
+        ...camposDoSalao,
         ...(areas ? { areas, valorTotal: totalDasAreas(areas) } : {})
       });
     });
@@ -3604,7 +3892,7 @@ async function verificarReservaProxima(){
       const inicioAviso = new Date(dataEvento);
       inicioAviso.setDate(inicioAviso.getDate() - diasAntes);
       const inicioAvisoIso = isoDeData(inicioAviso.getFullYear(), inicioAviso.getMonth(), inicioAviso.getDate());
-      if(hojeIso >= inicioAvisoIso) elegiveis.push({ reserva: r, iso: r.data });
+      if(hojeIso >= inicioAvisoIso) elegiveis.push({ reserva: { id:d.id, ...r }, iso: r.data });
     });
     if(elegiveis.length === 0) return;
 
@@ -3619,7 +3907,8 @@ async function verificarReservaProxima(){
     const bloco = document.getElementById("home-status-proxima-reserva");
     const texto = document.getElementById("home-status-proxima-reserva-texto");
     const casaNome = (todasAsCasas.find(c=>c.id===maisProxima.reserva.casaId)||{}).apelido || `Casa ${maisProxima.reserva.casaNumero}`;
-    texto.textContent = `Terá evento no salão ${quando}, ${casaNome}. Clique aqui para ações.`
+    const ondeTxt = temVariosSaloes() ? nomeDoSalaoDaReserva(maisProxima.reserva) : "salão";
+    texto.textContent = `Terá evento no ${ondeTxt} ${quando}, ${casaNome}. Clique aqui para ações.`
       + (outras > 0 ? ` (+${outras} outra${outras>1?"s":""})` : "");
     bloco.style.display = "flex";
   }catch(e){ console.error("Erro ao verificar reserva próxima:", e); }
@@ -3627,7 +3916,10 @@ async function verificarReservaProxima(){
 
 window.abrirReservaProximaDetalhe = function(){
   if(!reservaBannerAtual) return;
+  salaoAtualId = salaoDaReserva(reservaBannerAtual.reserva);   // abre a agenda do salão da festa
   mudarTab("agenda");
+  renderizarCalendario();
+  renderizarProximasReservas();
   document.getElementById("tabs-nav").style.display = "flex";
   document.getElementById("back-row").style.display = "flex";
   abrirDetalheDia(reservaBannerAtual.iso, reservaBannerAtual.reserva);
@@ -3645,7 +3937,7 @@ function renderizarTudo(){
 function renderizarProximasReservas(){
   const hojeIso = isoDeData(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
   const lista = reservasDoMes
-    .filter(r=> r.data >= hojeIso && r.status !== "recusada")
+    .filter(r=> r.data >= hojeIso && r.status !== "recusada" && salaoDaReserva(r) === salaoAtualId)
     .sort((a,b)=> a.data.localeCompare(b.data));
   const el = document.getElementById("lista-proximas");
   el.innerHTML = "";
@@ -3748,6 +4040,14 @@ function renderizarResumoHome(){
     const ultimo = new Date(hoje.getFullYear(), hoje.getMonth()+1, 0).getDate();
     const ocupados = new Set(listaMes.filter(r=> r.status === "pendente" || r.status === "confirmada").map(r=> r.data));
     let livres = 0;
+    if(temVariosSaloes()){
+      const ativos = saloesDoCondominio(condominioData).filter(x=> x.ativo).map(x=> x.id);
+      for(let d = hoje.getDate(); d <= ultimo; d++){
+        const iso = isoDeData(hoje.getFullYear(), hoje.getMonth(), d);
+        const tomados = new Set(listaMes.filter(r=> r.data === iso && reservaEstaAtiva(r)).map(salaoDaReserva));
+        if(ativos.some(id=> !tomados.has(id))) livres++;
+      }
+    }else
     for(let d = hoje.getDate(); d <= ultimo; d++){
       if(!ocupados.has(isoDeData(hoje.getFullYear(), hoje.getMonth(), d))) livres++;
     }
@@ -3856,7 +4156,10 @@ function linhasConvite(r){
   const dsem = nomeDiaSemana(r.data);
   const dataTxt = dsem.charAt(0).toUpperCase() + dsem.slice(1) + ", " + formatarDataBR(r.data);
   const nomeCondo = textoLimpo(condominioData && condominioData.nome, 80);
-  const local = nomeCondo ? `Salão de festas do ${nomeCondo}` : "Salão de festas do condomínio";
+  let local = nomeCondo ? `Salão de festas do ${nomeCondo}` : "Salão de festas do condomínio";
+  const salaoConvite = salaoPorId(salaoDaReserva(r));
+  if(temVariosSaloes() || r.salaoId) local = textoLimpo(nomeDoSalaoDaReserva(r), 60) + (nomeCondo ? ` — ${nomeCondo}` : "");
+  const dicaSalao = textoLimpo(salaoConvite && salaoConvite.dica, 120);
   const endereco = textoLimpo(condominioData && condominioData.endereco, 200);
   const link = linkMapsValido(condominioData && condominioData.linkMaps);
   const numCasa = textoLimpo(r.casaNumero || (casaAtual && casaAtual.numero), 10);
@@ -3867,6 +4170,7 @@ function linhasConvite(r){
   if(horario) L.push({ r:"Horário:", t:horario });
   L.push({ r:"Local:", t:local });
   if(endereco) L.push({ r:"Endereço:", t:endereco });
+  if(dicaSalao) L.push({ r:"Como achar o salão:", t:dicaSalao });
   if(numCasa){ L.push({ t:"" }); L.push({ t:"Na portaria, avise que vai à ", b:`Casa ${numCasa}`, fim:"." }); }
   if(link){ L.push({ t:"" }); L.push({ r:"Como chegar:", t:link, link:true }); }
   return L;
@@ -3975,6 +4279,13 @@ function itemReservaEl(r, mostrarCasa=false, comAcoes=false){
   pill.className = "pill " + r.status;
   pill.innerHTML = `<i class="ti ${iconeStatus(r.status)}"></i>${legendaStatus(r.status)}`;
   info.appendChild(t1); info.appendChild(t2);
+  if(temVariosSaloes() || r.salaoId){
+    const ts = document.createElement("span");
+    ts.className = "salao-tag";
+    ts.innerHTML = '<i class="ti ti-confetti"></i>';
+    ts.appendChild(document.createTextNode(nomeDoSalaoDaReserva(r)));
+    info.appendChild(ts);
+  }
   if(vejoQuem && Array.isArray(r.areas) && r.areas.length){
     const t3 = document.createElement("p");
     t3.className = "t2";
@@ -4095,7 +4406,7 @@ window.abrirModal = function(id){
       document.getElementById("cd-foto-salao-preview").style.display = "block";
       document.getElementById("cd-foto-salao-icone").style.display = "none";
     }
-    locaisEdicao = locaisDoCondominio(condominioData);
+    iniciarEdicaoDeSaloes();
     renderizarLocaisConfig();
     definirSecaoConfig(null);     // abre com todas as seções fechadas
     atualizarResumosConfig();
@@ -4176,6 +4487,169 @@ window.onFotoSalaoSelecionada = function(input){
 /* ---------- Configurações em seções (abre uma por vez) ---------- */
 const SECOES_CONFIG = ["dados","local","locais","aviso","lembrete","zelador","relatorio"];
 let locaisEdicao = [];        // cópia editada na tela; só grava no "Salvar alterações"
+/* ---------- gestão de salões (só para condomínio com a liberação de vários salões) ---------- */
+let saloesEdicao = [];        // [{ id, ativo, motivo, dica, locais:[principal, ...acessórios] }]
+let salaoEdicaoIdx = 0;
+let podeVariosSaloes = false;
+let desativacaoPendente = null;
+function iniciarEdicaoDeSaloes(){
+  saloesEdicao = saloesDoCondominio(condominioData).map(s=> ({
+    id: s.id, ativo: s.ativo, motivo: s.motivo, dica: s.dica,
+    locais: s.id === SALAO_PADRAO_ID ? locaisDoCondominio(condominioData)
+      : [{ id:s.id, nome:s.nome, diaria:s.diaria, ativo:true, principal:true }, ...s.acessorios.map(a=> ({ ...a, principal:false }))]
+  }));
+  salaoEdicaoIdx = 0;
+  locaisEdicao = saloesEdicao[0].locais;
+  podeVariosSaloes = ehDev || saloesEdicao.length > 1;
+  renderizarSaloesConfig();
+  if(!podeVariosSaloes){
+    // A liberação fica junto da cobrança do condomínio: só o desenvolvedor liga
+    getDoc(doc(db, "Condominios", TENANT_ID, "cobranca", "aviso")).then(snap=>{
+      if(snap.exists() && (snap.data() || {}).multiSalao === true){ podeVariosSaloes = true; renderizarSaloesConfig(); }
+    }).catch(()=>{});
+  }
+}
+function guardarCamposDoSalao(){
+  const s = saloesEdicao[salaoEdicaoIdx];
+  if(!s || !podeVariosSaloes) return;
+  s.dica = document.getElementById("cd-salao-dica").value.replace(/\s+/g, " ").trim().slice(0, 120);
+  s.motivo = document.getElementById("cd-salao-motivo").value.replace(/\s+/g, " ").trim().slice(0, 60);
+  s.ativo = document.getElementById("cd-salao-ativo").checked;
+  s.locais = locaisEdicao;
+}
+function renderizarSaloesConfig(){
+  const bloco = document.getElementById("cd-saloes-bloco");
+  bloco.style.display = podeVariosSaloes ? "block" : "none";
+  document.getElementById("cd-salao-excluir").style.display = (podeVariosSaloes && salaoEdicaoIdx > 0) ? "flex" : "none";
+  if(!podeVariosSaloes) return;
+  const caixa = document.getElementById("cd-saloes-lista");
+  caixa.innerHTML = "";
+  saloesEdicao.forEach((s, i)=>{
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "salao-linha" + (i === salaoEdicaoIdx ? " sel" : "");
+    b.innerHTML = '<span class="ic"><i class="ti ti-confetti"></i></span><span><p class="t1"></p><p class="t2"></p></span><span class="st"></span>';
+    b.querySelector(".ic").classList.add("salao-cor-" + (i % 6));
+    b.querySelector(".t1").textContent = s.locais[0].nome;
+    const n = s.locais.length - 1;
+    b.querySelector(".t2").textContent = formatarReais(s.locais[0].diaria) + " · " + (n === 0 ? "Sem acessórios" : n === 1 ? "1 acessório" : `${n} acessórios`);
+    const st = b.querySelector(".st");
+    st.textContent = s.ativo ? "Ativo" : "Desativado";
+    st.classList.add(s.ativo ? "on" : "off");
+    b.onclick = ()=> selecionarSalaoEdicao(i);
+    caixa.appendChild(b);
+  });
+  const s = saloesEdicao[salaoEdicaoIdx];
+  document.getElementById("cd-salao-titulo").textContent = `Editando: ${s.locais[0].nome}`;
+  document.getElementById("cd-salao-ativo").checked = s.ativo;
+  document.getElementById("cd-salao-motivo").value = s.motivo || "";
+  document.getElementById("cd-salao-motivo-campo").style.display = s.ativo ? "none" : "block";
+  document.getElementById("cd-salao-dica").value = s.dica || "";
+}
+window.selecionarSalaoEdicao = function(i){
+  guardarCamposDoSalao();
+  salaoEdicaoIdx = i;
+  locaisEdicao = saloesEdicao[i].locais;
+  renderizarSaloesConfig();
+  renderizarLocaisConfig();
+  atualizarResumosConfig();
+};
+window.novoSalaoEdicao = function(){
+  if(saloesEdicao.length >= 6){ showToast("Limite de 6 salões por condomínio."); return; }
+  guardarCamposDoSalao();
+  const id = "s" + Date.now().toString(36);
+  saloesEdicao.push({ id, ativo:true, motivo:"", dica:"", locais:[{ id, nome:`Salão ${saloesEdicao.length + 1}`, diaria:0, ativo:true, principal:true }] });
+  salaoEdicaoIdx = saloesEdicao.length - 1;
+  locaisEdicao = saloesEdicao[salaoEdicaoIdx].locais;
+  renderizarSaloesConfig();
+  renderizarLocaisConfig();
+  atualizarResumosConfig();
+  abrirEdicaoLocal(id);     // já abre para dar o nome e a diária
+};
+window.excluirSalaoEdicao = async function(){
+  const s = saloesEdicao[salaoEdicaoIdx];
+  if(!s || salaoEdicaoIdx === 0) return;
+  // Salão com qualquer reserva (inclusive festas já realizadas) não pode ser apagado: o caminho é desativar
+  try{
+    const snap = await getDocs(query(collection(db, "Condominios", TENANT_ID, "reservas"), where("salaoId", "==", s.id)));
+    if(!snap.empty){ showToast("Este salão tem reservas no histórico. Em vez de excluir, desative."); return; }
+  }catch(e){ showToast("Não foi possível conferir as reservas deste salão. Tente novamente."); return; }
+  if(!confirm(`Excluir o salão "${s.locais[0].nome}"?`)) return;
+  saloesEdicao.splice(salaoEdicaoIdx, 1);
+  salaoEdicaoIdx = 0;
+  locaisEdicao = saloesEdicao[0].locais;
+  renderizarSaloesConfig();
+  renderizarLocaisConfig();
+  atualizarResumosConfig();
+  showToast("Salão removido. Toque em Salvar alterações para gravar.");
+};
+// Ao desligar a chave: mostra as reservas que o salão já tem. Nada é cancelado.
+window.aoMudarSalaoAtivo = async function(){
+  const chave = document.getElementById("cd-salao-ativo");
+  const s = saloesEdicao[salaoEdicaoIdx];
+  if(chave.checked){
+    s.ativo = true;
+    document.getElementById("cd-salao-motivo-campo").style.display = "none";
+    renderizarSaloesConfig();
+    return;
+  }
+  if(saloesEdicao.filter(x=> x.ativo).length <= 1 && s.ativo){
+    chave.checked = true;
+    showToast("Pelo menos um salão precisa ficar disponível.");
+    return;
+  }
+  desativacaoPendente = s.id;
+  document.getElementById("ds-titulo").textContent = `Desativar o ${s.locais[0].nome}?`;
+  const lista = document.getElementById("ds-lista");
+  lista.innerHTML = '<p class="sub" style="margin:0 0 12px;">Conferindo as reservas deste salão...</p>';
+  document.getElementById("ds-aviso").style.display = "none";
+  document.getElementById("ds-btn").textContent = "Desativar";
+  document.getElementById("modal-desativar-salao").classList.add("show");
+  let ativas = [];
+  try{
+    const hoje = hojeISO();
+    const base = collection(db, "Condominios", TENANT_ID, "reservas");
+    const [conf, pend] = await Promise.all([
+      getDocs(query(base, where("status", "==", "confirmada"), where("data", ">=", hoje))),
+      getDocs(query(base, where("status", "==", "pendente")))
+    ]);
+    conf.forEach(d=> ativas.push({ id:d.id, ...d.data() }));
+    pend.forEach(d=>{ const r = { id:d.id, ...d.data() }; if(r.data >= hoje) ativas.push(r); });
+    ativas = ativas.filter(r=> salaoDaReserva(r) === s.id).sort((a,b)=> a.data.localeCompare(b.data));
+  }catch(e){ ativas = null; }
+  if(desativacaoPendente !== s.id) return;
+  lista.innerHTML = "";
+  if(ativas === null){
+    lista.innerHTML = '<p class="sub" style="margin:0 0 12px;">Não foi possível conferir as reservas agora. Se houver alguma, ela continua valendo.</p>';
+  }else if(ativas.length){
+    document.getElementById("ds-aviso").style.display = "block";
+    document.getElementById("ds-btn").textContent = "Desativar e manter as reservas";
+    ativas.forEach(r=>{
+      const [, m, d] = r.data.split("-");
+      const el = document.createElement("div");
+      el.className = "umadia-card";
+      el.innerHTML = `<div class="dia${r.status === "confirmada" ? " ok" : ""}">${d}<small>${MESES_CURTOS[parseInt(m, 10) - 1].toUpperCase()}</small></div><div><b></b><br><span class="pill ${r.status}"><i class="ti ${iconeStatus(r.status)}"></i>${legendaStatus(r.status)}</span></div>`;
+      const casa = todasAsCasas.find(c=> c.id === r.casaId);
+      el.querySelector("b").textContent = `Casa ${r.casaNumero || ""}` + (casa && (casa.apelido || casa.nomeResponsavel) ? ` · ${casa.apelido || casa.nomeResponsavel}` : "");
+      lista.appendChild(el);
+    });
+  }
+};
+window.confirmarDesativarSalao = function(){
+  const s = saloesEdicao.find(x=> x.id === desativacaoPendente);
+  desativacaoPendente = null;
+  fecharModal("modal-desativar-salao");
+  if(!s) return;
+  s.ativo = false;
+  renderizarSaloesConfig();
+  document.getElementById("cd-salao-motivo").focus();
+  showToast("Salão desativado. Toque em Salvar alterações para gravar.");
+};
+window.cancelarDesativarSalao = function(){
+  desativacaoPendente = null;
+  fecharModal("modal-desativar-salao");
+  document.getElementById("cd-salao-ativo").checked = true;
+};
 let localEmEdicao = null;     // id do local aberto no cadastro (null = novo)
 function renderizarLocaisConfig(){
   const caixa = document.getElementById("cd-locais-lista");
@@ -4217,6 +4691,8 @@ window.salvarEdicaoLocal = function(){
   if(nome.length < 2){ showToast("Informe o nome do local."); document.getElementById("lc-nome").focus(); return; }
   if(isNaN(diaria)){ showToast("Informe o valor da diária. Use 0,00 se não houver cobrança."); document.getElementById("lc-diaria").focus(); return; }
   if(locaisEdicao.some(x=> x.id !== localEmEdicao && x.nome.toLowerCase() === nome.toLowerCase())){ showToast("Já existe um local com este nome."); return; }
+  const editandoPrincipal = !!(localEmEdicao && locaisEdicao.find(x=> x.id === localEmEdicao && x.principal));
+  if(editandoPrincipal && saloesEdicao.some((sx, i)=> i !== salaoEdicaoIdx && sx.locais[0].nome.toLowerCase() === nome.toLowerCase())){ showToast("Já existe um salão com este nome."); return; }
   const atual = localEmEdicao ? locaisEdicao.find(x=> x.id === localEmEdicao) : null;
   if(atual){
     atual.nome = nome; atual.diaria = diaria;
@@ -4227,6 +4703,7 @@ window.salvarEdicaoLocal = function(){
   }
   fecharModal("modal-local");
   renderizarLocaisConfig();
+  renderizarSaloesConfig();
   atualizarResumosConfig();
   showToast("Local anotado. Toque em Salvar alterações para gravar.");
 };
@@ -4234,6 +4711,7 @@ window.excluirLocalEmEdicao = function(){
   const l = locaisEdicao.find(x=> x.id === localEmEdicao);
   if(!l || l.principal) return;
   locaisEdicao = locaisEdicao.filter(x=> x.id !== l.id);
+  if(saloesEdicao[salaoEdicaoIdx]) saloesEdicao[salaoEdicaoIdx].locais = locaisEdicao;
   fecharModal("modal-local");
   renderizarLocaisConfig();
   atualizarResumosConfig();
@@ -4261,8 +4739,10 @@ function atualizarResumosConfig(){
   por("dados", v("cd-nome") || "Sem nome cadastrado", !v("cd-nome"));
   const temEnd = !!v("cd-endereco"), temMapa = !!v("cd-maps");
   por("local", temEnd && temMapa ? "Endereço e link do mapa" : temEnd ? "Só endereço, sem link do mapa" : temMapa ? "Só link do mapa, sem endereço" : "Não cadastrada");
-  const semCobranca = locaisEdicao.every(l=> !l.diaria);
-  por("locais", locaisEdicao.length > 1 ? `${locaisEdicao.length} locais cadastrados` : (semCobranca ? "Só o salão, sem cobrança" : `Só o salão · ${formatarReais(locaisEdicao[0].diaria)}`));
+  const locaisResumo = (saloesEdicao[0] && saloesEdicao[0].locais) || locaisEdicao;
+  const semCobranca = locaisResumo.every(l=> !l.diaria);
+  por("locais", saloesEdicao.length > 1 ? `${saloesEdicao.length} salões cadastrados`
+    : locaisResumo.length > 1 ? `${locaisResumo.length} locais cadastrados` : (semCobranca ? "Só o salão, sem cobrança" : `Só o salão · ${formatarReais(locaisResumo[0].diaria)}`));
   por("aviso", (v("cd-aviso-titulo") || v("cd-aviso-texto")) ? "Com aviso publicado" : "Sem aviso");
   const falta = oQueFaltaNoLembrete();
   por("lembrete", falta ? `Desligado: falta ${falta}` : "Ligado", !!falta);
@@ -4334,7 +4814,20 @@ window.salvarCondominio = async function(confirmouSemLembrete){
     return;
   }
   const dados = { nome, subtitulo, emailSindico, relatorioAutomatico, avisoTitulo, avisoTexto, lembreteEmailAssunto, lembreteEmailTexto, zeladorNome, zeladorApelido, zeladorWhatsapp, msgZeladorTexto, endereco, linkMaps };
-  dados.locais = locaisEdicao.map(l=> ({ id:l.id, nome:l.nome, diaria:l.diaria, ativo:l.ativo, principal:l.principal }));
+  guardarCamposDoSalao();
+  const salao1 = saloesEdicao[0] || { locais: locaisEdicao, ativo:true, motivo:"", dica:"" };
+  dados.locais = salao1.locais.map(l=> ({ id:l.id, nome:l.nome, diaria:l.diaria, ativo:l.ativo, principal:l.principal }));
+  // Campos de vários salões: só são gravados em condomínio que usa o recurso (os demais ficam como sempre)
+  if(podeVariosSaloes || saloesEdicao.length > 1){
+    dados.salaoAtivo = salao1.ativo !== false;
+    dados.salaoMotivo = salao1.ativo !== false ? "" : (salao1.motivo || "");
+    dados.salaoDica = salao1.dica || "";
+    dados.saloesExtras = saloesEdicao.slice(1).map(sx=> ({
+      id: sx.id, nome: sx.locais[0].nome, diaria: sx.locais[0].diaria, ativo: sx.ativo !== false,
+      motivo: sx.ativo !== false ? "" : (sx.motivo || ""), dica: sx.dica || "",
+      acessorios: sx.locais.slice(1).map(l=> ({ id:l.id, nome:l.nome, diaria:l.diaria, ativo:l.ativo }))
+    }));
+  }
   if(condominioData._novaFoto) dados.fotoBase64 = condominioData._novaFoto;
   if(condominioData._novaFotoSalao) dados.fotoSalao = condominioData._novaFotoSalao;
   try{
@@ -4345,6 +4838,7 @@ window.salvarCondominio = async function(confirmouSemLembrete){
     if(avisoTexto) document.getElementById("home-banner-texto").textContent = avisoTexto;
     if(dados.fotoBase64) document.getElementById("topbar-avatar").innerHTML = `<img src="${dados.fotoBase64}">`;
     if(dados.fotoSalao) document.getElementById("home-btn-watermark-salao").style.backgroundImage = `url(${dados.fotoSalao})`;
+    try{ renderizarTudo(); }catch(e){ /* a agenda se ajusta na próxima abertura */ }
     showToast("Configurações salvas.");
     fecharModal("modal-condominio");
   }catch(e){
@@ -4787,7 +5281,7 @@ async function carregarRelatorio(inicioISO, fimISO, rotulo){
       const casa = r.casaExcluida ? null : todasAsCasas.find(c=> c.id === r.casaId);
       linhas.push({
         casa: String(r.casaNumero || (casa ? casa.numero : "—")) + (r.casaExcluida ? " (excluída)" : ""),
-        nome: r.casaExcluida ? "Casa excluída" : ((casa && (casa.nomeResponsavel || casa.apelido)) || "—"),
+        nome: (r.casaExcluida ? "Casa excluída" : ((casa && (casa.nomeResponsavel || casa.apelido)) || "—")) + ((temVariosSaloes() || r.salaoId) ? " · " + nomeDoSalaoDaReserva(r) : ""),
         data: r.data,
         diaSemana: nomeDiaSemana(r.data)
       });
