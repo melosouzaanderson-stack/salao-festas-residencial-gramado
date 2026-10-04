@@ -1576,7 +1576,7 @@ import {
   getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, getDocs, query, where,
   orderBy, onSnapshot, serverTimestamp,
   initializeFirestore, persistentLocalCache, persistentMultipleTabManager, getDocFromCache, getDocsFromCache,
-  runTransaction
+  runTransaction, writeBatch, deleteField
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import {
   getAuth, signInWithEmailAndPassword, updatePassword, createUserWithEmailAndPassword,
@@ -1660,7 +1660,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026040002";
+const VERSAO_APP = "2026040003";
 
 /* ===================================================================== */
 
@@ -1778,11 +1778,70 @@ function listaDeEmails(txt){
   return String(txt || "").split(/[,;\s]+/).map(e=> e.trim().toLowerCase())
     .filter(e=> emailValido(e)).filter((e,i,a)=> a.indexOf(e) === i);
 }
+/* ---------- dados reservados do condomínio ----------
+   O cadastro do condomínio (Condominios/{id}) pode ser lido sem login, porque a tela de entrada mostra nome e foto.
+   Por isso os contatos e textos abaixo NÃO ficam nele: ficam em Condominios/{id}/reservado/dados, que o banco só
+   entrega ao síndico daquele condomínio e ao desenvolvedor. Se algum desses campos ainda aparecer no cadastro
+   público (condomínio antigo, ou gravado por uma versão antiga do app), ele é o mais recente: vale e é movido. */
+const CAMPOS_RESERVADOS = ["emailSindico","zeladorNome","zeladorApelido","zeladorWhatsapp","msgZeladorTexto","lembreteEmailAssunto","lembreteEmailTexto"];
+function refCondominio(tenant){ return doc(db, "Condominios", tenant); }
+function refReservado(tenant){ return doc(db, "Condominios", tenant, "reservado", "dados"); }
+function separarReservados(dados){
+  const publicos = {}, reservados = {};
+  Object.keys(dados || {}).forEach(k=>{ (CAMPOS_RESERVADOS.includes(k) ? reservados : publicos)[k] = dados[k]; });
+  return { publicos, reservados };
+}
+// Grava o cadastro do condomínio pondo cada dado no seu lugar, numa operação só (ou grava tudo, ou nada).
+// "reservadoLiberado" fica falso só enquanto as regras novas do banco não foram publicadas: aí grava como antes.
+async function gravarCondominio(tenant, dados){
+  const { publicos, reservados } = separarReservados(dados);
+  if(Object.keys(reservados).length === 0){ await setDoc(refCondominio(tenant), publicos, { merge:true }); return; }
+  try{
+    const lote = writeBatch(db);
+    lote.set(refReservado(tenant), reservados, { merge:true });
+    const limpeza = {}; CAMPOS_RESERVADOS.forEach(k=>{ limpeza[k] = deleteField(); });
+    lote.set(refCondominio(tenant), { ...publicos, ...limpeza }, { merge:true });
+    await lote.commit();
+  }catch(e){
+    if(!e || e.code !== "permission-denied") throw e;
+    await setDoc(refCondominio(tenant), dados, { merge:true });
+  }
+}
+// Lê os dados reservados de um condomínio (só síndico dele e desenvolvedor conseguem) e move o que ainda estiver exposto.
+// Devolve { valores, protegeu }. "publicoDoServidor" é o cadastro público lido agora do servidor (não da cópia do aparelho).
+async function lerReservados(tenant, publicoDoServidor, podeMover){
+  const valores = {}; let protegeu = false;
+  const pub = publicoDoServidor || {};
+  let res = {}, leu = false;
+  try{ const s = await getDoc(refReservado(tenant)); res = s.exists() ? (s.data() || {}) : {}; leu = true; }catch(e){ /* regras novas ainda não publicadas */ }
+  const expostos = {};
+  CAMPOS_RESERVADOS.forEach(k=>{
+    if(pub[k] !== undefined){ valores[k] = pub[k]; expostos[k] = pub[k]; }
+    else if(res[k] !== undefined) valores[k] = res[k];
+  });
+  if(leu && podeMover && Object.keys(expostos).length){
+    try{ await gravarCondominio(tenant, expostos); const c = await getDoc(refCondominio(tenant)); protegeu = c.exists() && CAMPOS_RESERVADOS.every(k=> c.data()[k] === undefined); }catch(e){ /* tenta de novo na próxima abertura */ }
+  }
+  return { valores, protegeu };
+}
+async function carregarDadosReservados(){
+  if(!(ehSindico || ehDev) || !condominioData) return;
+  try{
+    const s = await getDoc(refCondominio(TENANT_ID));
+    if(!s.exists()) return;
+    const doAparelho = !!(s.metadata && s.metadata.fromCache);
+    const { valores } = await lerReservados(TENANT_ID, s.data(), !doAparelho);
+    CAMPOS_RESERVADOS.forEach(k=>{ if(valores[k] !== undefined) condominioData[k] = valores[k]; else delete condominioData[k]; });
+  }catch(e){ /* segue com o que já tem */ }
+}
 async function ajustarEmailsSindico({ adicionar, remover }){
   let atual = (condominioData && condominioData.emailSindico) || "";
   try{
-    const s = await getDoc(doc(db, "Condominios", TENANT_ID));
-    if(s.exists()) atual = s.data().emailSindico || "";
+    const s = await getDoc(refCondominio(TENANT_ID));
+    if(s.exists()){
+      const { valores } = await lerReservados(TENANT_ID, s.data(), false);
+      atual = valores.emailSindico || "";
+    }
   }catch(e){ /* usa o que já está em memória */ }
   let lista = listaDeEmails(atual);
   const r = String(remover || "").trim().toLowerCase();
@@ -1798,7 +1857,7 @@ async function ajustarEmailsSindico({ adicionar, remover }){
   }
   if(a && emailValido(a) && !lista.includes(a)) lista.push(a);
   const novo = lista.join(", ");
-  await setDoc(doc(db, "Condominios", TENANT_ID), { emailSindico: novo }, { merge:true });
+  await gravarCondominio(TENANT_ID, { emailSindico: novo });
   if(condominioData) condominioData.emailSindico = novo;
 }
 
@@ -2345,6 +2404,7 @@ async function carregarListaCondominiosDev(){
       }catch(e){ ultimoErro = e; }
     }
     if(!snap) throw ultimoErro || new Error("sem resposta");
+    let protegidos = 0;
     const itens = await Promise.all(snap.docs.map(async d=>{
       let casas = 0; const sindicos = []; let telSindico = "";
       try{
@@ -2352,8 +2412,12 @@ async function carregarListaCondominiosDev(){
         casas = cs.size;
         cs.forEach(c=>{ const v = c.data(); if(v.papel === "sindico"){ sindicos.push(String(v.numero)); if(!telSindico && v.telefone) telSindico = v.telefone; } });
       }catch(e){ /* mostra o condomínio mesmo sem a contagem */ }
-      return { id: d.id, nome: (d.data().nome || d.id), casas, sindicos, telSindico, emailSindico: String(d.data().emailSindico || "").trim() };
+      const doAparelho = !!(snap.metadata && snap.metadata.fromCache);
+      const r = await lerReservados(d.id, d.data(), !doAparelho);
+      if(r.protegeu) protegidos++;
+      return { id: d.id, nome: (d.data().nome || d.id), casas, sindicos, telSindico, emailSindico: String(r.valores.emailSindico || "").trim() };
     }));
+    if(protegidos) showToast(protegidos === 1 ? "Contatos protegidos em 1 condomínio." : `Contatos protegidos em ${protegidos} condomínios.`);
     // Cobrança: só o desenvolvedor lê. Se as regras novas ainda não foram publicadas, o painel segue sem ela.
     await cobCarregarTudo();
     const hojeCob = hojeISO();
@@ -3099,11 +3163,8 @@ window.devCriarCondominio = async function(){
     const novoUid = cred.user.uid;
     await signOut(authSecundario);
     // 2) Condomínio, já com o lembrete padrão (o síndico pode editar depois)
-    await setDoc(doc(db, "Condominios", codigo), {
-      nome, subtitulo, emailSindico: email, relatorioAutomatico: true,
-      lembreteEmailAssunto: LEMBRETE_ASSUNTO_PADRAO, lembreteEmailTexto: LEMBRETE_TEXTO_PADRAO,
-      criadoEm: serverTimestamp()
-    });
+    await setDoc(doc(db, "Condominios", codigo), { nome, subtitulo, relatorioAutomatico: true, criadoEm: serverTimestamp() });
+    await gravarCondominio(codigo, { emailSindico: email, lembreteEmailAssunto: LEMBRETE_ASSUNTO_PADRAO, lembreteEmailTexto: LEMBRETE_TEXTO_PADRAO });
     // 3) Casa do síndico
     await setDoc(doc(db, "Condominios", codigo, "casas", novoUid), {
       numero, papel: "sindico", apelido: "", nomeResponsavel: "", telefone: celular,
@@ -3182,7 +3243,7 @@ async function iniciarApp(){
     otimizarFotosDoCondominio();
   }
 
-  await promessaReservas;
+  await Promise.all([promessaReservas, carregarDadosReservados()]);
   renderizarTudo();
   carregarMinhasReservas();
   escutarPendentesEmTempoReal();
@@ -4894,7 +4955,7 @@ window.salvarCondominio = async function(confirmouSemLembrete){
     if(tamanho > LIMITE_CADASTRO_CONDOMINIO){ showToast("As fotos dos salões ficaram pesadas demais. Tire a foto de um dos salões e salve de novo."); return; }
   }
   try{
-    await setDoc(doc(db, "Condominios", TENANT_ID), dados, { merge:true });
+    await gravarCondominio(TENANT_ID, dados);
     Object.assign(condominioData, dados);
     document.getElementById("topbar-nome").textContent = nome;
     if(avisoTitulo) document.getElementById("home-banner-titulo").textContent = avisoTitulo;
