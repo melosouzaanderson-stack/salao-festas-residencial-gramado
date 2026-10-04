@@ -422,6 +422,18 @@
   .cv-envio button{ flex:1; min-height:52px; border-radius:14px; font-family:inherit; font-size:16px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; }
   .cv-envio .zap{ border:0; background:#1F7A44; color:#fff; }
   .cv-envio .mail{ border:2px solid var(--accent-d); background:#fff; color:var(--accent-d); }
+  .cv-pend{ background:var(--amber); border:1px solid var(--amber-bd); color:var(--amber-ink); border-radius:16px; padding:16px; margin:0 0 12px; }
+  .cv-pend .t{ margin:0 0 6px; font-size:18px; font-weight:600; }
+  .cv-pend .x{ margin:0 0 14px; font-size:17px; line-height:1.45; }
+  .cv-pend .acoes{ display:flex; gap:10px; }
+  .cv-pend .acoes button{ flex:1; min-height:52px; border-radius:14px; font-family:inherit; font-size:17px; font-weight:600; cursor:pointer; }
+  .cv-pend .sim{ border:0; background:var(--amber-ink); color:#fff; }
+  .cv-pend .nao{ border:2px solid var(--amber-bd); background:#fff; color:var(--amber-ink); }
+  .cv-pend-nota{ background:var(--amber); color:var(--amber-ink); border-radius:12px; padding:10px 12px; font-size:15px; line-height:1.4; margin:0 0 12px; }
+  .cfg-aprov{ background:#EAF2FF; color:#0F172A; border-radius:12px; padding:12px; font-size:16px; line-height:1.45; margin:0; }
+  .cfg-aprov.nao{ background:var(--amber); color:var(--amber-ink); }
+  .nr-na-hora{ background:#E3F4E8; color:#1F7A44; border-radius:12px; padding:12px; font-size:16px; line-height:1.4; margin:0 0 14px; gap:8px; align-items:flex-start; }
+  .nr-na-hora i{ font-size:20px; flex:none; }
   .cv-envio button:disabled{ background:#E2E8F0; border-color:#E2E8F0; color:#64748B; cursor:default; }
   .icon-btn{ width:46px; height:46px; border-radius:12px; }
   .icon-btn i{ font-size:20px; }
@@ -1151,15 +1163,16 @@
 <div class="modal-wrap" id="modal-nova-reserva">
   <div class="modal">
     <button class="close-x" onclick="fecharModal('modal-nova-reserva')"><i class="ti ti-x"></i></button>
-    <h3>Pedir reserva</h3>
+    <h3 id="nr-titulo">Pedir reserva</h3>
     <p class="sub" id="nr-data-label">—</p>
+    <div class="nr-na-hora" id="nr-na-hora" style="display:none;"><i class="ti ti-circle-check"></i><span>Neste condomínio a reserva é confirmada na hora. Não precisa esperar aprovação.</span></div>
     <div class="field" id="nr-campo-casa" style="display:none;">
       <label>Reservar em nome de</label>
       <select id="nr-casa-select"></select>
     </div>
     <div class="field"><label>Observação (opcional)</label><textarea id="nr-obs" rows="3" placeholder="ex: aniversário de 10 anos"></textarea></div>
     <div class="dev-info" id="nr-valor" style="display:none;margin-bottom:12px;"><i class="ti ti-receipt"></i><span id="nr-valor-texto"></span></div>
-    <button class="btn btn-primary" onclick="confirmarPedidoReserva()">Enviar pedido</button>
+    <button class="btn btn-primary" id="nr-btn" onclick="confirmarPedidoReserva()">Enviar pedido</button>
   </div>
 </div>
 
@@ -1303,6 +1316,23 @@
         <button class="btn btn-danger" type="button" id="cd-salao-excluir" style="display:none;width:100%;margin-bottom:8px;align-items:center;justify-content:center;gap:8px;" onclick="excluirSalaoEdicao()"><i class="ti ti-trash"></i> Excluir este salão</button>
       </div>
     </div>
+    <div class="cfg-sec" id="cfg-sec-reservas">
+      <button type="button" class="cfg-cab" onclick="alternarSecaoConfig('reservas')" aria-expanded="false">
+        <span class="ic"><i class="ti ti-calendar-check"></i></span>
+        <span class="txt"><span class="t1">Reservas</span><span class="t2" id="cfg-res-reservas"></span></span>
+        <i class="ti ti-chevron-right seta"></i>
+      </button>
+      <div class="cfg-corpo">
+        <fieldset class="mud-tipo"><legend>Usa aprovação de agenda?</legend>
+          <div class="ops">
+            <label for="cd-aprov-sim"><input type="radio" name="cd-aprov" id="cd-aprov-sim" value="sim" checked onchange="aoMudarAprovacaoAgenda()">Sim</label>
+            <label for="cd-aprov-nao"><input type="radio" name="cd-aprov" id="cd-aprov-nao" value="nao" onchange="aoMudarAprovacaoAgenda()">Não</label>
+          </div>
+        </fieldset>
+        <p class="cfg-aprov" id="cd-aprov-txt"></p>
+      </div>
+    </div>
+
     <div class="cfg-sec" id="cfg-sec-aviso">
       <button type="button" class="cfg-cab" onclick="alternarSecaoConfig('aviso')" aria-expanded="false">
         <span class="ic"><i class="ti ti-speakerphone"></i></span>
@@ -1454,6 +1484,16 @@
     <button class="close-x" aria-label="Fechar" onclick="fecharModal('modal-convidados')"><i class="ti ti-x"></i></button>
     <h3>Lista de convidados</h3>
     <p class="sub" id="cv-sub" style="margin:-6px 0 14px;"></p>
+    <div class="cv-pend" id="cv-pend" style="display:none;">
+      <p class="t"><i class="ti ti-clock"></i> Ainda sem aprovação do síndico</p>
+      <p class="x">Se ele reprovar o pedido, você perde a lista. Deseja seguir?</p>
+      <div class="acoes">
+        <button type="button" class="sim" onclick="seguirConvidadosPendente()">Sim, seguir</button>
+        <button type="button" class="nao" onclick="fecharModal('modal-convidados')">Não</button>
+      </div>
+    </div>
+    <p class="cv-pend-nota" id="cv-pend-nota" style="display:none;"><i class="ti ti-clock"></i> Pedido aguardando aprovação. Se for reprovado, a lista é apagada.</p>
+    <div id="cv-corpo">
     <div id="cv-form">
       <div class="field"><label for="cv-nome">Nome</label><input type="text" id="cv-nome" maxlength="60" autocomplete="off" placeholder="Nome do convidado" style="font-size:18px;min-height:52px;" onkeydown="if(event.key==='Enter'){ event.preventDefault(); adicionarConvidado(); }"></div>
       <button class="btn btn-primary btn-linha" id="cv-add" onclick="adicionarConvidado()"><i class="ti ti-plus"></i> Adicionar</button>
@@ -1465,6 +1505,7 @@
     <div class="cv-envio">
       <button type="button" class="zap" id="cv-zap" onclick="enviarConvidados('whatsapp')"><i class="ti ti-brand-whatsapp"></i> WhatsApp</button>
       <button type="button" class="mail" id="cv-mail" onclick="enviarConvidados('email')"><i class="ti ti-mail"></i> E-mail</button>
+    </div>
     </div>
     <button class="btn btn-ghost btn-linha" onclick="fecharModal('modal-convidados')">Voltar</button>
   </div>
@@ -1771,7 +1812,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026040008";
+const VERSAO_APP = "2026040010";
 
 /* ===================================================================== */
 
@@ -3665,7 +3706,7 @@ function abrirDetalheDia(iso, reserva){
       if(variosSaloes) conteudo.querySelector(".sub").textContent = `Esse dia está livre no ${salaoTela.nome}.`;
       const btn = document.createElement("button");
       btn.className = "btn btn-primary";
-      btn.textContent = "Pedir esse dia";
+      btn.textContent = usaAprovacaoAgenda() ? "Pedir esse dia" : "Reservar esse dia";
       btn.onclick = ()=>{
         fecharModal("modal-detalhe-dia");
         // Uma reserva por dia para cada casa: se já tem pedido ou reserva em outro salão, avisa e para
@@ -3760,6 +3801,10 @@ function escaparHtml(s){
 function abrirNovaReserva(iso, paraQuem){
   diaSelecionadoISO = iso;
   document.getElementById("nr-data-label").textContent = formatarDataBR(iso);
+  const comAprovacao = usaAprovacaoAgenda();
+  document.getElementById("nr-titulo").textContent = comAprovacao ? "Pedir reserva" : "Reservar o salão";
+  document.getElementById("nr-btn").textContent = comAprovacao ? "Enviar pedido" : "Reservar";
+  document.getElementById("nr-na-hora").style.display = comAprovacao ? "none" : "flex";
   document.getElementById("nr-obs").value = "";
   // Só o salão, mas com diária: avisa o valor (com mais locais, o valor aparece na escolha das áreas)
   const locaisPedido = locaisDoPedido();
@@ -3874,7 +3919,7 @@ function abrirEscolhaDeAreas(){
   });
   atualizarTotalDasAreas();
   const btn = document.getElementById("ar-btn");
-  btn.disabled = false; btn.textContent = "Confirmar pedido";
+  btn.disabled = false; btn.textContent = usaAprovacaoAgenda() ? "Confirmar pedido" : "Confirmar reserva";
   document.getElementById("modal-areas").classList.add("show");
 }
 window.confirmarAreasDoPedido = async function(){
@@ -3923,17 +3968,22 @@ async function enviarPedidoReserva(areasEscolhidas){
   const camposDoSalao = !variosSaloes ? {} : (salaoPedido.id === SALAO_PADRAO_ID ? { salaoNome: salaoPedido.nome } : { salaoId: salaoPedido.id, salaoNome: salaoPedido.nome });
   try{
     // Confere NO SERVIDOR, no mesmo instante da gravação, se a data continua livre
+    let confirmadaNaHora = false;
     await runTransaction(db, async (tx)=>{
       const atual = await tx.get(refReserva);
       if(atual.exists() && ["pendente","confirmada"].includes(atual.data().status)){
         throw new Error("DATA_OCUPADA");
       }
+      // "Usa aprovação de agenda?" é conferido no servidor no instante do pedido (o padrão é Sim)
+      const condAgora = await tx.get(doc(db, "Condominios", TENANT_ID));
+      confirmadaNaHora = condAgora.exists() && condAgora.data().usaAprovacao === false;
+      if(condominioData) condominioData.usaAprovacao = !confirmadaNaHora;
       tx.set(refReserva, {
         data: diaSelecionadoISO,
         casaId: casaIdEscolhida,
         casaNumero: casaNumeroEscolhida,
         observacao: obs,
-        status: "pendente",
+        status: confirmadaNaHora ? "confirmada" : "pendente",
         criadoPor: casaAtualId,
         criadoEm: serverTimestamp(),
         ...camposDoSalao,
@@ -3941,7 +3991,7 @@ async function enviarPedidoReserva(areasEscolhidas){
       });
     });
     fecharModal("modal-nova-reserva");
-    showToast("Pedido enviado! O síndico foi notificado.");
+    showToast(confirmadaNaHora ? "Reserva confirmada! O síndico foi avisado." : "Pedido enviado! O síndico foi notificado.");
     carregarMinhasReservas();
     notificarSindicoNovoPedido(reservaId);
     await carregarReservasDoMes();
@@ -3954,9 +4004,13 @@ async function enviarPedidoReserva(areasEscolhidas){
       renderizarTudo();
       return;
     }
-    showToast("Não foi possível enviar o pedido. Tente novamente.");
+    showToast(usaAprovacaoAgenda() ? "Não foi possível enviar o pedido. Tente novamente." : "Não foi possível reservar. Tente novamente.");
   }
 }
+
+/* "Usa aprovação de agenda?" (configurações do condomínio). O padrão é Sim: só vale Não
+   quando o síndico gravou Não. Com Não, a reserva do morador já nasce confirmada. */
+function usaAprovacaoAgenda(){ return !condominioData || condominioData.usaAprovacao !== false; }
 
 // Aviso ao síndico: o servidor confere o pedido e manda o e-mail pelo Gmail do app
 async function notificarSindicoNovoPedido(reservaId){
@@ -4005,6 +4059,7 @@ async function recusarReserva(id){
   showToast("Reserva recusada.");
   try{
     await updateDoc(doc(db, "Condominios", TENANT_ID, "reservas", id), { status: "recusada" });
+    apagarConvidadosDaReserva(id);
     atualizarStatusLocal(id, "recusada");
     setTimeout(()=>{ renderizarTudo(); carregarMinhasReservas(); renderListaPendentesElementos(); renderListaTodasElementos(); }, 230);
   }catch(e){
@@ -4018,6 +4073,7 @@ async function cancelarReserva(id){
   showToast("Reserva cancelada.");
   try{
     await updateDoc(doc(db, "Condominios", TENANT_ID, "reservas", id), { status: "recusada" });
+    apagarConvidadosDaReserva(id);
     atualizarStatusLocal(id, "recusada");
     setTimeout(()=>{ renderizarTudo(); carregarMinhasReservas(); renderListaPendentesElementos(); renderListaTodasElementos(); }, 230);
   }catch(e){
@@ -4189,6 +4245,15 @@ function cartaoMinhaReserva(r, anterior){
     bLista.innerHTML = `<i class="ti ti-clipboard-list"></i>Lista de convidados<span class="cv-qtd"></span>`;
     bLista.onclick = (e)=>{ e.stopPropagation(); abrirConvidados(r); };
     acoes.appendChild(bAgenda); acoes.appendChild(bConv); acoes.appendChild(bLista);
+    info.appendChild(acoes);
+    lerConvidados(r).then(nomes=>{ if(nomes.length) bLista.querySelector(".cv-qtd").textContent = nomes.length; }).catch(()=>{});
+  }else if(!anterior && r.status === "pendente"){
+    const acoes = document.createElement("div");
+    acoes.className = "acoes-reserva";
+    const bLista = document.createElement("button");
+    bLista.innerHTML = `<i class="ti ti-clipboard-list"></i>Lista de convidados<span class="cv-qtd"></span>`;
+    bLista.onclick = (e)=>{ e.stopPropagation(); abrirConvidados(r); };
+    acoes.appendChild(bLista);
     info.appendChild(acoes);
     lerConvidados(r).then(nomes=>{ if(nomes.length) bLista.querySelector(".cv-qtd").textContent = nomes.length; }).catch(()=>{});
   }
@@ -4586,6 +4651,9 @@ window.abrirModal = function(id){
     document.getElementById("cd-subtitulo").value = condominioData.subtitulo || "";
     document.getElementById("cd-email-sindico").value = condominioData.emailSindico || "";
     document.getElementById("cd-relatorio-auto").checked = condominioData.relatorioAutomatico !== false;
+    document.getElementById("cd-aprov-sim").checked = condominioData.usaAprovacao !== false;
+    document.getElementById("cd-aprov-nao").checked = condominioData.usaAprovacao === false;
+    textoAprovacaoAgenda();
     document.getElementById("cd-aviso-titulo").value = condominioData.avisoTitulo || "";
     document.getElementById("cd-aviso-texto").value = condominioData.avisoTexto || "";
     document.getElementById("cd-lembrete-assunto").value = condominioData.lembreteEmailAssunto || "";
@@ -4692,7 +4760,7 @@ window.onFotoSalaoSelecionada = function(input){
 };
 
 /* ---------- Configurações em seções (abre uma por vez) ---------- */
-const SECOES_CONFIG = ["dados","local","locais","aviso","lembrete","zelador","relatorio"];
+const SECOES_CONFIG = ["dados","local","locais","reservas","aviso","lembrete","zelador","relatorio"];
 let locaisEdicao = [];        // cópia editada na tela; só grava no "Salvar alterações"
 /* ---------- gestão de salões (só para condomínio com a liberação de vários salões) ---------- */
 let saloesEdicao = [];        // [{ id, ativo, motivo, dica, locais:[principal, ...acessórios] }]
@@ -4960,6 +5028,15 @@ window.excluirLocalEmEdicao = function(){
   atualizarResumosConfig();
   showToast("Local removido. Toque em Salvar alterações para gravar.");
 };
+function textoAprovacaoAgenda(){
+  const nao = document.getElementById("cd-aprov-nao").checked;
+  const el = document.getElementById("cd-aprov-txt");
+  el.classList.toggle("nao", nao);
+  el.textContent = nao
+    ? "A reserva do morador é confirmada na hora, sem passar por você. Você recebe um aviso e ainda pode cancelar."
+    : "O morador pede a data e você aprova ou recusa.";
+}
+window.aoMudarAprovacaoAgenda = function(){ textoAprovacaoAgenda(); atualizarResumosConfig(); };
 function definirSecaoConfig(nome){
   SECOES_CONFIG.forEach(n=>{
     const el = document.getElementById("cfg-sec-" + n);
@@ -4992,6 +5069,7 @@ function atualizarResumosConfig(){
   const zel = v("cd-zelador-apelido") || v("cd-zelador-nome");
   por("zelador", zel ? zel + (v("cd-zelador-whatsapp") ? "" : " · sem WhatsApp") : "Não cadastrado");
   por("relatorio", document.getElementById("cd-relatorio-auto").checked ? "Ligado · 1º dia útil do mês" : "Desligado");
+  por("reservas", document.getElementById("cd-aprov-nao").checked ? "Confirmadas na hora, sem aprovação" : "Com aprovação do síndico");
 }
 ["input","change"].forEach(ev=> document.getElementById("modal-condominio").addEventListener(ev, atualizarResumosConfig));
 
@@ -5056,7 +5134,8 @@ window.salvarCondominio = async function(confirmouSemLembrete){
     document.getElementById("modal-sem-lembrete").classList.add("show");
     return;
   }
-  const dados = { nome, subtitulo, emailSindico, relatorioAutomatico, avisoTitulo, avisoTexto, lembreteEmailAssunto, lembreteEmailTexto, zeladorNome, zeladorApelido, zeladorWhatsapp, msgZeladorTexto, endereco, linkMaps };
+  const usaAprovacao = !document.getElementById("cd-aprov-nao").checked;
+  const dados = { nome, subtitulo, emailSindico, relatorioAutomatico, usaAprovacao, avisoTitulo, avisoTexto, lembreteEmailAssunto, lembreteEmailTexto, zeladorNome, zeladorApelido, zeladorWhatsapp, msgZeladorTexto, endereco, linkMaps };
   guardarCamposDoSalao();
   const salao1 = saloesEdicao[0] || { locais: locaisEdicao, ativo:true, motivo:"", dica:"" };
   dados.locais = salao1.locais.map(l=> ({ id:l.id, nome:l.nome, diaria:l.diaria, ativo:l.ativo, principal:l.principal }));
@@ -5341,7 +5420,12 @@ window.confirmarExcluirCasa = async function(){
 const MAX_CONVIDADOS = 200;
 let cvEstado = null;   // { reserva, nomes, podeEditar }
 function refConvidados(reservaId){ return doc(db, "Condominios", TENANT_ID, "convidados", reservaId); }
+/* Reserva recusada ou cancelada: a lista de convidados dela é apagada (não trava a ação se falhar) */
+function apagarConvidadosDaReserva(reservaId){
+  try{ deleteDoc(refConvidados(reservaId)).catch(()=>{}); }catch(e){ /* a lista só deixa de valer; ver lerConvidados */ }
+}
 async function lerConvidados(r){
+  if(r.status === "recusada") return [];
   const snap = await getDoc(refConvidados(r.id));
   if(!snap.exists()) return [];
   const d = snap.data() || {};
@@ -5383,11 +5467,17 @@ function renderizarConvidados(){
 window.abrirConvidados = async function(r){
   if(!r || !r.id || !r.data) return;
   const minha = !!casaAtualId && r.casaId === casaAtualId;
-  const podeEditar = minha && r.status === "confirmada" && r.data >= hojeISO();
+  const pendente = r.status === "pendente";
+  const podeEditar = minha && (r.status === "confirmada" || pendente) && r.data >= hojeISO();
   cvEstado = { reserva: r, nomes: [], podeEditar };
   const salao = temVariosSaloes() ? " · " + (nomeDoSalaoDaReserva(r) || "") : "";
   document.getElementById("cv-sub").textContent = (minha ? "" : `Casa ${r.casaNumero || ""} · `) + `Festa de ${textoDataMudanca(r.data)}${salao}`;
   document.getElementById("cv-form").style.display = podeEditar ? "block" : "none";
+  /* Pedido ainda não aprovado: avisa antes e só mostra a lista depois do "Sim, seguir" */
+  const avisar = podeEditar && pendente;
+  document.getElementById("cv-pend").style.display = avisar ? "block" : "none";
+  document.getElementById("cv-pend-nota").style.display = "none";
+  document.getElementById("cv-corpo").style.display = avisar ? "none" : "block";
   document.getElementById("cv-nome").value = "";
   document.getElementById("cv-priv-txt").textContent = minha ? "Só você e o síndico veem esta lista." : "Lista feita pelo morador. Você só consulta e envia.";
   document.getElementById("cv-envio-rot").textContent = minha ? "Enviar a lista" : "Enviar para a portaria";
@@ -5404,6 +5494,12 @@ window.abrirConvidados = async function(r){
   }catch(e){
     document.getElementById("cv-lista").innerHTML = `<div class="cv-vazio">Não foi possível carregar a lista. Tente novamente.</div>`;
   }
+};
+window.seguirConvidadosPendente = function(){
+  document.getElementById("cv-pend").style.display = "none";
+  document.getElementById("cv-pend-nota").style.display = "block";
+  document.getElementById("cv-corpo").style.display = "block";
+  const campo = document.getElementById("cv-nome"); if(campo) campo.focus();
 };
 async function gravarConvidados(nomes){
   const r = cvEstado.reserva;
@@ -5460,8 +5556,8 @@ window.enviarConvidados = function(meio){
   }
 };
 window.abrirConvidadosProximaFesta = function(){
-  const prox = minhasFuturasAtivas().filter(r=> r.status === "confirmada").sort((a,b)=> a.data.localeCompare(b.data))[0];
-  if(!prox){ showToast("Você ainda não tem festa confirmada. A lista abre quando o síndico aprovar o seu pedido."); return; }
+  const prox = minhasFuturasAtivas().slice().sort((a,b)=> a.data.localeCompare(b.data))[0];
+  if(!prox){ showToast("Você ainda não tem festa marcada. Peça uma data em Reservar o salão."); return; }
   abrirConvidados(prox);
 };
 
@@ -5651,6 +5747,7 @@ function listarReservasNoCartao(el, c, lista){
       if(!confirm(`Cancelar a reserva de ${formatarDataBR(r.data)} da Casa ${c.numero}?`)) return;
       try{
         await updateDoc(doc(db, "Condominios", TENANT_ID, "reservas", r.id), { status: "recusada" });
+        apagarConvidadosDaReserva(r.id);
         atualizarStatusLocal(r.id, "recusada");
         linha.querySelector(".acoes").outerHTML = `<p class="feito">Reserva cancelada</p>`;
         renderizarTudo();
