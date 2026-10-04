@@ -657,6 +657,9 @@
   .cob-rapidas.tres .cob-rap{ font-size:15px; gap:5px; padding:0 4px; }
   .cob-rapidas.tres .cob-rap i{ font-size:19px; }
   .cob-acordo-info{ font-size:15px; color:var(--muted); margin:0; line-height:1.5; }
+  .cob-previa-rot{ font-size:14px; font-weight:600; color:var(--muted); margin:0 0 6px; }
+  .cob-previa{ width:100%; height:46vh; min-height:260px; border:1px solid var(--line); border-radius:14px; background:#EEF3FA; display:block; margin:0 0 6px; }
+  .cob-previa-msg{ font-size:15px; color:var(--muted); background:var(--soft); border-radius:12px; padding:14px; margin:0 0 12px; line-height:1.45; }
   .cob-rap:active{ transform:scale(.97); }
   .cob-resumo{ background:linear-gradient(135deg,#1E293B,#0F172A); color:#fff; border-radius:18px; padding:16px; }
   .cob-resumo .rot{ font-size:14px; opacity:.78; margin:0 0 2px; }
@@ -1357,6 +1360,10 @@
     <p class="sub" id="ca-sub" style="margin:-8px 0 14px;"></p>
     <p class="dev-resumo" id="ca-resumo" style="margin:0 0 14px;"></p>
     <div class="rs-aviso" id="ca-aviso" style="display:none;"><i class="ti ti-alert-triangle"></i> <span id="ca-aviso-texto"></span></div>
+    <p class="cob-previa-rot">Prévia do e-mail, com os dados reais</p>
+    <p class="cob-previa-msg" id="ca-previa-msg">Carregando a prévia…</p>
+    <iframe class="cob-previa" id="ca-previa" title="Prévia do e-mail do acordo" sandbox="" style="display:none;"></iframe>
+    <p class="dev-dica" id="ca-previa-dica" style="display:none;margin:0 0 12px;">Role dentro do quadro para ver o e-mail inteiro. É exatamente o que o síndico vai receber.</p>
     <button class="btn btn-primary btn-linha" id="ca-btn" onclick="cobEnviarAcordo()"><i class="ti ti-send"></i> Enviar e-mail</button>
     <button class="btn btn-ghost btn-linha" onclick="fecharModal('modal-cob-acordo')">Cancelar</button>
   </div>
@@ -1558,7 +1565,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026030013";
+const VERSAO_APP = "2026030014";
 
 /* ===================================================================== */
 
@@ -2703,6 +2710,35 @@ function cobAbrirAcordo(it){
   const b = document.getElementById("ca-btn");
   b.disabled = !it.emailSindico; b.innerHTML = '<i class="ti ti-send"></i> Enviar e-mail';
   document.getElementById("modal-cob-acordo").classList.add("show");
+  cobCarregarPreviaAcordo(it);
+}
+// Pede ao servidor o e-mail pronto (mesmos dados e mesmo layout do envio), sem enviar nada
+async function cobCarregarPreviaAcordo(it){
+  const msg = document.getElementById("ca-previa-msg");
+  const quadro = document.getElementById("ca-previa");
+  const dica = document.getElementById("ca-previa-dica");
+  quadro.style.display = "none"; quadro.removeAttribute("srcdoc"); dica.style.display = "none";
+  msg.style.display = "block"; msg.textContent = "Carregando a prévia…";
+  try{
+    const token = await auth.currentUser.getIdToken();
+    const resp = await fetch(URL_FN_RELATORIO_EMAIL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify({ modo: "acordoPrevia", tenantId: it.id })
+    });
+    const dados = await resp.json().catch(()=> ({}));
+    if(cobAcordoAlvo !== it) return;   // o desenvolvedor já fechou ou abriu outro condomínio
+    if(!resp.ok || !dados.ok || !dados.html){
+      msg.textContent = dados.erro === "Dados incompletos."
+        ? "A prévia ainda não está publicada no servidor. Atualize a função de e-mail."
+        : (dados.erro || "Não foi possível carregar a prévia.");
+      return;
+    }
+    quadro.setAttribute("srcdoc", dados.html);
+    quadro.style.display = "block"; dica.style.display = "block"; msg.style.display = "none";
+  }catch(e){
+    if(cobAcordoAlvo === it) msg.textContent = "Não foi possível carregar a prévia. Confira a internet e tente de novo.";
+  }
 }
 window.cobAbrirAcordo = cobAbrirAcordo;
 window.cobEnviarAcordo = async function(){
