@@ -731,6 +731,7 @@
   .cob-resumo .mini b{ font-size:15px; white-space:nowrap; }
   .cob-resumo .mini.atraso b{ color:#FCA5A5; }
   .cob-resumo .mini.ok b{ color:#86EFAC; }
+  .dev-top .dev-marca{ display:block; font-family:ui-monospace, 'SF Mono', 'Cascadia Mono', 'Roboto Mono', Consolas, 'Courier New', monospace; font-size:11px; font-weight:600; letter-spacing:.24em; color:var(--accent-d); margin-top:2px; }
   .dev-top .sub2{ display:block; font-family:'Work Sans', sans-serif; font-size:14px; color:var(--muted); font-weight:400; }
   .cob-seg{ display:flex; background:#E9EFF8; border-radius:12px; padding:4px; gap:4px; }
   .cob-seg button{ flex:1; border:0; background:none; font-family:inherit; font-size:16px; font-weight:500; padding:12px 4px; border-radius:9px; color:var(--muted); cursor:pointer; }
@@ -884,14 +885,14 @@
   <div class="dev-wrap">
 
     <div class="dev-vista" id="dev-view-lista">
-      <div class="dev-top"><div class="av"><i class="ti ti-shield-lock"></i></div><b>Painel de gestão</b></div>
+      <div class="dev-top"><div class="av"><i class="ti ti-shield-lock"></i></div><b>Painel de gestão<span class="dev-marca">SOUZA IATECH</span></b></div>
       <div class="dev-corpo">
         <div id="dev-resumo-cob" style="display:none;"></div>
-        <button class="btn btn-ghost" style="display:flex;align-items:center;justify-content:center;gap:8px;" onclick="pvAbrir()"><i class="ti ti-tags"></i> Planos e valores</button>
         <p class="dev-secao">Condomínios cadastrados</p>
         <div id="dev-lista" style="display:flex;flex-direction:column;gap:12px;"></div>
         <div class="dev-rodape">
           <button class="btn btn-primary" onclick="devNovoCondominio()"><i class="ti ti-plus"></i> Novo condomínio</button>
+          <button class="btn btn-ghost" onclick="pvAbrir()"><i class="ti ti-tags"></i> Planos e valores</button>
           <button class="btn btn-ghost" onclick="cobAbrirConfig()"><i class="ti ti-qrcode"></i> Meus dados de recebimento</button>
           <button class="btn btn-ghost" onclick="fazerLogout()"><i class="ti ti-logout"></i> Sair</button>
         </div>
@@ -1021,7 +1022,7 @@
     </div>
 
     <div class="dev-vista" id="dev-view-pronto">
-      <div class="dev-top"><div class="av"><i class="ti ti-shield-lock"></i></div><b>Painel de gestão</b></div>
+      <div class="dev-top"><div class="av"><i class="ti ti-shield-lock"></i></div><b>Painel de gestão<span class="dev-marca">SOUZA IATECH</span></b></div>
       <div class="dev-corpo">
         <div class="dev-ok"><i class="ti ti-check"></i></div>
         <p class="dev-h" style="text-align:center;">Condomínio criado!</p>
@@ -1899,7 +1900,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026040013";
+const VERSAO_APP = "2026040014";
 
 /* ===================================================================== */
 
