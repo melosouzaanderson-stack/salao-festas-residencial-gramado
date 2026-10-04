@@ -37,6 +37,30 @@
 })();
 </script>
 <title>Salão de Festas — Condomínio</title>
+<!-- Ícone do app e instalação na tela inicial do celular (v2026040017) -->
+<link rel="manifest" href="manifest.json" id="link-manifest">
+<link rel="icon" type="image/png" href="icone-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#1D4ED8">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Agende&amp;Festas">
+<script>
+/* Instalação na tela inicial.
+   Android: guarda o convite de instalação do navegador para o botão "Instalar" usar depois.
+   iPhone: tira o manifesto, para o ícone guardar o endereço da página (com o condomínio) e não o endereço puro. */
+(function(){
+  window.__instalarEvento = null;
+  window.addEventListener("beforeinstallprompt", function(e){
+    e.preventDefault(); window.__instalarEvento = e;
+    try{ window.dispatchEvent(new Event("agendefestas-instalavel")); }catch(err){}
+  });
+  var ua = navigator.userAgent || "";
+  if(/iphone|ipad|ipod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)){
+    var m = document.getElementById("link-manifest"); if(m) m.parentNode.removeChild(m);
+  }
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -790,6 +814,16 @@
   .home-atalho:active{ transform:scale(.97); }
   .home-atalho .ic{ width:44px; height:44px; border-radius:12px; background:linear-gradient(145deg,var(--azul1),var(--azul2)); display:flex; align-items:center; justify-content:center; flex:none; }
   .home-atalho .ic i{ color:#fff; font-size:23px; }
+  .home-atalho .ic.ic-app{ background:none; }
+  .home-atalho .ic.ic-app img{ width:44px; height:44px; border-radius:12px; display:block; }
+  .inst-app{ display:flex; align-items:center; gap:12px; background:var(--soft); border-radius:16px; padding:12px; margin:0 0 14px; }
+  .inst-app img{ width:56px; height:56px; border-radius:14px; flex:none; }
+  .inst-app b{ display:block; font-size:17px; color:var(--deep); }
+  .inst-app span{ font-size:15px; color:var(--muted); }
+  .inst-passo{ display:flex; gap:12px; align-items:flex-start; padding:10px 0; border-top:1px solid #EEF2F7; font-size:16px; line-height:1.45; color:var(--deep); }
+  .inst-passo:first-child{ border-top:0; }
+  .inst-passo .n{ width:30px; height:30px; border-radius:50%; background:var(--accent-d); color:#fff; font-weight:600; display:flex; align-items:center; justify-content:center; flex:none; }
+  .inst-link{ display:block; width:100%; border:0; background:none; font-family:inherit; font-size:16px; font-weight:600; color:var(--accent-d); padding:12px 0 2px; cursor:pointer; }
   .home-atalho.avisado{ background:var(--amber); border-color:var(--amber-bd); color:var(--amber-ink); }
   .home-atalho.avisado .ic{ background:var(--amber-ink); }
   .cob-aviso .acoes .b-unico{ flex:1; }
@@ -1129,6 +1163,9 @@
         <button type="button" class="home-atalho" id="home-atalho-convidados" onclick="abrirConvidadosProximaFesta()">
           <span class="ic"><i class="ti ti-clipboard-list"></i></span>Lista de convidados
         </button>
+        <button type="button" class="home-atalho" id="home-atalho-instalar" style="display:none;" onclick="abrirInstalar()">
+          <span class="ic ic-app"><img src="icone-192.png" alt="" onerror="this.parentNode.classList.remove('ic-app');this.outerHTML='&lt;i class=&quot;ti ti-device-mobile-down&quot;&gt;&lt;/i&gt;';"></span>Instalar o app
+        </button>
       </div>
       <div class="cob-aviso" id="home-mudanca-avisada" style="display:none;">
         <p class="rot"><i class="ti ti-clock"></i> MUDANÇA AVISADA</p>
@@ -1195,6 +1232,7 @@
   <div class="drawer-item" id="menu-config-condominio" style="display:none;" onclick="abrirModal('modal-condominio')"><i class="ti ti-building"></i> Condomínio</div>
   <div class="drawer-item" id="menu-casas" style="display:none;" onclick="abrirModal('modal-casas')"><i class="ti ti-users"></i> Casas cadastradas</div>
   <div class="drawer-item" id="menu-relatorio" style="display:none;" onclick="abrirModal('modal-relatorio')"><i class="ti ti-report"></i> Festas realizadas</div>
+  <div class="drawer-item" id="menu-instalar" style="display:none;" onclick="abrirInstalar()"><i class="ti ti-device-mobile-down"></i> Colocar na tela inicial</div>
   <div class="drawer-item" id="menu-painel-dev" style="display:none;" onclick="voltarAoPainelDev()"><i class="ti ti-shield-lock"></i> Painel de gestão</div>
   <div class="drawer-item danger" onclick="fazerLogout()"><i class="ti ti-logout"></i> Sair</div>
   <p style="font-size:10px; opacity:.5; margin-top:24px;" id="drawer-versao">v0000000000</p>
@@ -1600,6 +1638,38 @@
   </div>
 </div>
 
+<!-- ===================== MODAL: COLOCAR NA TELA INICIAL ===================== -->
+<div class="modal-wrap" id="modal-instalar">
+  <div class="modal">
+    <button class="close-x" aria-label="Fechar" onclick="fecharModal('modal-instalar')"><i class="ti ti-x"></i></button>
+    <h3 id="inst-titulo">Colocar na tela inicial</h3>
+    <p class="sub" id="inst-sub" style="margin:-6px 0 14px;">Abra o app com um toque, direto da tela do celular</p>
+    <div class="inst-app"><img src="icone-192.png" alt="" onerror="this.style.display='none'"><div><b>Agende&amp;Festas</b><span>Agenda do salão de festas</span></div></div>
+    <div id="inst-android">
+      <button class="btn btn-primary btn-linha" id="inst-btn" onclick="instalarApp()"><i class="ti ti-download"></i> Instalar</button>
+      <button class="btn btn-ghost btn-linha" onclick="instalarDispensar()">Agora não</button>
+      <button type="button" class="inst-link" onclick="instalarMostrarIphone()">Tenho iPhone</button>
+    </div>
+    <div id="inst-ios" style="display:none;">
+      <div style="margin:0 0 12px;">
+        <div class="inst-passo"><span class="n">1</span><span>Toque no botão <b>Compartilhar</b>, o quadrado com a seta para cima, na barra do Safari</span></div>
+        <div class="inst-passo"><span class="n">2</span><span>Role a lista e toque em <b>Adicionar à Tela de Início</b></span></div>
+        <div class="inst-passo"><span class="n">3</span><span>Toque em <b>Adicionar</b>, no canto de cima</span></div>
+      </div>
+      <button class="btn btn-ghost btn-linha" onclick="instalarDispensar()">Entendi</button>
+    </div>
+    <div id="inst-manual" style="display:none;">
+      <div style="margin:0 0 12px;">
+        <div class="inst-passo"><span class="n">1</span><span>Toque nos <b>três pontinhos</b> do navegador, no canto de cima</span></div>
+        <div class="inst-passo"><span class="n">2</span><span>Toque em <b>Adicionar à tela inicial</b> ou <b>Instalar app</b></span></div>
+        <div class="inst-passo"><span class="n">3</span><span>Confirme em <b>Instalar</b></span></div>
+      </div>
+      <button class="btn btn-ghost btn-linha" onclick="instalarDispensar()">Entendi</button>
+      <button type="button" class="inst-link" onclick="instalarMostrarIphone()">Tenho iPhone</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-wrap" id="modal-aviso-mudanca">
   <div class="modal">
     <button class="close-x" aria-label="Fechar" onclick="fecharModal('modal-aviso-mudanca')"><i class="ti ti-x"></i></button>
@@ -1902,7 +1972,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026040016";
+const VERSAO_APP = "2026040017";
 
 /* ===================================================================== */
 
@@ -6044,11 +6114,70 @@ window.aoMudarTipoMudanca = function(){
 };
 function textoDataMudanca(iso){ return `${formatarDataBR(iso)} (${nomeDiaSemana(iso)})`; }
 
+/* ---------- colocar o app na tela inicial do celular ----------
+   O atalho aparece para morador e síndico enquanto o app não está instalado. Depois de
+   "Agora não" ou "Entendi" ele some de vez neste aparelho; a opção continua no menu. */
+const CHAVE_INSTALAR_DISPENSADO = "salaoFestas.instalarDispensado";
+function appEstaInstalado(){
+  try{ return window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true; }catch(e){ return false; }
+}
+function aparelhoEhIphone(){
+  const ua = navigator.userAgent || "";
+  return /iphone|ipad|ipod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+}
+function instalarFoiDispensado(){ try{ return localStorage.getItem(CHAVE_INSTALAR_DISPENSADO) === "1"; }catch(e){ return false; } }
+function atualizarAtalhoInstalar(){
+  const atalho = document.getElementById("home-atalho-instalar"), menu = document.getElementById("menu-instalar");
+  if(!atalho || !menu) return;
+  const pode = !!casaAtualId && !devSemCasa && !ehDev && !appEstaInstalado();
+  menu.style.display = pode ? "flex" : "none";
+  atalho.style.display = (pode && !instalarFoiDispensado() && (!!window.__instalarEvento || aparelhoEhIphone())) ? "" : "none";
+}
+function instalarMostrarPainel(qual){
+  ["android","ios","manual"].forEach(n=>{ document.getElementById("inst-" + n).style.display = (n === qual) ? "block" : "none"; });
+  document.getElementById("inst-titulo").textContent = qual === "ios" ? "Colocar na tela de início" : "Colocar na tela inicial";
+  document.getElementById("inst-sub").textContent = qual === "ios" ? "No iPhone são três toques, pelo Safari" : "Abra o app com um toque, direto da tela do celular";
+  if(qual === "ios"){
+    // O ícone do iPhone guarda o endereço da página: deixa o condomínio nele, para o ícone abrir direto aqui
+    try{ if(TENANT_ID && tenantValido(TENANT_ID)) history.replaceState(null, "", location.pathname + "?c=" + encodeURIComponent(TENANT_ID)); }catch(e){}
+  }
+}
+window.abrirInstalar = function(){
+  instalarMostrarPainel(window.__instalarEvento ? "android" : (aparelhoEhIphone() ? "ios" : "manual"));
+  abrirModal("modal-instalar");
+};
+window.instalarMostrarIphone = function(){ instalarMostrarPainel("ios"); };
+window.instalarApp = async function(){
+  const ev = window.__instalarEvento;
+  if(!ev){ instalarMostrarPainel("manual"); return; }
+  const b = document.getElementById("inst-btn");
+  b.disabled = true;
+  try{
+    ev.prompt();
+    const r = await ev.userChoice;
+    window.__instalarEvento = null;   // o convite do navegador só vale uma vez
+    if(r && r.outcome === "accepted"){
+      fecharModal("modal-instalar");
+      showToast("App instalado. Procure o ícone Agende&Festas na tela do celular.");
+    }else{ instalarMostrarPainel("manual"); }
+  }catch(e){ instalarMostrarPainel("manual"); }
+  finally{ b.disabled = false; atualizarAtalhoInstalar(); }
+};
+window.instalarDispensar = function(){
+  try{ localStorage.setItem(CHAVE_INSTALAR_DISPENSADO, "1"); }catch(e){}
+  fecharModal("modal-instalar");
+  atualizarAtalhoInstalar();
+  showToast("Combinado. Quando quiser, a opção fica no menu.");
+};
+window.addEventListener("agendefestas-instalavel", atualizarAtalhoInstalar);
+window.addEventListener("appinstalled", ()=>{ window.__instalarEvento = null; atualizarAtalhoInstalar(); });
+
 function renderizarAtalhosHome(){
   const faixa = document.getElementById("home-atalhos");
   if(!faixa || !casaAtual) return;
   const podeAvisar = !!casaAtualId && !devSemCasa && !ehDev;   /* morador e síndico avisam a própria mudança; desenvolvedor não */
   faixa.style.display = podeAvisar ? "grid" : "none";
+  atualizarAtalhoInstalar();
   const m = podeAvisar ? mudancaDaCasa(casaAtual) : null;
   const atalho = document.getElementById("home-atalho-mudanca");
   atalho.classList.toggle("avisado", !!m);
