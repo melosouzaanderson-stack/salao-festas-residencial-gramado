@@ -406,6 +406,23 @@
   .acoes-reserva button{ border:1px solid #CBD5E1; background:#fff; border-radius:12px; min-height:46px; padding:0 14px; font-size:15px; font-weight:600; color:var(--deep); display:flex; align-items:center; gap:6px; }
   .acoes-reserva button i{ font-size:19px; color:var(--accent-d); }
   .acoes-reserva button .ti-brand-whatsapp{ color:#1F7A44; }
+  .acoes-reserva .cv-qtd{ background:#EAF2FF; color:var(--accent-d); border-radius:99px; padding:1px 9px; font-size:14px; }
+  .acoes-reserva .cv-qtd:empty{ display:none; }
+  .cv-total{ font-size:17px; font-weight:600; margin:14px 0 4px; }
+  .cv-lista{ max-height:34vh; overflow-y:auto; margin:0 0 12px; }
+  .cv-item{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 0; border-top:1px solid #EEF2F7; }
+  .cv-item .n{ font-size:17px; font-weight:600; min-width:0; overflow-wrap:anywhere; }
+  .cv-item button{ width:44px; height:44px; flex:none; border:0; border-radius:12px; background:var(--red); color:var(--red-ink); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .cv-item button i{ font-size:20px; }
+  .cv-vazio{ border:1px dashed #CBD5E1; border-radius:14px; padding:18px 14px; text-align:center; color:#475569; font-size:16px; line-height:1.45; }
+  .cv-vazio b{ display:block; color:#0F172A; font-size:17px; margin-bottom:4px; }
+  .cv-priv{ display:flex; gap:8px; align-items:center; font-size:15px; color:#475569; margin:0 0 12px; }
+  .cv-envio-rot{ font-size:16px; font-weight:600; margin:0 0 8px; }
+  .cv-envio{ display:flex; gap:10px; margin:0 0 10px; }
+  .cv-envio button{ flex:1; min-height:52px; border-radius:14px; font-family:inherit; font-size:16px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; }
+  .cv-envio .zap{ border:0; background:#1F7A44; color:#fff; }
+  .cv-envio .mail{ border:2px solid var(--accent-d); background:#fff; color:var(--accent-d); }
+  .cv-envio button:disabled{ background:#E2E8F0; border-color:#E2E8F0; color:#64748B; cursor:default; }
   .icon-btn{ width:46px; height:46px; border-radius:12px; }
   .icon-btn i{ font-size:20px; }
   .empty{ padding:28px 10px; color:#475569; }
@@ -1008,6 +1025,9 @@
         <button type="button" class="home-atalho" id="home-atalho-mudanca" onclick="abrirAvisoMudanca()">
           <span class="ic"><i class="ti ti-truck"></i></span>Aviso de mudança
         </button>
+        <button type="button" class="home-atalho" id="home-atalho-convidados" onclick="abrirConvidadosProximaFesta()">
+          <span class="ic"><i class="ti ti-clipboard-list"></i></span>Lista de convidados
+        </button>
       </div>
       <div class="cob-aviso" id="home-mudanca-avisada" style="display:none;">
         <p class="rot"><i class="ti ti-clock"></i> MUDANÇA AVISADA</p>
@@ -1429,6 +1449,27 @@
 </div>
 
 <!-- ===================== MODAL: AVISO DE MUDANÇA (morador) ===================== -->
+<div class="modal-wrap" id="modal-convidados">
+  <div class="modal">
+    <button class="close-x" aria-label="Fechar" onclick="fecharModal('modal-convidados')"><i class="ti ti-x"></i></button>
+    <h3>Lista de convidados</h3>
+    <p class="sub" id="cv-sub" style="margin:-6px 0 14px;"></p>
+    <div id="cv-form">
+      <div class="field"><label for="cv-nome">Nome</label><input type="text" id="cv-nome" maxlength="60" autocomplete="off" placeholder="Nome do convidado" style="font-size:18px;min-height:52px;" onkeydown="if(event.key==='Enter'){ event.preventDefault(); adicionarConvidado(); }"></div>
+      <button class="btn btn-primary btn-linha" id="cv-add" onclick="adicionarConvidado()"><i class="ti ti-plus"></i> Adicionar</button>
+    </div>
+    <p class="cv-total" id="cv-total"></p>
+    <div class="cv-lista" id="cv-lista"></div>
+    <p class="cv-priv"><i class="ti ti-lock"></i> <span id="cv-priv-txt"></span></p>
+    <p class="cv-envio-rot" id="cv-envio-rot"></p>
+    <div class="cv-envio">
+      <button type="button" class="zap" id="cv-zap" onclick="enviarConvidados('whatsapp')"><i class="ti ti-brand-whatsapp"></i> WhatsApp</button>
+      <button type="button" class="mail" id="cv-mail" onclick="enviarConvidados('email')"><i class="ti ti-mail"></i> E-mail</button>
+    </div>
+    <button class="btn btn-ghost btn-linha" onclick="fecharModal('modal-convidados')">Voltar</button>
+  </div>
+</div>
+
 <div class="modal-wrap" id="modal-aviso-mudanca">
   <div class="modal">
     <button class="close-x" aria-label="Fechar" onclick="fecharModal('modal-aviso-mudanca')"><i class="ti ti-x"></i></button>
@@ -1730,7 +1771,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026040007";
+const VERSAO_APP = "2026040008";
 
 /* ===================================================================== */
 
@@ -3681,6 +3722,11 @@ function abrirDetalheDia(iso, reserva){
           zapBtn.innerHTML = `<i class="ti ti-brand-whatsapp"></i> Avisar zelador`;
           zapBtn.onclick = ()=> avisarZelador(reserva, iso);
           wrap.appendChild(zapBtn);
+          const listaBtn = document.createElement("button");
+          listaBtn.className = "btn btn-ghost btn-sm";
+          listaBtn.innerHTML = `<i class="ti ti-clipboard-list"></i> Lista de convidados`;
+          listaBtn.onclick = ()=> abrirConvidados({ ...reserva, data: reserva.data || iso });
+          wrap.appendChild(listaBtn);
         }
       }
       conteudo.appendChild(wrap);
@@ -4139,8 +4185,12 @@ function cartaoMinhaReserva(r, anterior){
     const bConv = document.createElement("button");
     bConv.innerHTML = `<i class="ti ti-brand-whatsapp"></i>Convidar amigos`;
     bConv.onclick = (e)=>{ e.stopPropagation(); convidarPeloWhatsApp(r); };
-    acoes.appendChild(bAgenda); acoes.appendChild(bConv);
+    const bLista = document.createElement("button");
+    bLista.innerHTML = `<i class="ti ti-clipboard-list"></i>Lista de convidados<span class="cv-qtd"></span>`;
+    bLista.onclick = (e)=>{ e.stopPropagation(); abrirConvidados(r); };
+    acoes.appendChild(bAgenda); acoes.appendChild(bConv); acoes.appendChild(bLista);
     info.appendChild(acoes);
+    lerConvidados(r).then(nomes=>{ if(nomes.length) bLista.querySelector(".cv-qtd").textContent = nomes.length; }).catch(()=>{});
   }
   return el;
 }
@@ -5284,6 +5334,137 @@ window.confirmarExcluirCasa = async function(){
    O morador avisa a data de saída; o síndico vê o aviso e conclui a troca.
    O aviso sozinho não apaga nada: quem conclui é sempre o síndico.
    ===================================================================== */
+/* ---------- Lista de convidados da festa ----------
+   Fica em Condominios/{id}/convidados/{id da reserva}, fora da reserva, porque as reservas
+   são lidas por todos os moradores. As regras do banco só deixam ler a casa dona da festa
+   e o síndico; só a casa dona grava, e só com a reserva confirmada. */
+const MAX_CONVIDADOS = 200;
+let cvEstado = null;   // { reserva, nomes, podeEditar }
+function refConvidados(reservaId){ return doc(db, "Condominios", TENANT_ID, "convidados", reservaId); }
+async function lerConvidados(r){
+  const snap = await getDoc(refConvidados(r.id));
+  if(!snap.exists()) return [];
+  const d = snap.data() || {};
+  if(d.casaId !== r.casaId) return [];   // lista antiga de outra casa na mesma data: não vale
+  return (Array.isArray(d.nomes) ? d.nomes : []).map(n=> String(n || "").trim()).filter(Boolean).slice(0, MAX_CONVIDADOS);
+}
+function renderizarConvidados(){
+  if(!cvEstado) return;
+  const { nomes, podeEditar } = cvEstado;
+  const total = document.getElementById("cv-total");
+  const lista = document.getElementById("cv-lista");
+  total.textContent = nomes.length === 0 ? "" : nomes.length === 1 ? "1 convidado" : `${nomes.length} convidados`;
+  lista.innerHTML = "";
+  if(!nomes.length){
+    lista.innerHTML = podeEditar
+      ? `<div class="cv-vazio"><b>Nenhum convidado ainda</b>Escreva o nome acima e toque em Adicionar. Repita para cada convidado.</div>`
+      : `<div class="cv-vazio"><b>Nenhum convidado na lista</b>O morador ainda não cadastrou os convidados desta festa.</div>`;
+  }
+  nomes.forEach((nome, i)=>{
+    const item = document.createElement("div");
+    item.className = "cv-item";
+    const n = document.createElement("span");
+    n.className = "n";
+    n.textContent = `${i + 1}. ${nome}`;
+    item.appendChild(n);
+    if(podeEditar){
+      const b = document.createElement("button");
+      b.type = "button";
+      b.setAttribute("aria-label", "Remover " + nome);
+      b.innerHTML = '<i class="ti ti-x"></i>';
+      b.onclick = ()=> removerConvidado(i);
+      item.appendChild(b);
+    }
+    lista.appendChild(item);
+  });
+  document.getElementById("cv-zap").disabled = !nomes.length;
+  document.getElementById("cv-mail").disabled = !nomes.length;
+}
+window.abrirConvidados = async function(r){
+  if(!r || !r.id || !r.data) return;
+  const minha = !!casaAtualId && r.casaId === casaAtualId;
+  const podeEditar = minha && r.status === "confirmada" && r.data >= hojeISO();
+  cvEstado = { reserva: r, nomes: [], podeEditar };
+  const salao = temVariosSaloes() ? " · " + (nomeDoSalaoDaReserva(r) || "") : "";
+  document.getElementById("cv-sub").textContent = (minha ? "" : `Casa ${r.casaNumero || ""} · `) + `Festa de ${textoDataMudanca(r.data)}${salao}`;
+  document.getElementById("cv-form").style.display = podeEditar ? "block" : "none";
+  document.getElementById("cv-nome").value = "";
+  document.getElementById("cv-priv-txt").textContent = minha ? "Só você e o síndico veem esta lista." : "Lista feita pelo morador. Você só consulta e envia.";
+  document.getElementById("cv-envio-rot").textContent = minha ? "Enviar a lista" : "Enviar para a portaria";
+  document.getElementById("cv-total").textContent = "";
+  document.getElementById("cv-lista").innerHTML = `<div class="cv-vazio">Carregando…</div>`;
+  document.getElementById("cv-zap").disabled = true;
+  document.getElementById("cv-mail").disabled = true;
+  abrirModal("modal-convidados");
+  try{
+    const nomes = await lerConvidados(r);
+    if(!cvEstado || cvEstado.reserva.id !== r.id) return;
+    cvEstado.nomes = nomes;
+    renderizarConvidados();
+  }catch(e){
+    document.getElementById("cv-lista").innerHTML = `<div class="cv-vazio">Não foi possível carregar a lista. Tente novamente.</div>`;
+  }
+};
+async function gravarConvidados(nomes){
+  const r = cvEstado.reserva;
+  await setDoc(refConvidados(r.id), { casaId: r.casaId, data: r.data, nomes, atualizadoEm: new Date().toISOString() });
+  cvEstado.nomes = nomes;
+  renderizarConvidados();
+  if(document.getElementById("screen-reservas").classList.contains("active")) renderizarMinhasReservas();
+}
+window.adicionarConvidado = async function(){
+  if(!cvEstado || !cvEstado.podeEditar) return;
+  const campo = document.getElementById("cv-nome");
+  const nome = campo.value.replace(/\s+/g, " ").trim().slice(0, 60);
+  if(nome.length < 2){ showToast("Escreva o nome do convidado."); campo.focus(); return; }
+  if(cvEstado.nomes.some(n=> n.toLowerCase() === nome.toLowerCase())){ showToast("Esse nome já está na lista."); campo.focus(); return; }
+  if(cvEstado.nomes.length >= MAX_CONVIDADOS){ showToast(`A lista aceita até ${MAX_CONVIDADOS} convidados.`); return; }
+  const b = document.getElementById("cv-add");
+  b.disabled = true;
+  try{
+    await gravarConvidados([...cvEstado.nomes, nome]);
+    campo.value = "";
+    const l = document.getElementById("cv-lista"); l.scrollTop = l.scrollHeight;
+  }catch(e){
+    showToast("Não foi possível adicionar. Tente novamente.");
+  }finally{
+    b.disabled = false; campo.focus();
+  }
+};
+async function removerConvidado(i){
+  if(!cvEstado || !cvEstado.podeEditar) return;
+  try{ await gravarConvidados(cvEstado.nomes.filter((_, k)=> k !== i)); }
+  catch(e){ showToast("Não foi possível remover. Tente novamente."); }
+}
+function textoListaConvidados(){
+  const r = cvEstado.reserva;
+  const cond = (condominioData && condominioData.nome) || "Condomínio";
+  const salao = temVariosSaloes() ? " · " + (nomeDoSalaoDaReserva(r) || "") : "";
+  const n = cvEstado.nomes.length;
+  return [
+    "Lista de convidados", cond,
+    `Casa ${r.casaNumero || (casaAtual && casaAtual.numero) || ""} · Festa de ${textoDataMudanca(r.data)}${salao}`, "",
+    ...cvEstado.nomes.map((nome, i)=> `${i + 1}. ${nome}`), "",
+    `Total: ${n} ${n === 1 ? "convidado" : "convidados"}`
+  ].join("\n");
+}
+window.enviarConvidados = function(meio){
+  if(!cvEstado || !cvEstado.nomes.length) return;
+  const texto = textoListaConvidados();
+  if(meio === "email"){
+    const r = cvEstado.reserva;
+    const assunto = `Lista de convidados: Casa ${r.casaNumero || (casaAtual && casaAtual.numero) || ""}, festa de ${formatarDataBR(r.data)}`;
+    window.location.href = `mailto:?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(texto)}`;
+  }else{
+    window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, "_blank", "noopener");
+  }
+};
+window.abrirConvidadosProximaFesta = function(){
+  const prox = minhasFuturasAtivas().filter(r=> r.status === "confirmada").sort((a,b)=> a.data.localeCompare(b.data))[0];
+  if(!prox){ showToast("Você ainda não tem festa confirmada. A lista abre quando o síndico aprovar o seu pedido."); return; }
+  abrirConvidados(prox);
+};
+
 /* Aviso de mudança da casa: tipo "saida" (padrão) ou "entrada", com a data em .data */
 function mudancaDaCasa(c){
   const m = c && c.mudanca;
