@@ -756,6 +756,12 @@
   .mud-linha .b-cancelar{ border:2px solid var(--red-ink); color:var(--red-ink); }
   .mud-linha .feito{ font-size:16px; font-weight:600; margin:0; }
   .mud-vazio{ font-size:16px; color:#475569; margin:0 0 14px; }
+  .cob-aviso .mud-reservas:empty{ display:none; }
+  .cob-aviso .mud-reservas{ margin:0 0 12px; }
+  .cob-aviso .mud-rot{ margin:0 0 8px; font-size:15px; font-weight:600; }
+  .cob-aviso .mud-linha{ color:#0F172A; }
+  .cob-aviso .mud-linha:last-child{ margin-bottom:0; }
+  .cob-aviso .mud-linha .acoes button{ flex:1; background:#fff; border:2px solid var(--red-ink); color:var(--red-ink); }
   .cob-pix{ background:var(--soft); border-radius:12px; padding:12px; font-size:17px; color:#1E3A8A; word-break:break-all; user-select:all; margin:0 0 12px; }
 </style>
 </head>
@@ -994,7 +1000,7 @@
         <button class="home-btn escuro" onclick="abrirMinhasReservas()">
           <span class="contador" id="home-contador-minhas" style="display:none;">0</span>
           <div class="ic"><i class="ti ti-ticket"></i></div>
-          <div class="tx"><h3>Minhas reservas</h3><p>Acompanhe seus pedidos</p></div>
+          <div class="tx"><h3>Minhas reservas</h3><p id="home-minhas-sub">Acompanhe seus pedidos</p></div>
         </button>
       </div>
 
@@ -1010,10 +1016,6 @@
         <div class="acoes"><button type="button" class="b-dados b-unico" onclick="desfazerAvisoMudanca()">Desfazer aviso</button></div>
       </div>
 
-      <div id="home-proxima-festa" class="anima a3" style="display:none;">
-        <div class="home-secao"><h4>Sua próxima festa</h4><button onclick="abrirMinhasReservas()">Ver todas</button></div>
-        <div id="home-proxima-lista"></div>
-      </div>
       <div class="login-version" id="home-versao">v0000000000</div>
     </div>
 
@@ -1449,20 +1451,6 @@
   </div>
 </div>
 
-<!-- ===================== MODAL: MUDANÇA DA CASA (síndico / dev) ===================== -->
-<div class="modal-wrap" id="modal-mudanca-casa">
-  <div class="modal">
-    <button class="close-x" aria-label="Fechar" onclick="fecharModal('modal-mudanca-casa')"><i class="ti ti-x"></i></button>
-    <h3 id="mc-titulo">Casa</h3>
-    <div class="rs-aviso"><i class="ti ti-clock"></i> <span id="mc-aviso"></span></div>
-    <p style="font-size:17px;font-weight:600;margin:0 0 8px;">Reservas depois da saída</p>
-    <div id="mc-reservas"></div>
-    <button class="btn btn-primary btn-linha" onclick="concluirTrocaMorador()">Concluir troca de morador</button>
-    <p class="sub" style="margin:0 0 12px;">Apaga os dados do morador atual e gera a senha do novo morador.</p>
-    <button class="btn btn-ghost btn-linha" onclick="removerAvisoMudanca()">Remover aviso de mudança</button>
-  </div>
-</div>
-
 <!-- ===================== MODAL: EXCLUIR CASA (síndico / dev) ===================== -->
 <div class="modal-wrap" id="modal-excluir-casa" data-fixo="1" style="z-index:70;">
   <div class="modal">
@@ -1742,7 +1730,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026040006";
+const VERSAO_APP = "2026040007";
 
 /* ===================================================================== */
 
@@ -4224,14 +4212,18 @@ function renderizarResumoHome(){
   contador.textContent = futuras.length;
   contador.style.display = futuras.length ? "block" : "none";
 
-  const bloco = document.getElementById("home-proxima-festa");
-  const lista = document.getElementById("home-proxima-lista");
-  if(futuras.length){
-    lista.innerHTML = "";
-    lista.appendChild(cartaoMinhaReserva(futuras[0], false));
-    bloco.style.display = "block";
-  }else{
-    bloco.style.display = "none";
+  /* A próxima festa aparece no próprio card "Minhas reservas" (a tela inicial não rola) */
+  const sub = document.getElementById("home-minhas-sub");
+  if(sub){
+    const prox = futuras.slice().sort((a,b)=> a.data.localeCompare(b.data))[0];
+    if(prox){
+      const dias = Math.round((new Date(prox.data + "T00:00:00") - new Date(hojeISO() + "T00:00:00")) / 86400000);
+      const quando = prox.status === "pendente" ? "aguardando aprovação"
+        : dias === 0 ? "é hoje!" : dias === 1 ? "é amanhã" : `faltam ${dias} dias`;
+      sub.textContent = `Próxima: ${formatarDataBR(prox.data).slice(0, 5)} · ${quando}`;
+    }else{
+      sub.textContent = "Acompanhe seus pedidos";
+    }
   }
 }
 
@@ -5409,30 +5401,82 @@ async function reservasDepoisDaSaida(c){
   return lista.sort((a,b)=> a.data.localeCompare(b.data));
 }
 
+/* Cartões na tela inicial do síndico: a casa, a data e as ações ficam no próprio cartão.
+   Entrada: "Ciente" remove o aviso. Saída: "Ciente" só esconde o cartão (o aviso continua
+   gravado) e ele volta no dia da saída, com "Concluir troca de morador". */
 function renderizarMudancasSindico(){
   const el = document.getElementById("home-mudancas-sindico");
   if(!el) return;
   el.innerHTML = "";
   if(!(ehSindico || ehDev)) return;
+  const hoje = hojeISO();
   (todasAsCasas || [])
     .filter(c=> c.id !== casaAtualId && mudancaDaCasa(c))
     .sort((a,b)=> mudancaDaCasa(a).data.localeCompare(mudancaDaCasa(b).data))
     .forEach(c=>{
       const m = mudancaDaCasa(c);
+      const casa = escaparHtml(String(c.numero));
       const cartao = document.createElement("div");
       cartao.className = "cob-aviso";
+      if(m.tipo === "entrada"){
+        cartao.innerHTML = `
+          <p class="rot"><i class="ti ti-truck"></i> AVISO DE MUDANÇA</p>
+          <p class="tit">Casa ${casa} avisou mudança</p>
+          <p class="txt">Entrada em ${textoDataMudanca(m.data)}. Só para o seu conhecimento.</p>
+          <div class="acoes"><button type="button" class="b-ciente b-unico">Ciente</button></div>`;
+        cartao.querySelector(".b-ciente").onclick = ()=> cienteAvisoEntrada(c.id);
+        el.appendChild(cartao);
+        return;
+      }
+      if(m.data <= hoje){
+        cartao.innerHTML = `
+          <p class="rot"><i class="ti ti-truck"></i> AVISO DE MUDANÇA</p>
+          <p class="tit">${m.data === hoje ? `Casa ${casa} sai hoje` : `Casa ${casa}: saída em ${formatarDataBR(m.data)}`}</p>
+          <p class="txt">Conclua a troca para apagar os dados do morador atual e gerar a senha do novo morador.</p>
+          <div class="acoes"><button type="button" class="b-ciente b-unico">Concluir troca de morador</button></div>
+          <div class="acoes" style="margin-top:8px;"><button type="button" class="b-dados b-unico">Remover aviso</button></div>`;
+        cartao.querySelector(".b-ciente").onclick = ()=> concluirTrocaMorador(c.id);
+        cartao.querySelector(".b-dados").onclick = ()=> removerAvisoMudanca(c.id);
+        el.appendChild(cartao);
+        return;
+      }
+      if(m.cienteEm) return;   /* síndico já deu ciente: o cartão volta no dia da saída */
       cartao.innerHTML = `
         <p class="rot"><i class="ti ti-truck"></i> AVISO DE MUDANÇA</p>
-        <p class="tit">Casa ${escaparHtml(String(c.numero))} avisou mudança</p>
-        <p class="txt">${m.tipo === "entrada" ? "Entrada em " + textoDataMudanca(m.data) + ". Só para o seu conhecimento." : "Saída em " + textoDataMudanca(m.data)}<span class="extra"></span></p>
-        <div class="acoes"><button type="button" class="b-ciente b-unico">${m.tipo === "entrada" ? "Ciente" : "Ver casa"}</button></div>`;
-      cartao.querySelector("button").onclick = m.tipo === "entrada" ? ()=> cienteAvisoEntrada(c.id) : ()=> abrirMudancaCasa(c.id);
+        <p class="tit">Casa ${casa} avisou mudança</p>
+        <p class="txt">Saída em ${textoDataMudanca(m.data)}</p>
+        <div class="mud-reservas"></div>
+        <div class="acoes"><button type="button" class="b-ciente b-unico">Ciente</button></div>`;
+      cartao.querySelector(".b-ciente").onclick = ()=> cienteAvisoSaida(c.id);
       el.appendChild(cartao);
-      reservasDepoisDaSaida(c).then(lista=>{
-        if(lista.length) cartao.querySelector(".extra").textContent =
-          ` · ${lista.length} ${lista.length === 1 ? "reserva" : "reservas"} depois da saída`;
-      }).catch(()=>{});
+      reservasDepoisDaSaida(c).then(lista=> listarReservasNoCartao(cartao.querySelector(".mud-reservas"), c, lista)).catch(()=>{});
     });
+}
+
+/* Reservas da casa depois da saída, dentro do cartão. Nada é cancelado sozinho. */
+function listarReservasNoCartao(el, c, lista){
+  if(!el || !lista.length) return;
+  el.innerHTML = `<p class="mud-rot">${lista.length} ${lista.length === 1 ? "reserva" : "reservas"} depois da saída</p>`;
+  lista.forEach(r=>{
+    const linha = document.createElement("div");
+    linha.className = "mud-linha";
+    const situacao = r.status === "confirmada" ? "Confirmada" : "Pendente";
+    const salao = temVariosSaloes() ? " · " + escaparHtml(nomeDoSalaoDaReserva(r) || "") : "";
+    linha.innerHTML = `
+      <p class="d">${textoDataMudanca(r.data)}</p>
+      <p class="s">${situacao}${salao}</p>
+      <div class="acoes"><button type="button" class="b-cancelar">Cancelar reserva</button></div>`;
+    linha.querySelector(".b-cancelar").onclick = async ()=>{
+      if(!confirm(`Cancelar a reserva de ${formatarDataBR(r.data)} da Casa ${c.numero}?`)) return;
+      try{
+        await updateDoc(doc(db, "Condominios", TENANT_ID, "reservas", r.id), { status: "recusada" });
+        atualizarStatusLocal(r.id, "recusada");
+        linha.querySelector(".acoes").outerHTML = `<p class="feito">Reserva cancelada</p>`;
+        renderizarTudo();
+      }catch(e){ showToast("Não foi possível cancelar. Tente novamente."); }
+    };
+    el.appendChild(linha);
+  });
 }
 
 /* Aviso de entrada: é só para ciência. "Ciente" remove o aviso da casa. */
@@ -5450,63 +5494,36 @@ async function cienteAvisoEntrada(casaId){
   }
 }
 
-let casaMudancaId = null;
-window.abrirMudancaCasa = async function(casaId){
+/* Aviso de saída: "Ciente" esconde o cartão até o dia da saída. O aviso continua gravado. */
+async function cienteAvisoSaida(casaId){
   const c = todasAsCasas.find(x=> x.id === casaId);
   const m = mudancaDaCasa(c);
   if(!c || !m || m.tipo !== "saida") return;
-  casaMudancaId = casaId;
-  document.getElementById("mc-titulo").textContent = `Casa ${c.numero}`;
-  document.getElementById("mc-aviso").textContent = `Mudança em ${textoDataMudanca(m.data)}, avisada pelo morador.`;
-  const el = document.getElementById("mc-reservas");
-  el.innerHTML = `<p class="mud-vazio">Carregando...</p>`;
-  abrirModal("modal-mudanca-casa");
-  let lista = [];
-  try{ lista = await reservasDepoisDaSaida(c); }
-  catch(e){ el.innerHTML = `<p class="mud-vazio">Não foi possível carregar as reservas.</p>`; return; }
-  if(casaMudancaId !== casaId) return;
-  if(!lista.length){ el.innerHTML = `<p class="mud-vazio">Nenhuma reserva depois da saída.</p>`; return; }
-  el.innerHTML = "";
-  lista.forEach(r=>{
-    const linha = document.createElement("div");
-    linha.className = "mud-linha";
-    const situacao = r.status === "confirmada" ? "Confirmada" : "Pendente";
-    const salao = temVariosSaloes() ? " · " + escaparHtml(nomeDoSalaoDaReserva(r) || "") : "";
-    linha.innerHTML = `
-      <p class="d">${textoDataMudanca(r.data)}</p>
-      <p class="s">${situacao}${salao}</p>
-      <div class="acoes"><button type="button" class="b-manter">Manter</button><button type="button" class="b-cancelar">Cancelar</button></div>`;
-    const marcar = (texto)=>{ linha.querySelector(".acoes").outerHTML = `<p class="feito">${texto}</p>`; };
-    linha.querySelector(".b-manter").onclick = ()=> marcar("Reserva mantida");
-    linha.querySelector(".b-cancelar").onclick = async ()=>{
-      if(!confirm(`Cancelar a reserva de ${formatarDataBR(r.data)} da Casa ${c.numero}?`)) return;
-      try{
-        await updateDoc(doc(db, "Condominios", TENANT_ID, "reservas", r.id), { status: "recusada" });
-        atualizarStatusLocal(r.id, "recusada");
-        marcar("Reserva cancelada");
-        renderizarTudo();
-      }catch(e){ showToast("Não foi possível cancelar. Tente novamente."); }
-    };
-    el.appendChild(linha);
-  });
-};
+  try{
+    const cienteEm = new Date().toISOString();
+    await updateDoc(doc(db, "Condominios", TENANT_ID, "casas", c.id), { "mudanca.cienteEm": cienteEm });
+    c.mudanca = { ...c.mudanca, cienteEm };
+    renderizarMudancasSindico();
+    showToast("Ciente. O aviso volta no dia da saída.");
+  }catch(e){
+    showToast("Não foi possível concluir. Tente novamente.");
+  }
+}
 
-window.concluirTrocaMorador = function(){
-  const id = casaMudancaId;
-  if(!id) return;
-  fecharModal("modal-mudanca-casa");
-  abrirResetSenha(id);
+window.concluirTrocaMorador = function(casaId){
+  if(!casaId) return;
+  abrirResetSenha(casaId);
   document.getElementById("rs-troca").checked = true;
   aoMudarTrocaMorador();
 };
 
-window.removerAvisoMudanca = async function(){
-  const c = todasAsCasas.find(x=> x.id === casaMudancaId);
+window.removerAvisoMudanca = async function(casaId){
+  const c = todasAsCasas.find(x=> x.id === casaId);
   if(!c) return;
+  if(!confirm(`Remover o aviso de mudança da Casa ${c.numero}?`)) return;
   try{
     await updateDoc(doc(db, "Condominios", TENANT_ID, "casas", c.id), { mudanca: deleteField() });
     delete c.mudanca;
-    fecharModal("modal-mudanca-casa");
     renderizarMudancasSindico();
     showToast("Aviso de mudança removido.");
   }catch(e){
