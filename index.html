@@ -997,7 +997,8 @@
       <div class="dev-corpo">
         <div class="field"><label>Plano *</label><div class="plano-chips" id="pl-planos"></div><p class="dev-dica" id="pl-uso"></p></div>
         <div class="field" id="pl-bloco-periodo"><label>Período *</label><div class="plano-chips tres" id="pl-periodos"></div></div>
-        <div class="field"><label id="pl-rot-inicio">Início da vigência *</label><input type="date" id="pl-inicio" onchange="peAtualizar('pl')"></div>
+        <div class="field"><label id="pl-rot-inicio">Início da vigência *</label><input type="date" id="pl-inicio" onchange="peAtualizar('pl')"><p class="dev-dica">Dia em que o app começa a valer para o condomínio.</p></div>
+        <div class="field" id="pl-bloco-pagamento"><label>Primeiro pagamento *</label><input type="date" id="pl-pagamento" onchange="peAoMudarPagamento('pl')"><p class="dev-dica">Os próximos vencem no mesmo dia, a cada período. O síndico é avisado no app 3 dias antes.</p></div>
         <div class="field" id="pl-bloco-negociado"><label>Valor negociado do período (opcional)</label><input type="text" id="pl-negociado" inputmode="decimal" autocomplete="off" placeholder="Usar valor da tabela" oninput="peAtualizar('pl')"></div>
         <div class="plano-resumo" id="pl-resumo"></div>
         <div class="dev-rodape"><button class="btn btn-primary" id="pl-btn" onclick="plSalvar()"><i class="ti ti-check"></i> Salvar plano</button></div>
@@ -1011,7 +1012,8 @@
         <p class="dev-h">Plano</p>
         <div class="field"><label>Plano *</label><div class="plano-chips" id="p3-planos"></div><p class="dev-dica" id="p3-uso"></p></div>
         <div class="field" id="p3-bloco-periodo"><label>Período *</label><div class="plano-chips tres" id="p3-periodos"></div></div>
-        <div class="field"><label id="p3-rot-inicio">Início da vigência *</label><input type="date" id="p3-inicio" onchange="peAtualizar('p3')"></div>
+        <div class="field"><label id="p3-rot-inicio">Início da vigência *</label><input type="date" id="p3-inicio" onchange="peAtualizar('p3')"><p class="dev-dica">Dia em que o app começa a valer para o condomínio.</p></div>
+        <div class="field" id="p3-bloco-pagamento"><label>Primeiro pagamento *</label><input type="date" id="p3-pagamento" onchange="peAoMudarPagamento('p3')"><p class="dev-dica">Os próximos vencem no mesmo dia, a cada período. O síndico é avisado no app 3 dias antes.</p></div>
         <div class="field" id="p3-bloco-negociado"><label>Valor negociado do período (opcional)</label><input type="text" id="p3-negociado" inputmode="decimal" autocomplete="off" placeholder="Usar valor da tabela" oninput="peAtualizar('p3')"></div>
         <div class="plano-resumo" id="p3-resumo"></div>
         <div class="dev-rodape"><button class="btn btn-primary" id="dv-btn-criar" onclick="devCriarCondominio()"><i class="ti ti-check"></i> Criar condomínio</button></div>
@@ -1897,7 +1899,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026040012";
+const VERSAO_APP = "2026040013";
 
 /* ===================================================================== */
 
@@ -2840,6 +2842,7 @@ function cobMensalidades(cob, hoje){
   if(!cob || cob.situacao !== "cobrando" || !/^\d{4}-\d{2}-\d{2}$/.test(cob.primeiroVencimento || "") || !(Number(cob.valor) > 0)) return [];
   let [y, m] = cob.primeiroVencimento.split("-").map(Number);
   const dia = Math.min(28, Math.max(1, Number(cob.diaVencimento) || 1));
+  const ciclo = [1, 3, 12].includes(Number(cob.cicloMeses)) ? Number(cob.cicloMeses) : 1;   // mensal, trimestral ou anual
   const pag = cob.pagamentos || {};
   const lista = [];
   for(let i = 0; i < 600; i++){
@@ -2848,7 +2851,7 @@ function cobMensalidades(cob, hoje){
     const p = pag[ref] || null;
     lista.push({ ref, venc, pago: !!p, pagamento: p, valor: p ? (Number(p.valor) || 0) : Number(cob.valor), dias: cobDiasEntre(hoje, venc) });
     if(venc > hoje && !p) break;
-    m++; if(m > 12){ m = 1; y++; }
+    m += ciclo; while(m > 12){ m -= 12; y++; }
   }
   return lista;
 }
@@ -2907,6 +2910,7 @@ function cobEspelho(cob){
     situacao: cob.situacao || "",
     multiSalao: cob.multiSalao === true,
     valor: Number(cob.valor) || 0,
+    cicloMeses: [1, 3, 12].includes(Number(cob.cicloMeses)) ? Number(cob.cicloMeses) : 1,
     diaVencimento: Number(cob.diaVencimento) || 1,
     primeiroVencimento: cob.primeiroVencimento || "",
     pagos: Object.keys(cob.pagamentos || {}),
@@ -2955,7 +2959,7 @@ function cobMostrarMensalidades(){
   const it = cobCondo; if(!it) return;
   const cob = cobDados[it.id] || {};
   const hoje = hojeISO();
-  const rotSit = cob.situacao === "isento" ? "Isento" : cob.situacao === "pausado" ? "Pausado" : `${formatarReais(cob.valor)} · dia ${cob.diaVencimento}`;
+  const rotSit = cob.situacao === "isento" ? "Isento" : cob.situacao === "pausado" ? "Pausado" : `${formatarReais(cob.valor)} · ${Number(cob.cicloMeses) === 12 ? "Anual" : Number(cob.cicloMeses) === 3 ? "Trimestral" : "Mensal"} · dia ${cob.diaVencimento}`;
   document.getElementById("cob-sub").textContent = `${it.nome} · ${rotSit}`;
   // O acordo comercial sai do plano vinculado: sem plano, o botão leva para a escolha do plano
   document.getElementById("cob-btn-acordo").style.display = "flex";
@@ -3071,6 +3075,7 @@ window.cobSalvarForm = async function(){
   if(anterior.acordoEnviadoEm){ cob.acordoEnviadoEm = anterior.acordoEnviadoEm; cob.acordoEnviadoPara = anterior.acordoEnviadoPara || ""; }
   if(anterior.multiSalao === true) cob.multiSalao = true;
   if(anterior.plano) cob.plano = anterior.plano;
+  if(anterior.cicloMeses) cob.cicloMeses = anterior.cicloMeses;
   const b = document.getElementById("cobf-btn");
   b.disabled = true;
   try{
@@ -3177,6 +3182,7 @@ function cobAbrirAcordo(it){
    ["Plano", planoRotulo(pl)],
    [pl.periodo === "mensal" ? "Mensalidade" : "Valor do período", formatarReais(pl.total)],
    ["Vigência", pl.periodo === "mensal" ? "A partir de " + formatarDataBR(pl.inicio) : formatarDataBR(pl.inicio) + " a " + formatarDataBR(pl.fim)],
+   ["Primeiro pagamento", formatarDataBR(pl.primeiroPagamento || pl.inicio)],
    ["Limites", `Até ${pl.adm} ADM e ${pl.casas} casas`],
    ["Chave Pix", cobConfig.chavePix || "Não cadastrada"]].forEach(([rot, val])=>{
     const sp = document.createElement("span"); sp.textContent = rot + ": ";
@@ -3317,15 +3323,20 @@ const peEstado = {};   // por tela: { planoId, periodo, uso:{ adm, casas } }
 function peAbrir(x, planoAtual, uso){
   const existe = planoAtual && cobPlanos.planos.find(p=> p.id === planoAtual.id);
   const padrao = cobPlanos.planos.find(p=> p.degustacao) || cobPlanos.planos[0];
-  peEstado[x] = { planoId: existe ? existe.id : (planoAtual ? "" : (padrao ? padrao.id : "")), periodo: (planoAtual && planoAtual.periodo) || "mensal", uso: uso || null };
+  peEstado[x] = { planoId: existe ? existe.id : (planoAtual ? "" : (padrao ? padrao.id : "")), periodo: (planoAtual && planoAtual.periodo) || "mensal", uso: uso || null,
+    pagSegue: !(planoAtual && planoAtual.primeiroPagamento) };   // enquanto não for mexido, o primeiro pagamento acompanha o início
   document.getElementById(x + "-inicio").value = (planoAtual && planoAtual.inicio) || hojeISO();
+  document.getElementById(x + "-pagamento").value = (planoAtual && planoAtual.primeiroPagamento) || document.getElementById(x + "-inicio").value;
   document.getElementById(x + "-negociado").value = (planoAtual && planoAtual.negociado === true && existe) ? Number(planoAtual.total).toLocaleString("pt-BR", { minimumFractionDigits:2, maximumFractionDigits:2 }) : "";
   peAtualizar(x);
 }
 window.peEscolherPlano = function(x, id){ peEstado[x].planoId = id; peAtualizar(x); };
 window.peEscolherPeriodo = function(x, id){ peEstado[x].periodo = id; peAtualizar(x); };
+window.peAoMudarPagamento = function(x){ if(peEstado[x]) peEstado[x].pagSegue = false; peAtualizar(x); };
+const rotuloCiclo = meses => meses === 1 ? "de cada mês" : `a cada ${meses} meses`;
 window.peAtualizar = function(x){
   const e = peEstado[x]; if(!e) return;
+  if(e.pagSegue) document.getElementById(x + "-pagamento").value = document.getElementById(x + "-inicio").value;
   const plano = cobPlanos.planos.find(p=> p.id === e.planoId) || null;
   const degu = !!(plano && plano.degustacao);
   const cx = document.getElementById(x + "-planos");
@@ -3353,6 +3364,7 @@ window.peAtualizar = function(x){
   });
   document.getElementById(x + "-bloco-periodo").style.display = degu ? "none" : "block";
   document.getElementById(x + "-bloco-negociado").style.display = degu ? "none" : "block";
+  document.getElementById(x + "-bloco-pagamento").style.display = degu ? "none" : "block";
   document.getElementById(x + "-rot-inicio").textContent = degu ? "Início da degustação *" : "Início da vigência *";
   const uso = document.getElementById(x + "-uso");
   uso.textContent = ""; uso.className = "dev-dica";
@@ -3387,6 +3399,11 @@ window.peAtualizar = function(x){
   if(neg > 0) linha("Valor da tabela: ", formatarReais(tabela));
   else if(per.meses > 1 && plano.mensal * per.meses > total) linha("Economia de ", formatarReais(arred2(plano.mensal * per.meses - total)) + " sobre o mensal");
   if(inicioOk) linha("Vigência: ", per.meses === 1 ? `a partir de ${formatarDataBR(inicio)}, renovada a cada mês` : `${formatarDataBR(inicio)} a ${formatarDataBR(isoMais(inicio, per.meses, -1))}`);
+  const pag = document.getElementById(x + "-pagamento").value;
+  if(/^\d{4}-\d{2}-\d{2}$/.test(pag)){
+    linha("Primeiro pagamento: ", formatarDataBR(pag));
+    linha("Próximos: ", `todo dia ${Math.min(28, Number(pag.slice(8)))}, ${rotuloCiclo(per.meses)}`);
+  }
 };
 // Monta a cópia do plano que fica gravada no condomínio. Devolve null (com aviso) se faltar algo.
 function peMontar(x){
@@ -3402,10 +3419,22 @@ function peMontar(x){
   const campoNeg = document.getElementById(x + "-negociado").value.trim();
   const neg = lerReais(campoNeg);
   if(campoNeg && !(neg > 0)){ showToast("Valor negociado inválido. Deixe em branco para usar a tabela."); return null; }
+  const pag = document.getElementById(x + "-pagamento").value;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(pag)){ showToast("Informe a data do primeiro pagamento."); document.getElementById(x + "-pagamento").focus(); return null; }
   const tabela = totalDoPlano(cobPlanos, plano, per.id);
   if(!(neg > 0) && !(tabela > 0)){ showToast("Este plano está sem valor na tabela. Ajuste em Planos e valores."); return null; }
   return Object.assign(base, { periodo: per.id, meses: per.meses, mensal: plano.mensal, desconto: descontoDoPeriodo(cobPlanos, per.id),
-    total: neg > 0 ? neg : tabela, negociado: neg > 0, fim: isoMais(inicio, per.meses, -1) });
+    total: neg > 0 ? neg : tabela, negociado: neg > 0, fim: isoMais(inicio, per.meses, -1), primeiroPagamento: pag });
+}
+// Cobrança que nasce do plano pago: valor do período, primeiro pagamento e ciclo (1, 3 ou 12 meses).
+// Mantém as baixas já registradas e o resto do cadastro.
+function cobDoPlano(anterior, plano, telSindico){
+  return Object.assign({}, anterior || {}, {
+    situacao: "cobrando", valor: Number(plano.total), cicloMeses: Number(plano.meses) || 1,
+    primeiroVencimento: plano.primeiroPagamento, diaVencimento: Math.min(28, Number(plano.primeiroPagamento.slice(8))),
+    whatsapp: (anterior && anterior.whatsapp) || telSindico || "", observacao: (anterior && anterior.observacao) || "",
+    pagamentos: (anterior && anterior.pagamentos) || {}, atualizadoEm: new Date().toISOString(), plano
+  });
 }
 
 /* ---------- plano de um condomínio ---------- */
@@ -3427,12 +3456,24 @@ window.plSalvar = async function(){
   const it = plCondo; if(!it) return;
   const plano = peMontar("pl");
   if(!plano) return;
+  const anterior = cobDados[it.id] || {};
+  // Plano pago gera (ou atualiza) a cobrança. Isento e Pausado são respeitados; Degustação não cobra.
+  const geraCobranca = plano.degustacao !== true && (!anterior.situacao || anterior.situacao === "cobrando");
+  const nova = geraCobranca ? cobDoPlano(anterior, plano, it.telSindico) : null;
+  if(nova && anterior.situacao === "cobrando" && (Number(anterior.valor) !== nova.valor || anterior.primeiroVencimento !== nova.primeiroVencimento
+      || Number(anterior.diaVencimento) !== nova.diaVencimento || (Number(anterior.cicloMeses) || 1) !== nova.cicloMeses)){
+    const per = PERIODOS_PLANO.find(p=> p.id === plano.periodo);
+    if(!confirm(`A cobrança do ${it.nome} vai mudar:\n\nAntes: ${formatarReais(anterior.valor)}, primeiro vencimento em ${formatarDataBR(anterior.primeiroVencimento)}.\nAgora: ${formatarReais(nova.valor)} (${per.nome}), primeiro pagamento em ${formatarDataBR(nova.primeiroVencimento)}.\n\nAs baixas já registradas são mantidas. Confirmar?`)) return;
+  }
   const b = document.getElementById("pl-btn");
   b.disabled = true;
   try{
-    await setDoc(doc(db, "Cobrancas", it.id), { plano }, { merge:true });
-    cobDados[it.id] = Object.assign({}, cobDados[it.id] || {}, { plano });
-    showToast("Plano salvo: " + planoRotulo(plano) + ".");
+    if(nova){ await cobGravar(it.id, nova); }
+    else{
+      await setDoc(doc(db, "Cobrancas", it.id), { plano }, { merge:true });
+      cobDados[it.id] = Object.assign({}, anterior, { plano });
+    }
+    showToast("Plano salvo: " + planoRotulo(plano) + "." + (nova ? " Cobrança atualizada." : (plano.degustacao ? "" : " A cobrança continua como " + (anterior.situacao === "isento" ? "Isento" : "Pausado") + ".")));
     await devVoltarLista();
   }catch(e){
     showToast("Não foi possível salvar o plano. Tente novamente.");
@@ -3731,8 +3772,12 @@ window.devCriarCondominio = async function(){
     // 4) Plano do condomínio (fica na área de cobrança, que só o desenvolvedor lê)
     let planoGravado = true;
     try{
-      await setDoc(doc(db, "Cobrancas", codigo), { plano: planoNovo }, { merge:true });
-      cobDados[codigo] = Object.assign({}, cobDados[codigo] || {}, { plano: planoNovo });
+      if(planoNovo.degustacao === true){
+        await setDoc(doc(db, "Cobrancas", codigo), { plano: planoNovo }, { merge:true });
+        cobDados[codigo] = Object.assign({}, cobDados[codigo] || {}, { plano: planoNovo });
+      }else{
+        await cobGravar(codigo, cobDoPlano(cobDados[codigo] || null, planoNovo, celular));
+      }
     }catch(e){ planoGravado = false; }
     devNovo = { nome, subtitulo, codigo, numero, celular, email, senha: senhaInicial };
     document.getElementById("dv-ok-plano").textContent = planoGravado ? planoRotulo(planoNovo) : "Não gravado. Vincule pelo painel.";
