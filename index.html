@@ -735,6 +735,27 @@
   .cob-seg{ display:flex; background:#E9EFF8; border-radius:12px; padding:4px; gap:4px; }
   .cob-seg button{ flex:1; border:0; background:none; font-family:inherit; font-size:16px; font-weight:500; padding:12px 4px; border-radius:9px; color:var(--muted); cursor:pointer; }
   .cob-seg button.on{ background:#fff; color:var(--deep); font-weight:600; box-shadow:0 1px 4px rgba(15,23,42,.12); }
+  .plano-chips{ display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+  .plano-chips.tres{ grid-template-columns:repeat(3,1fr); }
+  .plano-chip{ min-height:60px; border:1.5px solid var(--line); border-radius:12px; background:#fff; font-family:inherit; font-size:16px; font-weight:600; color:var(--deep); cursor:pointer; padding:6px 4px; line-height:1.25; }
+  .plano-chip small{ display:block; font-size:14px; font-weight:500; color:var(--muted); }
+  .plano-chip.on{ border-color:var(--accent-d); background:var(--soft); color:var(--accent-d); }
+  .plano-resumo{ background:#0F172A; color:#fff; border-radius:16px; padding:16px; }
+  .plano-resumo .v{ font-family:'Fraunces', serif; font-size:30px; font-weight:600; line-height:1.2; }
+  .plano-resumo p{ margin:2px 0; font-size:15px; color:#CBD5E1; line-height:1.45; }
+  .plano-resumo p b{ color:#fff; }
+  .plano-item{ display:block; width:100%; text-align:left; background:#fff; border:1.5px solid var(--line); border-radius:14px; padding:12px 14px; font-family:inherit; color:var(--deep); cursor:pointer; }
+  .plano-item.on{ border-color:var(--amber-bd); background:var(--amber); }
+  .plano-item.degu{ border-style:dashed; }
+  .plano-item .n{ font-family:'Fraunces', serif; font-size:19px; font-weight:600; margin:0; }
+  .plano-item .l{ font-size:15px; color:var(--muted); margin:2px 0 0; }
+  .plano-item .p{ font-size:19px; font-weight:700; color:var(--accent-d); margin:4px 0 0; }
+  .plano-item .p small{ font-size:14px; font-weight:500; color:var(--muted); }
+  .plano-tabela{ width:100%; border-collapse:collapse; font-size:15px; background:#fff; border:1px solid var(--line); border-radius:14px; overflow:hidden; }
+  .plano-tabela th, .plano-tabela td{ padding:10px 8px; text-align:right; border-top:1px solid #EEF2F7; white-space:nowrap; }
+  .plano-tabela th{ border-top:0; color:var(--muted); font-size:14px; font-weight:600; }
+  .plano-tabela th:first-child, .plano-tabela td:first-child{ text-align:left; font-weight:600; }
+  .plano-alerta{ color:var(--red-ink); font-weight:600; }
   .cob-duas{ display:flex; gap:10px; }
   .cob-duas .field{ flex:1; min-width:0; }
   .cob-mes{ background:#fff; border:1px solid var(--line); border-radius:16px; padding:14px; display:flex; flex-direction:column; gap:10px; }
@@ -866,6 +887,7 @@
       <div class="dev-top"><div class="av"><i class="ti ti-shield-lock"></i></div><b>Painel de gestão</b></div>
       <div class="dev-corpo">
         <div id="dev-resumo-cob" style="display:none;"></div>
+        <button class="btn btn-ghost" style="display:flex;align-items:center;justify-content:center;gap:8px;" onclick="pvAbrir()"><i class="ti ti-tags"></i> Planos e valores</button>
         <p class="dev-secao">Condomínios cadastrados</p>
         <div id="dev-lista" style="display:flex;flex-direction:column;gap:12px;"></div>
         <div class="dev-rodape">
@@ -913,7 +935,7 @@
     <div class="dev-vista" id="dev-view-p1">
       <div class="dev-top"><button class="volta" onclick="devVoltarLista()" aria-label="Voltar"><i class="ti ti-arrow-left"></i></button><b>Novo condomínio</b></div>
       <div class="dev-corpo">
-        <div><div class="onb-passos"><span class="on"></span><span></span></div><p class="onb-etapa">Passo 1 de 2</p></div>
+        <div><div class="onb-passos"><span class="on"></span><span></span><span></span></div><p class="onb-etapa">Passo 1 de 3</p></div>
         <p class="dev-h">Dados do condomínio</p>
         <div class="field"><label>Nome do condomínio *</label><input type="text" id="dv-nome" maxlength="80" autocomplete="off" placeholder="Ex.: Residencial Bela Vista" oninput="devAoDigitarNome()"></div>
         <div class="field"><label>Subtítulo</label><input type="text" id="dv-subtitulo" maxlength="80" autocomplete="off"></div>
@@ -927,12 +949,71 @@
     <div class="dev-vista" id="dev-view-p2">
       <div class="dev-top"><button class="volta" onclick="devVoltarPasso1()" aria-label="Voltar"><i class="ti ti-arrow-left"></i></button><b>Novo condomínio</b></div>
       <div class="dev-corpo">
-        <div><div class="onb-passos"><span class="on"></span><span class="on"></span></div><p class="onb-etapa">Passo 2 de 2</p></div>
+        <div><div class="onb-passos"><span class="on"></span><span class="on"></span><span></span></div><p class="onb-etapa">Passo 2 de 3</p></div>
         <p class="dev-h">Síndico</p>
         <div class="field"><label>Número da casa do síndico *</label><input type="text" id="dv-casa" maxlength="4" inputmode="numeric" autocomplete="off" placeholder="Ex.: 03"></div>
         <div class="field"><label>Celular com DDD (WhatsApp) *</label><input type="text" id="dv-celular" placeholder="(00) 00000-0000" inputmode="tel" autocomplete="off" oninput="mascararTelefoneZelador(this)"></div>
         <div class="field"><label>E-mail do síndico *</label><input type="email" id="dv-email" maxlength="120" autocomplete="off" autocapitalize="none" placeholder="Recebe os pedidos de reserva"></div>
         <div class="dev-info"><i class="ti ti-key"></i><span>O app gera uma senha inicial só para esta casa. No primeiro acesso o síndico cria a própria senha e completa o cadastro.</span></div>
+        <div class="dev-rodape"><button class="btn btn-primary" onclick="devContinuarPasso3()">Continuar</button></div>
+      </div>
+    </div>
+
+    <div class="dev-vista" id="dev-view-planos">
+      <div class="dev-top"><button class="volta" onclick="devVoltarLista()" aria-label="Voltar"><i class="ti ti-arrow-left"></i></button><b>Planos e valores</b></div>
+      <div class="dev-corpo">
+        <p class="dev-secao">Planos</p>
+        <p class="dev-dica" style="margin:-6px 0 0;">Toque em um plano para editar.</p>
+        <div id="pv-lista" style="display:flex;flex-direction:column;gap:10px;"></div>
+        <button class="btn btn-ghost" style="display:flex;align-items:center;justify-content:center;gap:8px;" onclick="pvNovoPlano()"><i class="ti ti-plus"></i> Novo plano</button>
+        <div class="card" id="pv-edicao">
+          <p class="dev-h" id="pv-titulo" style="font-size:19px;"></p>
+          <div class="field"><label>Nome do plano *</label><input type="text" id="pv-nome" maxlength="20" autocomplete="off" oninput="pvAoEditar()"></div>
+          <div class="cob-duas">
+            <div class="field"><label>Acessos ADM *</label><input type="text" id="pv-adm" maxlength="2" inputmode="numeric" autocomplete="off" oninput="pvAoEditar()"></div>
+            <div class="field"><label>Limite de casas *</label><input type="text" id="pv-casas" maxlength="4" inputmode="numeric" autocomplete="off" oninput="pvAoEditar()"></div>
+          </div>
+          <div class="field" id="pv-campo-mensal"><label>Valor mensal (R$) *</label><input type="text" id="pv-mensal" inputmode="decimal" autocomplete="off" placeholder="0,00" oninput="pvAoEditar()"></div>
+          <div class="field" id="pv-campo-dias"><label>Dias grátis *</label><input type="text" id="pv-dias" maxlength="3" inputmode="numeric" autocomplete="off" oninput="pvAoEditar()"></div>
+          <button class="btn btn-danger" id="pv-btn-excluir" style="display:none;align-items:center;justify-content:center;gap:8px;margin-top:10px;" onclick="pvExcluirPlano()"><i class="ti ti-trash"></i> Excluir este plano</button>
+        </div>
+        <p class="dev-secao">Desconto por período</p>
+        <div class="cob-duas">
+          <div class="field"><label>Trimestral (%)</label><input type="text" id="pv-desc-tri" maxlength="2" inputmode="numeric" autocomplete="off" oninput="pvAoEditar()"></div>
+          <div class="field"><label>Anual (%)</label><input type="text" id="pv-desc-anual" maxlength="2" inputmode="numeric" autocomplete="off" oninput="pvAoEditar()"></div>
+        </div>
+        <p class="dev-dica" style="margin:-6px 0 0;">O mensal é sempre o preço cheio.</p>
+        <p class="dev-secao">Tabela resultante</p>
+        <div id="pv-tabela"></div>
+        <div class="dev-rodape">
+          <button class="btn btn-primary" id="pv-btn" onclick="pvSalvar()"><i class="ti ti-check"></i> Salvar alterações</button>
+          <p class="dev-dica" style="margin:0;">Mudar a tabela não altera o plano de condomínio já vinculado. Vale para vínculo novo ou renovação.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="dev-vista" id="dev-view-plano">
+      <div class="dev-top"><button class="volta" onclick="devVoltarLista()" aria-label="Voltar"><i class="ti ti-arrow-left"></i></button><b>Plano do condomínio<span class="sub2" id="pl-sub"></span></b></div>
+      <div class="dev-corpo">
+        <div class="field"><label>Plano *</label><div class="plano-chips" id="pl-planos"></div><p class="dev-dica" id="pl-uso"></p></div>
+        <div class="field" id="pl-bloco-periodo"><label>Período *</label><div class="plano-chips tres" id="pl-periodos"></div></div>
+        <div class="field"><label id="pl-rot-inicio">Início da vigência *</label><input type="date" id="pl-inicio" onchange="peAtualizar('pl')"></div>
+        <div class="field" id="pl-bloco-negociado"><label>Valor negociado do período (opcional)</label><input type="text" id="pl-negociado" inputmode="decimal" autocomplete="off" placeholder="Usar valor da tabela" oninput="peAtualizar('pl')"></div>
+        <div class="plano-resumo" id="pl-resumo"></div>
+        <div class="dev-rodape"><button class="btn btn-primary" id="pl-btn" onclick="plSalvar()"><i class="ti ti-check"></i> Salvar plano</button></div>
+      </div>
+    </div>
+
+    <div class="dev-vista" id="dev-view-p3">
+      <div class="dev-top"><button class="volta" onclick="devVoltarPasso2()" aria-label="Voltar"><i class="ti ti-arrow-left"></i></button><b>Novo condomínio</b></div>
+      <div class="dev-corpo">
+        <div><div class="onb-passos"><span class="on"></span><span class="on"></span><span class="on"></span></div><p class="onb-etapa">Passo 3 de 3</p></div>
+        <p class="dev-h">Plano</p>
+        <div class="field"><label>Plano *</label><div class="plano-chips" id="p3-planos"></div><p class="dev-dica" id="p3-uso"></p></div>
+        <div class="field" id="p3-bloco-periodo"><label>Período *</label><div class="plano-chips tres" id="p3-periodos"></div></div>
+        <div class="field"><label id="p3-rot-inicio">Início da vigência *</label><input type="date" id="p3-inicio" onchange="peAtualizar('p3')"></div>
+        <div class="field" id="p3-bloco-negociado"><label>Valor negociado do período (opcional)</label><input type="text" id="p3-negociado" inputmode="decimal" autocomplete="off" placeholder="Usar valor da tabela" oninput="peAtualizar('p3')"></div>
+        <div class="plano-resumo" id="p3-resumo"></div>
         <div class="dev-rodape"><button class="btn btn-primary" id="dv-btn-criar" onclick="devCriarCondominio()"><i class="ti ti-check"></i> Criar condomínio</button></div>
       </div>
     </div>
@@ -942,7 +1023,7 @@
       <div class="dev-corpo">
         <div class="dev-ok"><i class="ti ti-check"></i></div>
         <p class="dev-h" style="text-align:center;">Condomínio criado!</p>
-        <div class="card"><p class="dev-resumo"><span>Condomínio:</span> <b id="dv-ok-nome"></b><br><span>Síndico:</span> <b id="dv-ok-casa"></b><br><span>Senha inicial:</span> <b id="dv-ok-senha"></b></p>
+        <div class="card"><p class="dev-resumo"><span>Condomínio:</span> <b id="dv-ok-nome"></b><br><span>Síndico:</span> <b id="dv-ok-casa"></b><br><span>Plano:</span> <b id="dv-ok-plano"></b><br><span>Senha inicial:</span> <b id="dv-ok-senha"></b></p>
           <div class="dev-previa" id="dv-ok-link"></div></div>
         <div class="dev-rodape">
           <button class="btn btn-whats" onclick="devEnviarAoSindico()"><i class="ti ti-brand-whatsapp"></i> Enviar ao síndico</button>
@@ -1572,7 +1653,8 @@
     <h3 id="do-nome">Condomínio</h3>
     <p class="sub" id="do-resumo" style="margin:-8px 0 12px;"></p>
     <div class="dev-link-caixa" id="do-link"></div>
-    <button class="btn btn-primary btn-linha" onclick="devOpcaoCobranca()"><i class="ti ti-receipt-2"></i> Cobrança</button>
+    <button class="btn btn-primary btn-linha" onclick="devOpcaoPlano()"><i class="ti ti-tags"></i> <span id="do-plano-texto">Plano</span></button>
+    <button class="btn btn-ghost btn-linha" onclick="devOpcaoCobranca()"><i class="ti ti-receipt-2"></i> Cobrança</button>
     <button class="btn btn-ghost btn-linha" id="do-btn-saloes" onclick="devOpcaoSaloes()"><i class="ti ti-building-pavilion"></i> <span id="do-saloes-texto">Vários salões: desligado</span></button>
     <button class="btn btn-ghost btn-linha" onclick="devOpcaoCopiarLink()"><i class="ti ti-copy"></i> Copiar link</button>
     <button class="btn btn-whats btn-linha" onclick="devOpcaoEnviarLink()"><i class="ti ti-brand-whatsapp"></i> Enviar link pelo WhatsApp</button>
@@ -1815,7 +1897,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026040011";
+const VERSAO_APP = "2026040012";
 
 /* ===================================================================== */
 
@@ -2529,7 +2611,7 @@ function linkLocalDoCondominio(codigo){ return urlBaseDoApp() + "?c=" + encodeUR
 window.voltarAoPainelDev = function(){ location.href = urlBaseDoApp() + "?dev"; };
 
 function mostrarVistaDev(vista){
-  ["lista","p1","p2","pronto","cob","cobform"].forEach(n=>{
+  ["lista","p1","p2","p3","pronto","cob","cobform","planos","plano"].forEach(n=>{
     document.getElementById("dev-view-" + n).style.display = (n === vista) ? "flex" : "none";
   });
   window.scrollTo(0, 0);
@@ -2592,6 +2674,13 @@ async function carregarListaCondominiosDev(){
       const sindTxt = it.sindicos.length ? "Síndico: Casa " + it.sindicos.join(", ") : "Sem síndico";
       b.querySelector(".t2").textContent = `${casasTxt} · ${sindTxt}`;
       if(cobDisponivel){
+        const lp = document.createElement("p");
+        lp.className = "t2";
+        const pc = planoDe(it.cob);
+        lp.textContent = pc ? `Plano ${planoRotulo(pc)} · ADM ${it.sindicos.length} de ${pc.adm} · Casas ${it.casas} de ${pc.casas}` : "Sem plano";
+        b.querySelector(".txt").appendChild(lp);
+      }
+      if(cobDisponivel){
         const tag = document.createElement("span");
         tag.className = "cob-tag " + it.sit.classe;
         tag.innerHTML = `<i class="ti ${it.sit.icone}"></i> `;
@@ -2613,7 +2702,7 @@ async function carregarListaCondominiosDev(){
       bloco.appendChild(linha);
       // Atalhos no card: cobrar e dar baixa (mensalidade atrasada ou a vencer) e o e-mail do acordo (toda cobrança ativa)
       const temPendencia = it.sit.tipo === "atraso" || it.sit.tipo === "avencer";
-      if(cobDisponivel && (temPendencia || it.sit.tipo === "ok")){
+      if(cobDisponivel && (temPendencia || it.sit.tipo === "ok" || planoPagoDe(it.cob))){
         const rap = document.createElement("div");
         rap.className = "cob-rapidas" + (temPendencia ? " tres" : "");
         const ba = document.createElement("button");
@@ -2653,6 +2742,7 @@ function devAbrirOpcoes(it){
   document.getElementById("do-link").textContent = linkDoCondominio(it.id);
   document.getElementById("do-btn-excluir").style.display = protegido ? "none" : "flex";
   document.getElementById("do-saloes-texto").textContent = "Vários salões: " + ((cobDados[it.id] || {}).multiSalao === true ? "ligado" : "desligado");
+  document.getElementById("do-plano-texto").textContent = planoDe(cobDados[it.id]) ? "Plano: " + planoRotulo(planoDe(cobDados[it.id])) : "Vincular plano";
   document.getElementById("do-protegido").style.display = protegido ? "block" : "none";
   document.getElementById("modal-dev-opcoes").classList.add("show");
 }
@@ -2780,12 +2870,13 @@ function cobSituacao(cob, hoje){
   return { tipo:"ok", rank:2, ordem:0, classe:"ok", icone:"ti-circle-check", texto:"Em dia", m:aberta };
 }
 async function cobCarregarTudo(){
-  cobDados = {}; cobDisponivel = false;
+  cobDados = {}; cobDisponivel = false; cobPlanos = planosNormalizar(null);
   try{
     const snap = await getDocs(collection(db, "Cobrancas"));
     snap.forEach(d=>{
       if(d.id === "_config") cobConfig = Object.assign({ chavePix:"", recebedor:"", whatsSuporte:"" }, d.data() || {});
-      else cobDados[d.id] = d.data() || {};
+      else if(d.id === "_planos") cobPlanos = planosNormalizar(d.data());
+      else if(d.id.charAt(0) !== "_") cobDados[d.id] = d.data() || {};
     });
     cobDisponivel = true;
   }catch(e){ console.warn("Cobrança indisponível (regras do banco ainda não publicadas?)", e && e.code); }
@@ -2866,8 +2957,8 @@ function cobMostrarMensalidades(){
   const hoje = hojeISO();
   const rotSit = cob.situacao === "isento" ? "Isento" : cob.situacao === "pausado" ? "Pausado" : `${formatarReais(cob.valor)} · dia ${cob.diaVencimento}`;
   document.getElementById("cob-sub").textContent = `${it.nome} · ${rotSit}`;
-  const podeAcordo = cob.situacao === "cobrando" && Number(cob.valor) > 0 && !!cob.primeiroVencimento;
-  document.getElementById("cob-btn-acordo").style.display = podeAcordo ? "flex" : "none";
+  // O acordo comercial sai do plano vinculado: sem plano, o botão leva para a escolha do plano
+  document.getElementById("cob-btn-acordo").style.display = "flex";
   const info = document.getElementById("cob-acordo-info");
   if(cob.acordoEnviadoEm){
     info.textContent = `Resumo do acordo enviado em ${formatarDataBR(cob.acordoEnviadoEm)}` + (cob.acordoEnviadoPara ? ` para ${cob.acordoEnviadoPara}.` : ".");
@@ -2979,6 +3070,7 @@ window.cobSalvarForm = async function(){
   };
   if(anterior.acordoEnviadoEm){ cob.acordoEnviadoEm = anterior.acordoEnviadoEm; cob.acordoEnviadoPara = anterior.acordoEnviadoPara || ""; }
   if(anterior.multiSalao === true) cob.multiSalao = true;
+  if(anterior.plano) cob.plano = anterior.plano;
   const b = document.getElementById("cobf-btn");
   b.disabled = true;
   try{
@@ -3072,17 +3164,20 @@ let cobAcordoAlvo = null;
 function cobAbrirAcordo(it){
   if(!it || cobSemRegras()) return;
   const cob = cobDados[it.id] || null;
-  if(!cob || cob.situacao !== "cobrando" || !(Number(cob.valor) > 0) || !cob.primeiroVencimento){
-    showToast("Cadastre a cobrança deste condomínio antes de enviar o resumo."); return;
+  const pl = planoPagoDe(cob);
+  if(!pl){
+    showToast(planoDe(cob) ? "A Degustação não tem acordo comercial. Vincule um plano pago." : "Vincule um plano a este condomínio para enviar o acordo.");
+    plAbrir(it); return;
   }
   cobAcordoAlvo = it;
   document.getElementById("ca-sub").textContent = it.nome;
   const r = document.getElementById("ca-resumo");
   r.innerHTML = "";
   [["Para", it.emailSindico || "Nenhum e-mail de síndico cadastrado"],
-   ["Mensalidade", formatarReais(cob.valor)],
-   ["Primeiro vencimento", formatarDataBR(cob.primeiroVencimento)],
-   ["Demais vencimentos", "Todo dia " + cob.diaVencimento],
+   ["Plano", planoRotulo(pl)],
+   [pl.periodo === "mensal" ? "Mensalidade" : "Valor do período", formatarReais(pl.total)],
+   ["Vigência", pl.periodo === "mensal" ? "A partir de " + formatarDataBR(pl.inicio) : formatarDataBR(pl.inicio) + " a " + formatarDataBR(pl.fim)],
+   ["Limites", `Até ${pl.adm} ADM e ${pl.casas} casas`],
    ["Chave Pix", cobConfig.chavePix || "Não cadastrada"]].forEach(([rot, val])=>{
     const sp = document.createElement("span"); sp.textContent = rot + ": ";
     const b = document.createElement("b"); b.textContent = val;
@@ -3118,7 +3213,16 @@ async function cobCarregarPreviaAcordo(it){
     if(!resp.ok || !dados.ok || !dados.html){
       msg.textContent = dados.erro === "Dados incompletos."
         ? "A prévia ainda não está publicada no servidor. Atualize a função de e-mail."
-        : (dados.erro || "Não foi possível carregar a prévia.");
+        : (dados.erro === "Cadastre a cobrança deste condomínio antes de enviar o resumo."
+          ? "A função de e-mail ainda está na versão antiga, sem os planos. Atualize a função antes de enviar."
+          : (dados.erro || "Não foi possível carregar a prévia."));
+      if(dados.erro) document.getElementById("ca-btn").disabled = true;
+      return;
+    }
+    if(dados.plano !== true){
+      // Servidor antigo: mandaria o e-mail no formato de mensalidade, sem o plano
+      msg.textContent = "A função de e-mail ainda está na versão antiga, sem os planos. Atualize a função antes de enviar.";
+      document.getElementById("ca-btn").disabled = true;
       return;
     }
     quadro.setAttribute("srcdoc", dados.html);
@@ -3153,6 +3257,290 @@ window.cobEnviarAcordo = async function(){
     showToast(e.message || "Não foi possível enviar o e-mail.");
     b.disabled = false; b.innerHTML = '<i class="ti ti-send"></i> Enviar e-mail';
   }
+};
+
+/* =====================================================================
+   PLANOS E VALORES (só o desenvolvedor)
+   A tabela fica em Cobrancas/_planos. Cada condomínio guarda uma cópia do
+   plano escolhido (campo plano em Cobrancas/{condominio}), então mudar a
+   tabela não mexe em quem já está vinculado. Nesta etapa é só cadastro:
+   nada é bloqueado para síndico ou morador.
+   ===================================================================== */
+const PERIODOS_PLANO = [ { id:"mensal", nome:"Mensal", meses:1 }, { id:"trimestral", nome:"Trimestral", meses:3 }, { id:"anual", nome:"Anual", meses:12 } ];
+const PLANOS_PADRAO = {
+  planos: [
+    { id:"degustacao", nome:"Degustação", adm:1, casas:60, mensal:0, degustacao:true, dias:30 },
+    { id:"start", nome:"Start", adm:1, casas:60, mensal:79 },
+    { id:"premium", nome:"Premium", adm:2, casas:180, mensal:119 },
+    { id:"company", nome:"Company", adm:5, casas:500, mensal:189 }
+  ],
+  descontos: { trimestral:5, anual:15 }
+};
+const arred2 = n => Math.round((Number(n) || 0) * 100) / 100;
+const inteiroEntre = (v, min, max, padrao)=>{ const n = Math.round(Number(v)); return isFinite(n) && n >= min && n <= max ? n : padrao; };
+let cobPlanos = planosNormalizar(null);
+function planosNormalizar(d){
+  const base = (d && Array.isArray(d.planos) && d.planos.length) ? d : PLANOS_PADRAO;
+  const planos = base.planos.filter(p=> p && p.id && p.nome).map(p=>{
+    const degu = p.degustacao === true;
+    const o = { id:String(p.id).slice(0, 30), nome:String(p.nome).replace(/\s+/g, " ").trim().slice(0, 20), adm:inteiroEntre(p.adm, 1, 99, 1), casas:inteiroEntre(p.casas, 1, 9999, 60), mensal: degu ? 0 : Math.max(0, arred2(p.mensal)) };
+    if(degu){ o.degustacao = true; o.dias = inteiroEntre(p.dias, 1, 365, 30); }
+    return o;
+  });
+  const desc = (base.descontos || {});
+  return { planos, descontos: { trimestral:inteiroEntre(desc.trimestral, 0, 90, 0), anual:inteiroEntre(desc.anual, 0, 90, 0) } };
+}
+function descontoDoPeriodo(tab, periodoId){ return periodoId === "mensal" ? 0 : (Number((tab.descontos || {})[periodoId]) || 0); }
+function totalDoPlano(tab, plano, periodoId){
+  const per = PERIODOS_PLANO.find(x=> x.id === periodoId) || PERIODOS_PLANO[0];
+  return arred2(plano.mensal * per.meses * (1 - descontoDoPeriodo(tab, per.id) / 100));
+}
+// Soma meses e dias a uma data AAAA-MM-DD (dia 31 + 1 mês cai no último dia do mês seguinte)
+function isoMais(iso, meses, dias){
+  let [y, m, d] = iso.split("-").map(Number);
+  if(meses){ const t = (y * 12 + (m - 1)) + meses; y = Math.floor(t / 12); m = (t % 12) + 1; d = Math.min(d, new Date(y, m, 0).getDate()); }
+  const dt = new Date(y, m - 1, d + (dias || 0), 12);
+  return isoDeData(dt.getFullYear(), dt.getMonth(), dt.getDate());
+}
+function planoDe(cob){ const p = cob && cob.plano; return (p && p.nome && /^\d{4}-\d{2}-\d{2}$/.test(p.inicio || "")) ? p : null; }
+function planoPagoDe(cob){ const p = planoDe(cob); return (p && p.degustacao !== true && Number(p.total) > 0 && /^\d{4}-\d{2}-\d{2}$/.test(p.fim || "")) ? p : null; }
+function planoRotulo(p){
+  if(!p) return "Sem plano";
+  if(p.degustacao === true) return `${p.nome} · até ${formatarDataBR(p.fim)}`;
+  const per = PERIODOS_PLANO.find(x=> x.id === p.periodo);
+  return `${p.nome} · ${per ? per.nome : ""}`;
+}
+const limitesTxt = p => `${p.adm} ADM · ${p.casas} casas`;
+
+/* ---------- escolha de plano (usada no plano do condomínio e no cadastro novo) ---------- */
+const peEstado = {};   // por tela: { planoId, periodo, uso:{ adm, casas } }
+function peAbrir(x, planoAtual, uso){
+  const existe = planoAtual && cobPlanos.planos.find(p=> p.id === planoAtual.id);
+  const padrao = cobPlanos.planos.find(p=> p.degustacao) || cobPlanos.planos[0];
+  peEstado[x] = { planoId: existe ? existe.id : (planoAtual ? "" : (padrao ? padrao.id : "")), periodo: (planoAtual && planoAtual.periodo) || "mensal", uso: uso || null };
+  document.getElementById(x + "-inicio").value = (planoAtual && planoAtual.inicio) || hojeISO();
+  document.getElementById(x + "-negociado").value = (planoAtual && planoAtual.negociado === true && existe) ? Number(planoAtual.total).toLocaleString("pt-BR", { minimumFractionDigits:2, maximumFractionDigits:2 }) : "";
+  peAtualizar(x);
+}
+window.peEscolherPlano = function(x, id){ peEstado[x].planoId = id; peAtualizar(x); };
+window.peEscolherPeriodo = function(x, id){ peEstado[x].periodo = id; peAtualizar(x); };
+window.peAtualizar = function(x){
+  const e = peEstado[x]; if(!e) return;
+  const plano = cobPlanos.planos.find(p=> p.id === e.planoId) || null;
+  const degu = !!(plano && plano.degustacao);
+  const cx = document.getElementById(x + "-planos");
+  cx.innerHTML = "";
+  cobPlanos.planos.forEach(p=>{
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "plano-chip" + (p.id === e.planoId ? " on" : "");
+    b.appendChild(document.createTextNode(p.nome));
+    const s = document.createElement("small"); s.textContent = p.degustacao ? `Grátis · ${p.dias} dias` : limitesTxt(p);
+    b.appendChild(s);
+    b.onclick = ()=> peEscolherPlano(x, p.id);
+    cx.appendChild(b);
+  });
+  const cp = document.getElementById(x + "-periodos");
+  cp.innerHTML = "";
+  PERIODOS_PLANO.forEach(per=>{
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "plano-chip" + (per.id === e.periodo ? " on" : "");
+    b.appendChild(document.createTextNode(per.nome));
+    const s = document.createElement("small"); const dsc = descontoDoPeriodo(cobPlanos, per.id);
+    s.textContent = dsc ? `-${dsc}%` : (per.id === "mensal" ? "Preço cheio" : "Sem desconto");
+    b.appendChild(s);
+    b.onclick = ()=> peEscolherPeriodo(x, per.id);
+    cp.appendChild(b);
+  });
+  document.getElementById(x + "-bloco-periodo").style.display = degu ? "none" : "block";
+  document.getElementById(x + "-bloco-negociado").style.display = degu ? "none" : "block";
+  document.getElementById(x + "-rot-inicio").textContent = degu ? "Início da degustação *" : "Início da vigência *";
+  const uso = document.getElementById(x + "-uso");
+  uso.textContent = ""; uso.className = "dev-dica";
+  if(plano){
+    let t = `Plano ${plano.nome}: até ${plano.adm} ${plano.adm === 1 ? "acesso ADM" : "acessos ADM"} (síndicos) e ${plano.casas} casas.`;
+    if(e.uso){
+      t += ` Hoje o condomínio tem ${e.uso.adm} ADM e ${e.uso.casas} casas.`;
+      if(e.uso.adm > plano.adm || e.uso.casas > plano.casas){ t += " Está acima do limite deste plano."; uso.className = "dev-dica plano-alerta"; }
+    }
+    uso.textContent = t;
+  }else{ uso.textContent = "Escolha um plano."; }
+  const r = document.getElementById(x + "-resumo");
+  r.innerHTML = "";
+  const linha = (rot, val, classe)=>{ const p = document.createElement(classe ? "div" : "p"); if(classe){ p.className = classe; p.textContent = val; }else{ p.appendChild(document.createTextNode(rot)); const b = document.createElement("b"); b.textContent = val; p.appendChild(b); } r.appendChild(p); };
+  const inicio = document.getElementById(x + "-inicio").value;
+  const inicioOk = /^\d{4}-\d{2}-\d{2}$/.test(inicio);
+  if(!plano){ linha("", "Sem plano escolhido", "v"); return; }
+  if(degu){
+    linha("Plano ", plano.nome);
+    linha("", "Grátis", "v");
+    linha("Sem cobrança por ", `${plano.dias} dias`);
+    if(inicioOk) linha("Termina em ", formatarDataBR(isoMais(inicio, 0, plano.dias)));
+    return;
+  }
+  const per = PERIODOS_PLANO.find(p=> p.id === e.periodo) || PERIODOS_PLANO[0];
+  const tabela = totalDoPlano(cobPlanos, plano, per.id);
+  const neg = lerReais(document.getElementById(x + "-negociado").value);
+  const total = neg > 0 ? neg : tabela;
+  linha("Plano ", `${plano.nome} · ${per.nome}`);
+  linha("", formatarReais(total), "v");
+  if(per.meses > 1) linha("Equivale a ", formatarReais(arred2(total / per.meses)) + " por mês");
+  if(neg > 0) linha("Valor da tabela: ", formatarReais(tabela));
+  else if(per.meses > 1 && plano.mensal * per.meses > total) linha("Economia de ", formatarReais(arred2(plano.mensal * per.meses - total)) + " sobre o mensal");
+  if(inicioOk) linha("Vigência: ", per.meses === 1 ? `a partir de ${formatarDataBR(inicio)}, renovada a cada mês` : `${formatarDataBR(inicio)} a ${formatarDataBR(isoMais(inicio, per.meses, -1))}`);
+};
+// Monta a cópia do plano que fica gravada no condomínio. Devolve null (com aviso) se faltar algo.
+function peMontar(x){
+  const e = peEstado[x] || {};
+  const plano = cobPlanos.planos.find(p=> p.id === e.planoId);
+  if(!plano){ showToast("Escolha um plano."); return null; }
+  const inicio = document.getElementById(x + "-inicio").value;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(inicio)){ showToast("Informe a data de início."); document.getElementById(x + "-inicio").focus(); return null; }
+  const base = { id: plano.id, nome: plano.nome, adm: plano.adm, casas: plano.casas, inicio, vinculadoEm: new Date().toISOString() };
+  if(plano.degustacao) return Object.assign(base, { degustacao:true, dias: plano.dias, total:0, fim: isoMais(inicio, 0, plano.dias) });
+  const per = PERIODOS_PLANO.find(p=> p.id === e.periodo);
+  if(!per){ showToast("Escolha o período."); return null; }
+  const campoNeg = document.getElementById(x + "-negociado").value.trim();
+  const neg = lerReais(campoNeg);
+  if(campoNeg && !(neg > 0)){ showToast("Valor negociado inválido. Deixe em branco para usar a tabela."); return null; }
+  const tabela = totalDoPlano(cobPlanos, plano, per.id);
+  if(!(neg > 0) && !(tabela > 0)){ showToast("Este plano está sem valor na tabela. Ajuste em Planos e valores."); return null; }
+  return Object.assign(base, { periodo: per.id, meses: per.meses, mensal: plano.mensal, desconto: descontoDoPeriodo(cobPlanos, per.id),
+    total: neg > 0 ? neg : tabela, negociado: neg > 0, fim: isoMais(inicio, per.meses, -1) });
+}
+
+/* ---------- plano de um condomínio ---------- */
+let plCondo = null;
+function plAbrir(it){
+  if(!it || cobSemRegras()) return;
+  plCondo = it;
+  fecharModal("modal-cob-acordo");
+  document.getElementById("pl-sub").textContent = it.nome;
+  peAbrir("pl", planoDe(cobDados[it.id]), { adm: it.sindicos.length, casas: it.casas });
+  mostrarVistaDev("plano");
+}
+window.devOpcaoPlano = function(){
+  const it = devCondoAtual; if(!it) return;
+  fecharModal("modal-dev-opcoes");
+  plAbrir(it);
+};
+window.plSalvar = async function(){
+  const it = plCondo; if(!it) return;
+  const plano = peMontar("pl");
+  if(!plano) return;
+  const b = document.getElementById("pl-btn");
+  b.disabled = true;
+  try{
+    await setDoc(doc(db, "Cobrancas", it.id), { plano }, { merge:true });
+    cobDados[it.id] = Object.assign({}, cobDados[it.id] || {}, { plano });
+    showToast("Plano salvo: " + planoRotulo(plano) + ".");
+    await devVoltarLista();
+  }catch(e){
+    showToast("Não foi possível salvar o plano. Tente novamente.");
+  }finally{ b.disabled = false; }
+};
+
+/* ---------- tabela de planos e valores ---------- */
+let pvRascunho = null, pvIdx = 0;
+window.pvAbrir = function(){
+  if(cobSemRegras()) return;
+  pvRascunho = JSON.parse(JSON.stringify(cobPlanos));
+  pvIdx = Math.min(1, pvRascunho.planos.length - 1);
+  document.getElementById("pv-desc-tri").value = String(pvRascunho.descontos.trimestral);
+  document.getElementById("pv-desc-anual").value = String(pvRascunho.descontos.anual);
+  pvPreencherEdicao(); pvDesenhar();
+  mostrarVistaDev("planos");
+};
+function pvPreencherEdicao(){
+  const p = pvRascunho.planos[pvIdx]; if(!p) return;
+  document.getElementById("pv-nome").value = p.nome;
+  document.getElementById("pv-adm").value = String(p.adm);
+  document.getElementById("pv-casas").value = String(p.casas);
+  document.getElementById("pv-mensal").value = p.mensal ? Number(p.mensal).toLocaleString("pt-BR", { minimumFractionDigits:2, maximumFractionDigits:2 }) : "";
+  document.getElementById("pv-dias").value = String(p.dias || 30);
+  document.getElementById("pv-campo-mensal").style.display = p.degustacao ? "none" : "block";
+  document.getElementById("pv-campo-dias").style.display = p.degustacao ? "block" : "none";
+  document.getElementById("pv-btn-excluir").style.display = (!p.degustacao && pvRascunho.planos.filter(q=> !q.degustacao).length > 1) ? "flex" : "none";
+}
+function pvDesenhar(){
+  const lista = document.getElementById("pv-lista");
+  lista.innerHTML = "";
+  pvRascunho.planos.forEach((p, i)=>{
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "plano-item" + (p.degustacao ? " degu" : "") + (i === pvIdx ? " on" : "");
+    const n = document.createElement("p"); n.className = "n"; n.textContent = "Plano " + p.nome;
+    const l = document.createElement("p"); l.className = "l"; l.textContent = `${p.adm} ${p.adm === 1 ? "acesso ADM" : "acessos ADM"} · Até ${p.casas} casas`;
+    const v = document.createElement("p"); v.className = "p";
+    v.appendChild(document.createTextNode(p.degustacao ? "Grátis " : formatarReais(p.mensal) + " "));
+    const s = document.createElement("small"); s.textContent = p.degustacao ? `por ${p.dias} dias` : "por mês"; v.appendChild(s);
+    b.appendChild(n); b.appendChild(l); b.appendChild(v);
+    b.onclick = ()=>{ pvIdx = i; pvPreencherEdicao(); pvDesenhar(); };
+    lista.appendChild(b);
+  });
+  const atual = pvRascunho.planos[pvIdx];
+  document.getElementById("pv-titulo").textContent = atual ? "Editando: Plano " + atual.nome : "";
+  const tab = document.createElement("table"); tab.className = "plano-tabela";
+  const cab = document.createElement("tr");
+  ["Plano"].concat(PERIODOS_PLANO.map(x=> x.nome)).forEach(t=>{ const th = document.createElement("th"); th.textContent = t; cab.appendChild(th); });
+  tab.appendChild(cab);
+  pvRascunho.planos.filter(p=> !p.degustacao).forEach(p=>{
+    const tr = document.createElement("tr");
+    const td = document.createElement("td"); td.textContent = p.nome; tr.appendChild(td);
+    PERIODOS_PLANO.forEach(per=>{ const c = document.createElement("td"); c.textContent = totalDoPlano(pvRascunho, p, per.id).toLocaleString("pt-BR", { minimumFractionDigits:2, maximumFractionDigits:2 }); tr.appendChild(c); });
+    tab.appendChild(tr);
+  });
+  const cx = document.getElementById("pv-tabela");
+  cx.innerHTML = ""; cx.appendChild(tab);
+  const dica = document.createElement("p"); dica.className = "dev-dica"; dica.textContent = "Valor total de cada período, em reais."; cx.appendChild(dica);
+}
+window.pvAoEditar = function(){
+  if(!pvRascunho) return;
+  const soNumero = id => document.getElementById(id).value.replace(/\D/g, "");
+  const p = pvRascunho.planos[pvIdx];
+  if(p){
+    const nome = document.getElementById("pv-nome").value.replace(/\s+/g, " ").trim();
+    if(nome) p.nome = nome.slice(0, 20);
+    p.adm = inteiroEntre(soNumero("pv-adm"), 1, 99, p.adm);
+    p.casas = inteiroEntre(soNumero("pv-casas"), 1, 9999, p.casas);
+    if(p.degustacao){ p.dias = inteiroEntre(soNumero("pv-dias"), 1, 365, p.dias); }
+    else{ const v = lerReais(document.getElementById("pv-mensal").value); p.mensal = v >= 0 ? v : 0; }
+  }
+  pvRascunho.descontos.trimestral = inteiroEntre(soNumero("pv-desc-tri"), 0, 90, 0);
+  pvRascunho.descontos.anual = inteiroEntre(soNumero("pv-desc-anual"), 0, 90, 0);
+  pvDesenhar();
+};
+window.pvNovoPlano = function(){
+  if(!pvRascunho) return;
+  if(pvRascunho.planos.length >= 8){ showToast("Limite de 8 planos."); return; }
+  pvRascunho.planos.push({ id: "p" + Date.now().toString(36), nome: "Novo plano", adm:1, casas:60, mensal:0 });
+  pvIdx = pvRascunho.planos.length - 1;
+  pvPreencherEdicao(); pvDesenhar();
+  document.getElementById("pv-nome").focus(); document.getElementById("pv-nome").select();
+};
+window.pvExcluirPlano = function(){
+  const p = pvRascunho && pvRascunho.planos[pvIdx];
+  if(!p || p.degustacao) return;
+  if(!confirm(`Excluir o Plano ${p.nome} da tabela? Os condomínios já vinculados a ele continuam com a cópia que têm.`)) return;
+  pvRascunho.planos.splice(pvIdx, 1);
+  pvIdx = Math.max(0, pvIdx - 1);
+  pvPreencherEdicao(); pvDesenhar();
+};
+window.pvSalvar = async function(){
+  if(!pvRascunho) return;
+  const nomes = pvRascunho.planos.map(p=> p.nome.toLowerCase());
+  if(new Set(nomes).size !== nomes.length){ showToast("Há dois planos com o mesmo nome."); return; }
+  const semValor = pvRascunho.planos.find(p=> !p.degustacao && !(p.mensal > 0));
+  if(semValor){ showToast(`Informe o valor mensal do Plano ${semValor.nome}.`); pvIdx = pvRascunho.planos.indexOf(semValor); pvPreencherEdicao(); pvDesenhar(); return; }
+  const b = document.getElementById("pv-btn");
+  b.disabled = true;
+  try{
+    const novo = planosNormalizar(pvRascunho);
+    await setDoc(doc(db, "Cobrancas", "_planos"), Object.assign({ atualizadoEm: new Date().toISOString() }, novo));
+    cobPlanos = novo;
+    showToast("Planos e valores salvos.");
+    await devVoltarLista();
+  }catch(e){
+    showToast("Não foi possível salvar. Tente novamente.");
+  }finally{ b.disabled = false; }
 };
 
 /* ---------- dados de recebimento do desenvolvedor ---------- */
@@ -3299,8 +3687,22 @@ window.devContinuarPasso2 = async function(){
     btn.disabled = false; btn.textContent = "Continuar";
   }
 };
+window.devVoltarPasso2 = function(){ mostrarVistaDev("p2"); };
+window.devContinuarPasso3 = function(){
+  if(!devNovo){ mostrarVistaDev("p1"); return; }
+  const casaDigitada = document.getElementById("dv-casa").value.trim();
+  const celular = document.getElementById("dv-celular").value.trim();
+  const email = document.getElementById("dv-email").value.trim().toLowerCase();
+  if(!/^\d{1,4}$/.test(casaDigitada)){ showToast("Informe o número da casa do síndico (só números)."); document.getElementById("dv-casa").focus(); return; }
+  if(!celularValido(celular)){ showToast("Informe o celular com DDD: (00) 00000-0000."); document.getElementById("dv-celular").focus(); return; }
+  if(!emailValido(email)){ showToast("Informe um e-mail válido para o síndico."); document.getElementById("dv-email").focus(); return; }
+  peAbrir("p3", null, null);
+  mostrarVistaDev("p3");
+};
 window.devCriarCondominio = async function(){
   if(!devNovo){ mostrarVistaDev("p1"); return; }
+  const planoNovo = peMontar("p3");
+  if(!planoNovo) return;
   const casaDigitada = document.getElementById("dv-casa").value.trim();
   const celular = document.getElementById("dv-celular").value.trim();
   const email = document.getElementById("dv-email").value.trim().toLowerCase();
@@ -3326,7 +3728,14 @@ window.devCriarCondominio = async function(){
       numero, papel: "sindico", apelido: "", nomeResponsavel: "", telefone: celular,
       emailContato: email, senhaTrocada: false, uid: novoUid, criadoEm: serverTimestamp()
     });
+    // 4) Plano do condomínio (fica na área de cobrança, que só o desenvolvedor lê)
+    let planoGravado = true;
+    try{
+      await setDoc(doc(db, "Cobrancas", codigo), { plano: planoNovo }, { merge:true });
+      cobDados[codigo] = Object.assign({}, cobDados[codigo] || {}, { plano: planoNovo });
+    }catch(e){ planoGravado = false; }
     devNovo = { nome, subtitulo, codigo, numero, celular, email, senha: senhaInicial };
+    document.getElementById("dv-ok-plano").textContent = planoGravado ? planoRotulo(planoNovo) : "Não gravado. Vincule pelo painel.";
     document.getElementById("dv-ok-senha").textContent = senhaInicial;
     document.getElementById("dv-ok-nome").textContent = nome;
     document.getElementById("dv-ok-casa").textContent = "Casa " + numero;
