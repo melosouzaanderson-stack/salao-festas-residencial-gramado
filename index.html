@@ -1216,6 +1216,19 @@
           </label>
           <div class="field" id="cd-salao-motivo-campo" style="display:none;"><label>Motivo (aparece para o morador)</label><input type="text" id="cd-salao-motivo" maxlength="60" autocomplete="off" placeholder="Ex.: Em reforma até novembro"></div>
           <div class="field"><label>Dica de localização</label><input type="text" id="cd-salao-dica" maxlength="120" autocomplete="off" placeholder="Ex.: Térreo da Torre A, ao lado da piscina"><p style="font-size:13px;color:var(--muted);margin:6px 0 0;">Aparece no convite que o morador manda aos convidados.</p></div>
+          <div class="field">
+            <label>Foto deste salão</label>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+              <div style="width:64px;height:64px;border-radius:10px;background:var(--soft);display:flex;align-items:center;justify-content:center;overflow:hidden;flex:none;cursor:pointer;" onclick="document.getElementById('cd-salao-foto-input').click()">
+                <img id="cd-salao-foto-preview" alt="" style="display:none;width:100%;height:100%;object-fit:cover;">
+                <i class="ti ti-photo" id="cd-salao-foto-icone" style="font-size:22px;color:var(--muted);"></i>
+              </div>
+              <button class="btn btn-ghost btn-sm" type="button" style="width:auto;padding:0 14px;" onclick="document.getElementById('cd-salao-foto-input').click()">Escolher foto</button>
+              <button class="btn btn-ghost btn-sm" type="button" id="cd-salao-foto-tirar" style="display:none;width:auto;padding:0 14px;" onclick="tirarFotoDoSalaoEdicao()">Remover foto</button>
+            </div>
+            <input type="file" id="cd-salao-foto-input" accept="image/*" style="display:none;" onchange="onFotoDoSalaoEdicao(this)">
+            <p style="font-size:13px;color:var(--muted);margin:6px 0 0;">Aparece na tela em que o morador escolhe o salão.</p>
+          </div>
         </div>
         <div id="cd-locais-lista"></div>
         <p style="font-size:14px;color:var(--muted);margin:4px 0 12px;line-height:1.45;">O salão é o local principal e entra em todo pedido. Os demais são acessórios, pedidos junto com o salão. Com só o salão cadastrado, o pedido de reserva fica igual ao de hoje.</p>
@@ -1249,6 +1262,7 @@
       <label>Texto do e-mail de lembrete ao síndico</label>
       <textarea id="cd-lembrete-texto" rows="4" placeholder="ex: Confira os itens de higiene e reforce a limpeza do salão antes do evento." oninput="atualizarAlertaLembrete()"></textarea>
       <p style="font-size:13px;color:var(--muted);margin:6px 0 0;">O síndico recebe este lembrete por e-mail antes de cada festa confirmada. Precisa de assunto e de texto.</p>
+      <p id="cd-lembrete-dica-salao" style="display:none;font-size:13px;color:var(--muted);margin:6px 0 0;">Com mais de um salão, o nome do salão vai no fim do lembrete. Para escolher o lugar, escreva {{salao}} no texto.</p>
       <div class="rs-aviso" id="cd-lembrete-alerta" style="display:none;margin:10px 0 0;"><i class="ti ti-alert-triangle"></i> <span id="cd-lembrete-alerta-texto"></span></div>
     </div>
       </div>
@@ -1646,7 +1660,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026040001";
+const VERSAO_APP = "2026040002";
 
 /* ===================================================================== */
 
@@ -1708,19 +1722,22 @@ function locaisDoCondominio(dados){
    reservas deles levam o campo salaoId. Com um salão só, nada muda. */
 const SALAO_PADRAO_ID = "salao";
 let salaoAtualId = SALAO_PADRAO_ID;       // salão cuja agenda está na tela
+// Só aceita foto gravada pelo próprio app (imagem embutida); qualquer outra coisa é ignorada
+function fotoValida(f){ return (typeof f === "string" && /^data:image\/[a-z0-9.+-]+;base64,[A-Za-z0-9+\/=]+$/.test(f)) ? f : ""; }
 function saloesDoCondominio(dados){
   const locais = locaisDoCondominio(dados);
   const d = dados || {};
   const limpar = (t, n)=> String(t || "").replace(/\s+/g, " ").trim().slice(0, n);
   const lista = [{
     id: SALAO_PADRAO_ID, idLocal: locais[0].id, nome: locais[0].nome, diaria: locais[0].diaria,
-    ativo: d.salaoAtivo !== false, motivo: limpar(d.salaoMotivo, 60), dica: limpar(d.salaoDica, 120), acessorios: locais.slice(1)
+    ativo: d.salaoAtivo !== false, motivo: limpar(d.salaoMotivo, 60), dica: limpar(d.salaoDica, 120), acessorios: locais.slice(1),
+    foto: fotoValida(d.fotoSalao)
   }];
   (Array.isArray(d.saloesExtras) ? d.saloesExtras : []).forEach(x=>{
     if(!x || !x.id || !x.nome || !/^[A-Za-z0-9]{1,20}$/.test(String(x.id)) || x.id === SALAO_PADRAO_ID) return;
     lista.push({
       id: String(x.id), idLocal: String(x.id), nome: String(x.nome).slice(0, 40), diaria: Math.max(0, Number(x.diaria) || 0),
-      ativo: x.ativo !== false, motivo: limpar(x.motivo, 60), dica: limpar(x.dica, 120),
+      ativo: x.ativo !== false, motivo: limpar(x.motivo, 60), dica: limpar(x.dica, 120), foto: fotoValida(x.foto),
       acessorios: (Array.isArray(x.acessorios) ? x.acessorios : []).filter(a=> a && a.id && a.nome).map(a=> ({
         id: String(a.id), nome: String(a.nome).slice(0, 40), diaria: Math.max(0, Number(a.diaria) || 0), ativo: a.ativo !== false, principal:false }))
     });
@@ -3214,8 +3231,8 @@ window.abrirEscolhaSalao = function(){
     const foto = b.querySelector(".foto");
     foto.classList.add(corDoSalao(s.id));
     foto.textContent = s.nome;
-    if(s.id === SALAO_PADRAO_ID && condominioData.fotoSalao && s.ativo){
-      foto.style.backgroundImage = `linear-gradient(rgba(15,23,42,.05), rgba(15,23,42,.55)), url(${condominioData.fotoSalao})`;
+    if(s.foto && s.ativo){
+      foto.style.backgroundImage = `linear-gradient(rgba(15,23,42,.05), rgba(15,23,42,.55)), url(${s.foto})`;
     }
     const txt = b.querySelector(".txt");
     if(s.ativo){
@@ -4388,6 +4405,7 @@ window.abrirModal = function(id){
     document.getElementById("cd-lembrete-assunto").value = condominioData.lembreteEmailAssunto || "";
     document.getElementById("cd-lembrete-texto").value = condominioData.lembreteEmailTexto || "";
     atualizarAlertaLembrete();
+    document.getElementById("cd-lembrete-dica-salao").style.display = temVariosSaloes() ? "block" : "none";
     document.getElementById("cd-endereco").value = condominioData.endereco || "";
     document.getElementById("cd-maps").value = condominioData.linkMaps || "";
     atualizarStatusMaps();
@@ -4437,6 +4455,9 @@ function reduzirImagem(dataUrl, ladoMaximo, qualidade = 0.78){
 }
 const LADO_MAX_FOTO_CONDOMINIO = 800;
 const LADO_MAX_FOTO_SALAO = 600;
+const LADO_MAX_FOTO_SALAO_EXTRA = 480;      // fotos dos demais salões são menores: ficam todas no mesmo cadastro
+const LIMITE_FOTO_SALAO_EXTRA = 110000;
+const LIMITE_CADASTRO_CONDOMINIO = 900000;  // o banco aceita até 1 MB por cadastro
 const LIMITE_FOTO_OTIMIZADA = 120000; // ~120 KB em texto
 
 /* Na abertura pelo síndico/dev: se as fotos salvas estiverem pesadas, reduz e salva de novo (uma vez só) */
@@ -4494,7 +4515,7 @@ let podeVariosSaloes = false;
 let desativacaoPendente = null;
 function iniciarEdicaoDeSaloes(){
   saloesEdicao = saloesDoCondominio(condominioData).map(s=> ({
-    id: s.id, ativo: s.ativo, motivo: s.motivo, dica: s.dica,
+    id: s.id, ativo: s.ativo, motivo: s.motivo, dica: s.dica, foto: s.foto || "",
     locais: s.id === SALAO_PADRAO_ID ? locaisDoCondominio(condominioData)
       : [{ id:s.id, nome:s.nome, diaria:s.diaria, ativo:true, principal:true }, ...s.acessorios.map(a=> ({ ...a, principal:false }))]
   }));
@@ -4545,7 +4566,43 @@ function renderizarSaloesConfig(){
   document.getElementById("cd-salao-motivo").value = s.motivo || "";
   document.getElementById("cd-salao-motivo-campo").style.display = s.ativo ? "none" : "block";
   document.getElementById("cd-salao-dica").value = s.dica || "";
+  const fotoAtual = salaoEdicaoIdx === 0 ? (condominioData._novaFotoSalao || fotoValida(condominioData.fotoSalao)) : (s.foto || "");
+  const img = document.getElementById("cd-salao-foto-preview");
+  img.style.display = fotoAtual ? "block" : "none";
+  if(fotoAtual) img.src = fotoAtual; else img.removeAttribute("src");
+  document.getElementById("cd-salao-foto-icone").style.display = fotoAtual ? "none" : "block";
+  document.getElementById("cd-salao-foto-tirar").style.display = (fotoAtual && salaoEdicaoIdx > 0) ? "inline-flex" : "none";
 }
+// Foto do salão que está em edição. No salão 1 é a mesma foto de sempre (a do botão "Reserva do Salão").
+window.onFotoDoSalaoEdicao = function(input){
+  const file = input.files[0];
+  input.value = "";
+  if(!file) return;
+  if(!/^image\//.test(file.type)){ showToast("Escolha um arquivo de imagem."); return; }
+  const idx = salaoEdicaoIdx;
+  const reader = new FileReader();
+  reader.onload = async ()=>{
+    if(idx === 0){
+      condominioData._novaFotoSalao = await reduzirImagem(reader.result, LADO_MAX_FOTO_SALAO);
+      document.getElementById("cd-foto-salao-preview").src = condominioData._novaFotoSalao;
+      document.getElementById("cd-foto-salao-preview").style.display = "block";
+      document.getElementById("cd-foto-salao-icone").style.display = "none";
+    }else if(saloesEdicao[idx]){
+      const f = fotoValida(await reduzirImagem(reader.result, LADO_MAX_FOTO_SALAO_EXTRA, 0.7));
+      if(!f || f.length > LIMITE_FOTO_SALAO_EXTRA){ showToast("Não foi possível usar esta foto. Tente outra imagem."); return; }
+      saloesEdicao[idx].foto = f;
+    }
+    renderizarSaloesConfig();
+    showToast("Foto escolhida. Toque em Salvar alterações para gravar.");
+  };
+  reader.readAsDataURL(file);
+};
+window.tirarFotoDoSalaoEdicao = function(){
+  const s = saloesEdicao[salaoEdicaoIdx];
+  if(!s || salaoEdicaoIdx === 0) return;
+  s.foto = "";
+  renderizarSaloesConfig();
+};
 window.selecionarSalaoEdicao = function(i){
   guardarCamposDoSalao();
   salaoEdicaoIdx = i;
@@ -4824,12 +4881,18 @@ window.salvarCondominio = async function(confirmouSemLembrete){
     dados.salaoDica = salao1.dica || "";
     dados.saloesExtras = saloesEdicao.slice(1).map(sx=> ({
       id: sx.id, nome: sx.locais[0].nome, diaria: sx.locais[0].diaria, ativo: sx.ativo !== false,
-      motivo: sx.ativo !== false ? "" : (sx.motivo || ""), dica: sx.dica || "",
+      motivo: sx.ativo !== false ? "" : (sx.motivo || ""), dica: sx.dica || "", ...(sx.foto ? { foto: sx.foto } : {}),
       acessorios: sx.locais.slice(1).map(l=> ({ id:l.id, nome:l.nome, diaria:l.diaria, ativo:l.ativo }))
     }));
   }
   if(condominioData._novaFoto) dados.fotoBase64 = condominioData._novaFoto;
   if(condominioData._novaFotoSalao) dados.fotoSalao = condominioData._novaFotoSalao;
+  if(dados.saloesExtras && dados.saloesExtras.some(x=> x.foto)){
+    const semPrivados = Object.fromEntries(Object.entries({ ...condominioData, ...dados }).filter(([k])=> !k.startsWith("_")));
+    let tamanho = LIMITE_CADASTRO_CONDOMINIO + 1;
+    try{ tamanho = JSON.stringify(semPrivados).length; }catch(e){}
+    if(tamanho > LIMITE_CADASTRO_CONDOMINIO){ showToast("As fotos dos salões ficaram pesadas demais. Tire a foto de um dos salões e salve de novo."); return; }
+  }
   try{
     await setDoc(doc(db, "Condominios", TENANT_ID), dados, { merge:true });
     Object.assign(condominioData, dados);
