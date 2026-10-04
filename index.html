@@ -1742,7 +1742,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026040005";
+const VERSAO_APP = "2026040006";
 
 /* ===================================================================== */
 
@@ -5316,7 +5316,7 @@ function textoDataMudanca(iso){ return `${formatarDataBR(iso)} (${nomeDiaSemana(
 function renderizarAtalhosHome(){
   const faixa = document.getElementById("home-atalhos");
   if(!faixa || !casaAtual) return;
-  const podeAvisar = !!casaAtualId && !devSemCasa && !ehDev && !ehSindico;
+  const podeAvisar = !!casaAtualId && !devSemCasa && !ehDev;   /* morador e síndico avisam a própria mudança; desenvolvedor não */
   faixa.style.display = podeAvisar ? "grid" : "none";
   const m = podeAvisar ? mudancaDaCasa(casaAtual) : null;
   const atalho = document.getElementById("home-atalho-mudanca");
