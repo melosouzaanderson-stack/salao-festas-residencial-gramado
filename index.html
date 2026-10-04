@@ -610,6 +610,9 @@
   .salao-cor-0{ background:linear-gradient(135deg,#60A5FA,#1D4ED8); } .salao-cor-1{ background:linear-gradient(135deg,#34D399,#047857); }
   .salao-cor-2{ background:linear-gradient(135deg,#FBBF24,#B45309); } .salao-cor-3{ background:linear-gradient(135deg,#C084FC,#6D28D9); }
   .salao-cor-4{ background:linear-gradient(135deg,#FB7185,#BE123C); } .salao-cor-5{ background:linear-gradient(135deg,#22D3EE,#0E7490); }
+  .salao-cor-6{ background:linear-gradient(135deg,#FB923C,#C2410C); } .salao-cor-7{ background:linear-gradient(135deg,#2DD4BF,#0F766E); }
+  .salao-cor-8{ background:linear-gradient(135deg,#F472B6,#BE185D); } .salao-cor-9{ background:linear-gradient(135deg,#A3E635,#4D7C0F); }
+  .salao-cor-10{ background:linear-gradient(135deg,#818CF8,#4338CA); } .salao-cor-11{ background:linear-gradient(135deg,#94A3B8,#334155); }
   .salao-card{ display:block; width:100%; text-align:left; background:#fff; border:1px solid var(--line); border-radius:18px; overflow:hidden; margin:0 0 12px; padding:0; font-family:inherit; color:var(--deep); cursor:pointer; }
   .salao-card .foto{ height:88px; display:flex; align-items:flex-end; padding:10px 14px; color:#fff; font-family:'Fraunces', serif; font-size:21px; font-weight:600; text-shadow:0 1px 4px rgba(0,0,0,.4); background-size:cover; background-position:center; }
   .salao-card .inf{ padding:10px 14px 12px; display:flex; align-items:center; gap:10px; font-size:15px; color:var(--muted); line-height:1.4; }
@@ -1812,7 +1815,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026040010";
+const VERSAO_APP = "2026040011";
 
 /* ===================================================================== */
 
@@ -1873,6 +1876,7 @@ function locaisDoCondominio(dados){
    continuam com o identificador igual à data. Os demais salões ficam em saloesExtras e as
    reservas deles levam o campo salaoId. Com um salão só, nada muda. */
 const SALAO_PADRAO_ID = "salao";
+const MAX_SALOES = 12;   // limite de salões por condomínio (há uma cor para cada um)
 let salaoAtualId = SALAO_PADRAO_ID;       // salão cuja agenda está na tela
 // Só aceita foto gravada pelo próprio app (imagem embutida); qualquer outra coisa é ignorada
 function fotoValida(f){ return (typeof f === "string" && /^data:image\/[a-z0-9.+-]+;base64,[A-Za-z0-9+\/=]+$/.test(f)) ? f : ""; }
@@ -1902,7 +1906,7 @@ function salaoPorId(id){ const l = saloesDoCondominio(condominioData); return l.
 function salaoAtual(){ return salaoPorId(salaoAtualId) || saloesDoCondominio(condominioData)[0]; }
 function nomeDoSalaoDaReserva(r){ const x = salaoPorId(salaoDaReserva(r)); return (r && r.salaoNome) || (x ? x.nome : "Salão"); }
 function idDaReserva(iso, salaoId){ return salaoId === SALAO_PADRAO_ID ? `${iso}` : `${iso}__${salaoId}`; }
-function corDoSalao(id){ const i = saloesDoCondominio(condominioData).findIndex(x=> x.id === id); return "salao-cor-" + (Math.max(0, i) % 6); }
+function corDoSalao(id){ const i = saloesDoCondominio(condominioData).findIndex(x=> x.id === id); return "salao-cor-" + (Math.max(0, i) % MAX_SALOES); }
 // Garante que o salão da tela existe; morador nunca fica parado em salão desativado
 function ajustarSalaoAtual(){
   const lista = saloesDoCondominio(condominioData);
@@ -4709,7 +4713,7 @@ function reduzirImagem(dataUrl, ladoMaximo, qualidade = 0.78){
 }
 const LADO_MAX_FOTO_CONDOMINIO = 800;
 const LADO_MAX_FOTO_SALAO = 600;
-const LADO_MAX_FOTO_SALAO_EXTRA = 480;      // fotos dos demais salões são menores: ficam todas no mesmo cadastro
+const LADO_MAX_FOTO_SALAO_EXTRA = 420;      // fotos dos demais salões são menores: ficam todas no mesmo cadastro
 const LIMITE_FOTO_SALAO_EXTRA = 110000;
 const LIMITE_CADASTRO_CONDOMINIO = 900000;  // o banco aceita até 1 MB por cadastro
 const LIMITE_FOTO_OTIMIZADA = 120000; // ~120 KB em texto
@@ -4804,7 +4808,7 @@ function renderizarSaloesConfig(){
     b.type = "button";
     b.className = "salao-linha" + (i === salaoEdicaoIdx ? " sel" : "");
     b.innerHTML = '<span class="ic"><i class="ti ti-confetti"></i></span><span><p class="t1"></p><p class="t2"></p></span><span class="st"></span>';
-    b.querySelector(".ic").classList.add("salao-cor-" + (i % 6));
+    b.querySelector(".ic").classList.add("salao-cor-" + (i % MAX_SALOES));
     b.querySelector(".t1").textContent = s.locais[0].nome;
     const n = s.locais.length - 1;
     b.querySelector(".t2").textContent = formatarReais(s.locais[0].diaria) + " · " + (n === 0 ? "Sem acessórios" : n === 1 ? "1 acessório" : `${n} acessórios`);
@@ -4842,7 +4846,7 @@ window.onFotoDoSalaoEdicao = function(input){
       document.getElementById("cd-foto-salao-preview").style.display = "block";
       document.getElementById("cd-foto-salao-icone").style.display = "none";
     }else if(saloesEdicao[idx]){
-      const f = fotoValida(await reduzirImagem(reader.result, LADO_MAX_FOTO_SALAO_EXTRA, 0.7));
+      const f = fotoValida(await reduzirImagem(reader.result, LADO_MAX_FOTO_SALAO_EXTRA, 0.68));
       if(!f || f.length > LIMITE_FOTO_SALAO_EXTRA){ showToast("Não foi possível usar esta foto. Tente outra imagem."); return; }
       saloesEdicao[idx].foto = f;
     }
@@ -4866,7 +4870,7 @@ window.selecionarSalaoEdicao = function(i){
   atualizarResumosConfig();
 };
 window.novoSalaoEdicao = function(){
-  if(saloesEdicao.length >= 6){ showToast("Limite de 6 salões por condomínio."); return; }
+  if(saloesEdicao.length >= MAX_SALOES){ showToast(`Limite de ${MAX_SALOES} salões por condomínio.`); return; }
   guardarCamposDoSalao();
   const id = "s" + Date.now().toString(36);
   saloesEdicao.push({ id, ativo:true, motivo:"", dica:"", locais:[{ id, nome:`Salão ${saloesEdicao.length + 1}`, diaria:0, ativo:true, principal:true }] });
