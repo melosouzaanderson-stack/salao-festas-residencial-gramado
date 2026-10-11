@@ -926,8 +926,11 @@
         <div id="dev-resumo-cob" style="display:none;"></div>
         <p class="dev-secao">Condomínios cadastrados</p>
         <div id="dev-lista" style="display:flex;flex-direction:column;gap:12px;"></div>
+        <p class="dev-secao">Clínicas cadastradas · Atypical &amp; Agendas</p>
+        <div id="cli-area" style="display:flex;flex-direction:column;gap:12px;"></div>
         <div class="dev-rodape">
           <button class="btn btn-primary" onclick="devNovoCondominio()"><i class="ti ti-plus"></i> Novo condomínio</button>
+          <button class="btn btn-ghost" onclick="cliNova()"><i class="ti ti-plus"></i> Nova clínica</button>
           <button class="btn btn-ghost" onclick="pvAbrir()"><i class="ti ti-tags"></i> Planos e valores</button>
           <button class="btn btn-ghost" onclick="cobAbrirConfig()"><i class="ti ti-qrcode"></i> Meus dados de recebimento</button>
           <button class="btn btn-ghost" onclick="fazerLogout()"><i class="ti ti-logout"></i> Sair</button>
@@ -966,6 +969,55 @@
           <p class="dev-dica">Já vem com o celular do síndico. Pode trocar.</p></div>
         <div class="field"><label>Observação (opcional)</label><input type="text" id="cobf-obs" maxlength="120" autocomplete="off" placeholder="Ex.: primeiros 2 meses grátis"></div>
         <div class="dev-rodape"><button class="btn btn-primary" id="cobf-btn" onclick="cobSalvarForm()"><i class="ti ti-check"></i> Salvar cobrança</button></div>
+      </div>
+    </div>
+
+    <!-- ===== Ponte com o Atypical & Agendas (banco próprio das clínicas) ===== -->
+    <div class="dev-vista" id="dev-view-clientrar">
+      <div class="dev-top"><button class="volta" onclick="devVoltarLista()" aria-label="Voltar"><i class="ti ti-arrow-left"></i></button><b>Clínicas<span class="sub2">Atypical &amp; Agendas</span></b></div>
+      <div class="dev-corpo">
+        <p class="dev-h">Entrar no banco das clínicas</p>
+        <div class="dev-info"><i class="ti ti-lock"></i><span>As clínicas ficam em um banco separado. Digite a senha da sua conta de desenvolvedor no Atypical &amp; Agendas.</span></div>
+        <div class="field"><label>E-mail</label><input type="email" id="cli-email" readonly autocomplete="username"></div>
+        <div class="field"><label for="cli-senha">Senha do Atypical &amp; Agendas *</label><input type="password" id="cli-senha" maxlength="128" autocomplete="current-password" onkeydown="if(event.key==='Enter') cliEntrar()"></div>
+        <div id="cli-verificar" style="display:none;flex-direction:column;gap:10px;">
+          <div class="dev-info"><i class="ti ti-mail-check"></i><span>Falta confirmar o seu e-mail neste banco. Envie o e-mail de confirmação, clique no link que chegar e entre de novo.</span></div>
+          <button class="btn btn-ghost" id="cli-btn-verificar" onclick="cliEnviarConfirmacao()"><i class="ti ti-mail-forward"></i> Enviar e-mail de confirmação</button>
+        </div>
+        <div class="dev-rodape"><button class="btn btn-primary" id="cli-btn-entrar" onclick="cliEntrar()">Entrar</button></div>
+      </div>
+    </div>
+
+    <div class="dev-vista" id="dev-view-clinova">
+      <div class="dev-top"><button class="volta" onclick="devVoltarLista()" aria-label="Voltar"><i class="ti ti-arrow-left"></i></button><b>Nova clínica<span class="sub2">Atypical &amp; Agendas</span></b></div>
+      <div class="dev-corpo">
+        <p class="dev-h">Clínica</p>
+        <div class="field"><label for="cn-nome">Nome da clínica *</label><input type="text" id="cn-nome" maxlength="80" autocomplete="off" placeholder="Ex.: Clínica Bem Viver" oninput="cliAoDigitarNome()"></div>
+        <div class="field"><label for="cn-codigo">Código do link *</label><input type="text" id="cn-codigo" maxlength="40" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Ex.: bem-viver" oninput="cliAoDigitarCodigo()">
+          <div class="dev-previa" id="cn-previa"></div>
+          <p class="dev-dica">Só letras minúsculas, números e hífen. Não pode ser alterado depois de criado.</p></div>
+        <p class="dev-h">Supervisora</p>
+        <div class="field"><label for="cn-sup">Nome *</label><input type="text" id="cn-sup" maxlength="120" autocomplete="off"></div>
+        <div class="field"><label for="cn-email">E-mail *</label><input type="email" id="cn-email" maxlength="120" autocomplete="off" autocapitalize="none" placeholder="É o login dela no app"></div>
+        <div class="field"><label for="cn-celular">Celular com DDD (WhatsApp) *</label><input type="text" id="cn-celular" placeholder="(00) 00000-0000" inputmode="tel" autocomplete="off" oninput="mascararTelefoneZelador(this)"></div>
+        <div class="dev-info"><i class="ti ti-key"></i><span>O painel gera uma senha inicial só para ela. No primeiro acesso ela cria a própria senha.</span></div>
+        <div class="dev-rodape"><button class="btn btn-primary" id="cn-btn-criar" onclick="cliCriar()"><i class="ti ti-check"></i> Criar clínica</button></div>
+      </div>
+    </div>
+
+    <div class="dev-vista" id="dev-view-clipronto">
+      <div class="dev-top"><div class="av"><i class="ti ti-shield-lock"></i></div><b>Painel de gestão<span class="dev-marca">by SOUZA IATECH</span></b></div>
+      <div class="dev-corpo">
+        <div class="dev-ok"><i class="ti ti-check"></i></div>
+        <p class="dev-h" style="text-align:center;">Clínica criada!</p>
+        <div class="card"><p class="dev-resumo"><span>Clínica:</span> <b id="cn-ok-nome"></b><br><span>Supervisora:</span> <b id="cn-ok-sup"></b><br><span>E-mail:</span> <b id="cn-ok-email"></b><br><span>Senha inicial:</span> <b id="cn-ok-senha"></b></p>
+          <div class="dev-previa" id="cn-ok-link"></div>
+          <p class="dev-dica">A senha inicial aparece só agora. Ela troca no primeiro acesso.</p></div>
+        <div class="dev-rodape">
+          <button class="btn btn-whats" onclick="cliEnviarWhats()"><i class="ti ti-brand-whatsapp"></i> Enviar pelo WhatsApp</button>
+          <button class="btn btn-ghost" onclick="cliCopiar()"><i class="ti ti-copy"></i> Copiar link e senha</button>
+          <button class="btn btn-ghost" onclick="cliFecharPronto()">Voltar ao painel</button>
+        </div>
       </div>
     </div>
 
@@ -1892,7 +1944,8 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import {
   getAuth, signInWithEmailAndPassword, updatePassword, createUserWithEmailAndPassword,
-  sendPasswordResetEmail, signOut, onAuthStateChanged, EmailAuthProvider, reauthenticateWithCredential
+  sendPasswordResetEmail, signOut, onAuthStateChanged, EmailAuthProvider, reauthenticateWithCredential,
+  sendEmailVerification
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 /* =====================================================================
@@ -1972,7 +2025,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026040017";
+const VERSAO_APP = "2026110001";
 
 /* ===================================================================== */
 
@@ -2486,6 +2539,7 @@ window.salvarCadastroObrigatorio = async function(){
 window.fazerLogout = async function(){
   // Desenvolvedor: ao sair, volta para a entrada genérica (e não para o condomínio que estava visitando)
   const eraDev = ehDev;
+  if(eraDev){ try{ await cliSair(); }catch(e){ /* segue com a saída do app */ } }
   await signOut(auth);
   if(eraDev){ location.href = urlBaseDoApp() + "?dev"; return; }
   location.reload();
@@ -2687,7 +2741,7 @@ function linkLocalDoCondominio(codigo){ return urlBaseDoApp() + "?c=" + encodeUR
 window.voltarAoPainelDev = function(){ location.href = urlBaseDoApp() + "?dev"; };
 
 function mostrarVistaDev(vista){
-  ["lista","p1","p2","p3","pronto","cob","cobform","planos","plano"].forEach(n=>{
+  ["lista","p1","p2","p3","pronto","cob","cobform","planos","plano","clientrar","clinova","clipronto"].forEach(n=>{
     document.getElementById("dev-view-" + n).style.display = (n === vista) ? "flex" : "none";
   });
   window.scrollTo(0, 0);
@@ -2699,6 +2753,7 @@ async function abrirPainelDev(){
   document.getElementById("app-shell").style.display = "none";
   document.getElementById("tela-dev").style.display = "block";
   mostrarVistaDev("lista");
+  cliRenderizarArea();
   await carregarListaCondominiosDev();
 }
 async function carregarListaCondominiosDev(){
@@ -2881,7 +2936,237 @@ window.devConfirmarExclusao = async function(){
   }
 };
 
-window.devVoltarLista = async function(){ mostrarVistaDev("lista"); await carregarListaCondominiosDev(); };
+/* =====================================================================
+   PONTE COM O ATYPICAL & AGENDAS (v2026110001)
+   As clínicas ficam em outro projeto Firebase (banco próprio). O painel abre uma
+   segunda conexão só com esse banco, com a mesma conta de desenvolvedor.
+   Nada é copiado entre os bancos. Quem confere a permissão são as regras de lá.
+   ===================================================================== */
+const cliConfig = {
+  apiKey: "AIzaSyBldXzQQBETrMj-uruiQqYsIdPAazr9Mxc",
+  authDomain: "atypical-agendas.firebaseapp.com",
+  projectId: "atypical-agendas",
+  storageBucket: "atypical-agendas.firebasestorage.app",
+  messagingSenderId: "305368058260",
+  appId: "1:305368058260:web:80c00e488229a782e62781"
+};
+const URL_CLINICAS = "https://atypical-agendas.vercel.app/";
+const CLI_CODIGOS_RESERVADOS = ["dev", "admin", "clinicas", "codigo-invalido"];
+let cliApp = null, cliDb = null, cliAuth = null, cliAuthSec = null;
+let cliCodigoEditado = false, cliNovo = null;   // cliNovo guarda a senha inicial só em memória
+function cliPreparar(){
+  if(cliApp) return;
+  cliApp = initializeApp(cliConfig, "clinicas");
+  cliDb = getFirestore(cliApp);
+  cliAuth = getAuth(cliApp);
+  // Sessão à parte só para criar o login da supervisora, sem derrubar a do desenvolvedor
+  cliAuthSec = getAuth(initializeApp(cliConfig, "clinicasSecundario"));
+}
+async function cliUsuario(){
+  cliPreparar();
+  try{ if(cliAuth.authStateReady) await cliAuth.authStateReady(); }catch(e){}
+  return cliAuth.currentUser;
+}
+async function cliSair(){ cliPreparar(); cliNovo = null; await signOut(cliAuth); }
+function linkDaClinica(codigo){ return URL_CLINICAS + "?c=" + encodeURIComponent(codigo); }
+function cliCodigoValido(c){ return /^[a-z0-9][a-z0-9-]{1,39}$/.test(String(c || "")) && !CLI_CODIGOS_RESERVADOS.includes(c); }
+function cliGerarSenha(){
+  // 12 caracteres sem letras e números que se confundem (0 O 1 l I), em três grupos
+  const alfabeto = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+  const a = new Uint32Array(12); crypto.getRandomValues(a);
+  let s = ""; for(let i = 0; i < 12; i++){ s += alfabeto[a[i] % alfabeto.length]; if(i === 3 || i === 7) s += "-"; }
+  return s;
+}
+function cliCartaoAviso(texto, rotuloBotao, acao){
+  const caixa = document.getElementById("cli-area");
+  caixa.innerHTML = "";
+  const p = document.createElement("p"); p.className = "dev-vazio"; p.textContent = texto; caixa.appendChild(p);
+  if(rotuloBotao){
+    const b = document.createElement("button"); b.className = "btn btn-ghost"; b.textContent = rotuloBotao; b.onclick = acao; caixa.appendChild(b);
+  }
+}
+async function cliRenderizarArea(){
+  const caixa = document.getElementById("cli-area");
+  if(!caixa) return;
+  caixa.innerHTML = '<p class="dev-vazio">Carregando…</p>';
+  let user = null;
+  try{ user = await cliUsuario(); }catch(e){ cliCartaoAviso("Não foi possível abrir o banco das clínicas.", "Tentar de novo", cliRenderizarArea); return; }
+  if(!user){ cliCartaoAviso("Entre no banco das clínicas para ver e cadastrar.", "Entrar no Atypical & Agendas", ()=> cliAbrirEntrar()); return; }
+  try{
+    const snap = await getDocs(collection(cliDb, "Clinicas"));
+    const itens = await Promise.all(snap.docs.map(async d=>{
+      let usuarios = 0; const sups = [];
+      try{
+        const us = await getDocs(collection(cliDb, "Clinicas", d.id, "usuarios"));
+        usuarios = us.size;
+        us.forEach(u=>{ const v = u.data(); if(v.tipo === "supervisora" && v.nome) sups.push(String(v.nome).trim().split(/\s+/)[0]); });
+      }catch(e){ /* mostra a clínica mesmo sem a contagem */ }
+      return { id: d.id, nome: (d.data().nome || d.id), usuarios, sups };
+    }));
+    itens.sort((a,b)=> a.nome.localeCompare(b.nome, "pt-BR"));
+    caixa.innerHTML = "";
+    if(!itens.length){ caixa.innerHTML = '<p class="dev-vazio">Nenhuma clínica cadastrada ainda.</p>'; return; }
+    itens.forEach(it=>{
+      const b = document.createElement("button");
+      b.className = "dev-condo";
+      b.innerHTML = '<div class="ic"><i class="ti ti-stethoscope"></i></div><div class="txt"><p class="t1"></p><p class="t2"></p><p class="t2"></p></div><div class="entrar">Abrir<i class="ti ti-chevron-right"></i></div>';
+      b.querySelector(".t1").textContent = it.nome;
+      const tx = b.querySelectorAll(".t2");
+      tx[0].textContent = (it.usuarios === 1 ? "1 usuário" : `${it.usuarios} usuários`) + " · " + (it.sups.length ? "Supervisora: " + it.sups.join(", ") : "Sem supervisora");
+      tx[1].textContent = "Código: " + it.id;
+      b.onclick = ()=>{ window.open(linkDaClinica(it.id), "_blank", "noopener"); };
+      caixa.appendChild(b);
+    });
+  }catch(e){
+    // Regra recusou: a conta não foi reconhecida como desenvolvedor naquele banco (e-mail não confirmado, por exemplo)
+    if(e && e.code === "permission-denied") cliCartaoAviso("Sua conta não foi reconhecida como desenvolvedor no banco das clínicas.", "Entrar de novo", ()=> cliAbrirEntrar());
+    else cliCartaoAviso("Não foi possível carregar as clínicas.", "Tentar de novo", cliRenderizarArea);
+  }
+}
+function cliAbrirEntrar(){
+  document.getElementById("cli-email").value = EMAIL_DESENVOLVEDOR;
+  document.getElementById("cli-senha").value = "";
+  document.getElementById("cli-verificar").style.display = "none";
+  mostrarVistaDev("clientrar");
+  setTimeout(()=> document.getElementById("cli-senha").focus(), 50);
+}
+window.cliEntrar = async function(){
+  const senha = document.getElementById("cli-senha").value;
+  if(!senha){ showToast("Digite a senha do Atypical & Agendas."); return; }
+  const btn = document.getElementById("cli-btn-entrar");
+  if(btn.disabled) return;
+  btn.disabled = true; btn.textContent = "Entrando...";
+  try{
+    cliPreparar();
+    const cred = await signInWithEmailAndPassword(cliAuth, EMAIL_DESENVOLVEDOR, senha);
+    document.getElementById("cli-senha").value = "";
+    if(!cred.user.emailVerified){
+      // As regras das clínicas só reconhecem o desenvolvedor com o e-mail confirmado
+      document.getElementById("cli-verificar").style.display = "flex";
+      showToast("Falta confirmar o e-mail neste banco.");
+      return;
+    }
+    mostrarVistaDev("lista");
+    await cliRenderizarArea();
+  }catch(e){
+    const c = (e && e.code) || "";
+    document.getElementById("cli-senha").value = "";
+    if(c === "auth/network-request-failed") showToast("Sem conexão. Confira a internet e tente de novo.");
+    else if(c === "auth/too-many-requests") showToast("Muitas tentativas. Aguarde alguns minutos.");
+    else showToast("Senha incorreta para o Atypical & Agendas.");
+  }finally{
+    btn.disabled = false; btn.textContent = "Entrar";
+  }
+};
+window.cliEnviarConfirmacao = async function(){
+  const b = document.getElementById("cli-btn-verificar");
+  try{
+    if(!cliAuth || !cliAuth.currentUser){ showToast("Entre de novo para enviar a confirmação."); return; }
+    b.disabled = true;
+    await sendEmailVerification(cliAuth.currentUser);
+    await signOut(cliAuth);
+    showToast("E-mail enviado. Clique no link e entre de novo.");
+  }catch(e){
+    showToast("Não foi possível enviar agora. Tente de novo em alguns minutos.");
+  }finally{ b.disabled = false; }
+};
+window.cliNova = async function(){
+  const user = await cliUsuario().catch(()=> null);
+  if(!user || !user.emailVerified){ cliAbrirEntrar(); return; }
+  ["cn-nome","cn-codigo","cn-sup","cn-email","cn-celular"].forEach(id=>{ document.getElementById(id).value = ""; });
+  cliCodigoEditado = false; cliNovo = null;
+  cliAtualizarPrevia();
+  mostrarVistaDev("clinova");
+  setTimeout(()=> document.getElementById("cn-nome").focus(), 50);
+};
+function cliAtualizarPrevia(){
+  const c = document.getElementById("cn-codigo").value.trim();
+  document.getElementById("cn-previa").textContent = c ? linkDaClinica(c) : "O link da clínica aparece aqui";
+}
+window.cliAoDigitarNome = function(){
+  if(!cliCodigoEditado) document.getElementById("cn-codigo").value = codigoDoNome(document.getElementById("cn-nome").value).slice(0, 40);
+  cliAtualizarPrevia();
+};
+window.cliAoDigitarCodigo = function(){
+  const campo = document.getElementById("cn-codigo");
+  campo.value = campo.value.toLowerCase().replace(/[^a-z0-9-]/g, "");
+  cliCodigoEditado = true;
+  cliAtualizarPrevia();
+};
+window.cliCriar = async function(){
+  const nome = document.getElementById("cn-nome").value.trim();
+  const codigo = document.getElementById("cn-codigo").value.trim();
+  const sup = document.getElementById("cn-sup").value.trim();
+  const email = document.getElementById("cn-email").value.trim().toLowerCase();
+  const celular = document.getElementById("cn-celular").value.trim();
+  if(!nome){ showToast("Informe o nome da clínica."); document.getElementById("cn-nome").focus(); return; }
+  if(!cliCodigoValido(codigo)){ showToast("Código inválido: use de 2 a 40 letras minúsculas, números ou hífen."); document.getElementById("cn-codigo").focus(); return; }
+  if(sup.length < 2){ showToast("Informe o nome da supervisora."); document.getElementById("cn-sup").focus(); return; }
+  if(!emailValido(email)){ showToast("Informe um e-mail válido para a supervisora."); document.getElementById("cn-email").focus(); return; }
+  if(email === EMAIL_DESENVOLVEDOR){ showToast("Use o e-mail da supervisora, não o do desenvolvedor."); document.getElementById("cn-email").focus(); return; }
+  if(!celularValido(celular)){ showToast("Informe o celular com DDD: (00) 00000-0000."); document.getElementById("cn-celular").focus(); return; }
+  const btn = document.getElementById("cn-btn-criar");
+  if(btn.disabled) return;
+  btn.disabled = true; btn.textContent = "Criando...";
+  let clinicaCriada = false, loginCriado = false;
+  try{
+    const dev = await cliUsuario();
+    if(!dev){ cliAbrirEntrar(); return; }
+    const refClinica = doc(cliDb, "Clinicas", codigo);
+    // 1) O código não pode existir
+    const ja = await getDoc(refClinica);
+    if(ja.exists()){ showToast("Já existe uma clínica com este código. Escolha outro."); document.getElementById("cn-codigo").focus(); return; }
+    // 2) Clínica (vitrine: só nome e código)
+    await setDoc(refClinica, { nome, codigo, criadaEm: serverTimestamp() });
+    clinicaCriada = true;
+    // 3) Login da supervisora, na sessão à parte
+    const senhaInicial = cliGerarSenha();
+    const cred = await createUserWithEmailAndPassword(cliAuthSec, email, senhaInicial);
+    const novoUid = cred.user.uid;
+    loginCriado = true;
+    await signOut(cliAuthSec);
+    // 4) Ficha da supervisora dentro da clínica
+    await setDoc(doc(cliDb, "Clinicas", codigo, "usuarios", novoUid), {
+      nome: sup, email, celular, tipo: "supervisora", ativo: true, primeiroAcesso: true,
+      criadoPor: dev.uid, criadoEm: serverTimestamp()
+    });
+    cliNovo = { nome, codigo, sup, email, celular, senha: senhaInicial };
+    document.getElementById("cn-ok-nome").textContent = nome;
+    document.getElementById("cn-ok-sup").textContent = sup;
+    document.getElementById("cn-ok-email").textContent = email;
+    document.getElementById("cn-ok-senha").textContent = senhaInicial;
+    document.getElementById("cn-ok-link").textContent = linkDaClinica(codigo);
+    mostrarVistaDev("clipronto");
+  }catch(e){
+    const c = (e && e.code) || "";
+    // Se a clínica foi gravada mas o login não saiu, desfaz a clínica para o código não ficar preso
+    if(clinicaCriada && !loginCriado){ try{ await deleteDoc(doc(cliDb, "Clinicas", codigo)); }catch(e2){ /* fica para excluir depois */ } }
+    if(c === "auth/email-already-in-use") showToast("Já existe um login com este e-mail. Use outro e-mail.");
+    else if(c === "auth/operation-not-allowed" || c === "auth/admin-restricted-operation") showToast("A criação de contas está desligada no Firebase das clínicas.");
+    else if(c === "permission-denied") showToast("O banco das clínicas recusou. Confira se o seu e-mail está confirmado.");
+    else if(loginCriado) showToast("O login foi criado, mas a ficha não foi gravada. Anote o e-mail e avise o suporte: " + (c || "erro"));
+    else showToast("Não foi possível criar: " + (c || (e && e.message) || "erro desconhecido"));
+  }finally{
+    btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> Criar clínica';
+  }
+};
+function cliTextoAcesso(){
+  const primeiro = cliNovo.sup.split(/\s+/)[0];
+  return `Olá, ${primeiro}! O Atypical & Agendas da ${cliNovo.nome} está pronto.\n\nAcesse: ${linkDaClinica(cliNovo.codigo)}\n\nEntre com o e-mail *${cliNovo.email}* e a senha inicial *${cliNovo.senha}*. No primeiro acesso você cria a sua própria senha.`;
+}
+window.cliEnviarWhats = function(){
+  if(!cliNovo) return;
+  const numero = "55" + cliNovo.celular.replace(/\D/g, "");
+  window.open("https://wa.me/" + numero + "?text=" + encodeURIComponent(cliTextoAcesso()), "_blank", "noopener");
+};
+window.cliCopiar = async function(){
+  if(!cliNovo) return;
+  try{ await navigator.clipboard.writeText(cliTextoAcesso().replace(/\*/g, "")); showToast("Link e senha copiados."); }
+  catch(e){ showToast("Não foi possível copiar. Selecione o texto e copie manualmente."); }
+};
+window.cliFecharPronto = function(){ cliNovo = null; document.getElementById("cn-ok-senha").textContent = ""; devVoltarLista(); };
+
+window.devVoltarLista = async function(){ mostrarVistaDev("lista"); cliRenderizarArea(); await carregarListaCondominiosDev(); };
 
 /* =====================================================================
    COBRANÇA DOS CONDOMÍNIOS (mensalidade do app)
