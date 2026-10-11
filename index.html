@@ -2025,7 +2025,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026110001";
+const VERSAO_APP = "2026110002";
 
 /* ===================================================================== */
 
@@ -2971,11 +2971,9 @@ async function cliSair(){ cliPreparar(); cliNovo = null; await signOut(cliAuth);
 function linkDaClinica(codigo){ return URL_CLINICAS + "?c=" + encodeURIComponent(codigo); }
 function cliCodigoValido(c){ return /^[a-z0-9][a-z0-9-]{1,39}$/.test(String(c || "")) && !CLI_CODIGOS_RESERVADOS.includes(c); }
 function cliGerarSenha(){
-  // 12 caracteres sem letras e números que se confundem (0 O 1 l I), em três grupos
-  const alfabeto = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
-  const a = new Uint32Array(12); crypto.getRandomValues(a);
-  let s = ""; for(let i = 0; i < 12; i++){ s += alfabeto[a[i] % alfabeto.length]; if(i === 3 || i === 7) s += "-"; }
-  return s;
+  // Senha provisória de 6 números, sorteada sem vício. A supervisora troca no primeiro acesso.
+  const a = new Uint32Array(1); do{ crypto.getRandomValues(a); }while(a[0] >= 4294000000);
+  return String(a[0] % 1000000).padStart(6, "0");
 }
 function cliCartaoAviso(texto, rotuloBotao, acao){
   const caixa = document.getElementById("cli-area");
