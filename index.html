@@ -723,6 +723,12 @@
   .dev-ok{ width:72px; height:72px; border-radius:50%; background:var(--green); color:var(--green-ink); display:flex; align-items:center; justify-content:center; font-size:38px; margin:10px auto 4px; }
   .dev-resumo{ font-size:16px; line-height:1.7; margin:0; }
   .dev-resumo span{ color:var(--muted); }
+  .dev-bloco{ display:flex; flex-direction:column; gap:12px; }
+  .dev-largo{ width:100%; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .dev-condo .t2.dev-conta{ font-weight:600; color:#1F5C36; }
+  .dev-embreve{ border-style:dashed; cursor:default; }
+  .dev-embreve .ic{ background:#EEF2F7; box-shadow:none; border-color:transparent; color:var(--muted); }
+  .dev-etq{ flex:none; padding:4px 12px; border-radius:999px; background:#FEF3C7; color:#92400E; font-size:15px; font-weight:600; }
   .dev-rodape{ margin-top:auto; display:flex; flex-direction:column; gap:10px; padding-top:8px; }
   .dev-rodape .btn{ width:100%; display:flex; align-items:center; justify-content:center; gap:8px; }
   /* ---- cobrança dos condomínios (painel do desenvolvedor) ---- */
@@ -921,18 +927,32 @@
   <div class="dev-wrap">
 
     <div class="dev-vista" id="dev-view-lista">
-      <div class="dev-top"><div class="av"><i class="ti ti-shield-lock"></i></div><b>Painel de gestão<span class="dev-marca">by SOUZA IATECH</span></b></div>
+      <div class="dev-top"><button class="volta" id="dev-tipo-volta" style="display:none;" onclick="devEscolherTipo(null)" aria-label="Voltar aos tipos de app"><i class="ti ti-chevron-left"></i></button><div class="av" id="dev-top-av"><i class="ti ti-shield-lock"></i></div><b><span id="dev-top-titulo">Painel de gestão</span><span class="dev-marca" id="dev-top-sub">by SOUZA IATECH</span></b></div>
       <div class="dev-corpo">
-        <div id="dev-resumo-cob" style="display:none;"></div>
-        <p class="dev-secao">Condomínios cadastrados</p>
-        <div id="dev-lista" style="display:flex;flex-direction:column;gap:12px;"></div>
-        <p class="dev-secao">Clínicas cadastradas · Atypical &amp; Agendas</p>
-        <div id="cli-area" style="display:flex;flex-direction:column;gap:12px;"></div>
+        <!-- Entrada do painel: um cartão por tipo de app (mockup 31) -->
+        <div id="dev-tipos" class="dev-bloco">
+          <p class="dev-secao">Escolha o tipo de app</p>
+          <button class="dev-condo" id="dev-tipo-festas" onclick="devEscolherTipo('festas')"><div class="ic"><i class="ti ti-confetti"></i></div><div class="txt"><p class="t1">Agende &amp; Festas</p><p class="t2">Salão de festas de condomínios</p><p class="t2 dev-conta" id="dev-conta-festas">Carregando…</p></div><div class="entrar">Abrir<i class="ti ti-chevron-right"></i></div></button>
+          <button class="dev-condo" id="dev-tipo-clinicas" onclick="devEscolherTipo('clinicas')"><div class="ic"><i class="ti ti-stethoscope"></i></div><div class="txt"><p class="t1">Atypical &amp; Agendas</p><p class="t2">Clínicas e agenda das profissionais</p><p class="t2 dev-conta" id="dev-conta-clinicas">Carregando…</p></div><div class="entrar">Abrir<i class="ti ti-chevron-right"></i></div></button>
+          <div class="dev-condo dev-embreve"><div class="ic"><i class="ti ti-massage"></i></div><div class="txt"><p class="t1">Massagens</p><p class="t2">Ainda não ligado ao painel</p></div><span class="dev-etq">Em breve</span></div>
+          <div class="dev-condo dev-embreve"><div class="ic"><i class="ti ti-scissors"></i></div><div class="txt"><p class="t1">Barbearia</p><p class="t2">Ainda não ligado ao painel</p></div><span class="dev-etq">Em breve</span></div>
+        </div>
+        <!-- Dentro de Agende & Festas: o que o painel sempre mostrou (mockup 32) -->
+        <div id="dev-sec-festas" class="dev-bloco" style="display:none;">
+          <div id="dev-resumo-cob" style="display:none;"></div>
+          <p class="dev-secao">Condomínios cadastrados</p>
+          <div id="dev-lista" style="display:flex;flex-direction:column;gap:12px;"></div>
+          <button class="btn btn-primary dev-largo" onclick="devNovoCondominio()"><i class="ti ti-plus"></i> Novo condomínio</button>
+          <button class="btn btn-ghost dev-largo" onclick="pvAbrir()"><i class="ti ti-tags"></i> Planos e valores</button>
+          <button class="btn btn-ghost dev-largo" onclick="cobAbrirConfig()"><i class="ti ti-qrcode"></i> Meus dados de recebimento</button>
+        </div>
+        <!-- Dentro de Atypical & Agendas -->
+        <div id="dev-sec-clinicas" class="dev-bloco" style="display:none;">
+          <p class="dev-secao">Clínicas cadastradas</p>
+          <div id="cli-area" style="display:flex;flex-direction:column;gap:12px;"></div>
+          <button class="btn btn-primary dev-largo" onclick="cliNova()"><i class="ti ti-plus"></i> Nova clínica</button>
+        </div>
         <div class="dev-rodape">
-          <button class="btn btn-primary" onclick="devNovoCondominio()"><i class="ti ti-plus"></i> Novo condomínio</button>
-          <button class="btn btn-ghost" onclick="cliNova()"><i class="ti ti-plus"></i> Nova clínica</button>
-          <button class="btn btn-ghost" onclick="pvAbrir()"><i class="ti ti-tags"></i> Planos e valores</button>
-          <button class="btn btn-ghost" onclick="cobAbrirConfig()"><i class="ti ti-qrcode"></i> Meus dados de recebimento</button>
           <button class="btn btn-ghost" onclick="fazerLogout()"><i class="ti ti-logout"></i> Sair</button>
         </div>
         <div class="login-version" id="dev-versao">v0000000000</div>
@@ -2025,7 +2045,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026110002";
+const VERSAO_APP = "2026110003";
 
 /* ===================================================================== */
 
@@ -2740,7 +2760,24 @@ function linkDoCondominio(codigo){ return URL_OFICIAL + "?c=" + encodeURICompone
 function linkLocalDoCondominio(codigo){ return urlBaseDoApp() + "?c=" + encodeURIComponent(codigo); }
 window.voltarAoPainelDev = function(){ location.href = urlBaseDoApp() + "?dev"; };
 
+/* Entrada do painel: cartões por tipo de app. Dentro de um tipo, a lista de sempre. */
+let devTipo = null;
+try{ const t = sessionStorage.getItem("painelTipo"); if(t === "festas" || t === "clinicas") devTipo = t; }catch(e){ /* sem memória da aba: abre nos cartões */ }
+function devRenderTipo(){
+  const mostra = (id, sim)=>{ document.getElementById(id).style.display = sim ? "flex" : "none"; };
+  mostra("dev-tipos", !devTipo); mostra("dev-sec-festas", devTipo === "festas"); mostra("dev-sec-clinicas", devTipo === "clinicas");
+  mostra("dev-tipo-volta", !!devTipo); mostra("dev-top-av", !devTipo);
+  document.getElementById("dev-top-titulo").textContent = devTipo === "festas" ? "Agende & Festas" : devTipo === "clinicas" ? "Atypical & Agendas" : "Painel de gestão";
+  document.getElementById("dev-top-sub").textContent = devTipo ? "Painel de gestão" : "by SOUZA IATECH";
+}
+window.devEscolherTipo = function(t){
+  devTipo = (t === "festas" || t === "clinicas") ? t : null;
+  try{ if(devTipo) sessionStorage.setItem("painelTipo", devTipo); else sessionStorage.removeItem("painelTipo"); }catch(e){ /* segue sem guardar */ }
+  devRenderTipo(); window.scrollTo(0, 0);
+};
+function devContar(qual, texto){ const e = document.getElementById("dev-conta-" + qual); if(e) e.textContent = texto; }
 function mostrarVistaDev(vista){
+  if(vista === "lista") devRenderTipo();
   ["lista","p1","p2","p3","pronto","cob","cobform","planos","plano","clientrar","clinova","clipronto"].forEach(n=>{
     document.getElementById("dev-view-" + n).style.display = (n === vista) ? "flex" : "none";
   });
@@ -2793,6 +2830,7 @@ async function carregarListaCondominiosDev(){
     itens.forEach(it=>{ it.cob = cobDados[it.id] || null; it.sit = cobSituacao(it.cob, hojeCob); });
     itens.sort((a,b)=> (a.sit.rank - b.sit.rank) || (a.sit.ordem - b.sit.ordem) || a.nome.localeCompare(b.nome, "pt-BR"));
     devItens = itens;
+    devContar("festas", itens.length === 1 ? "1 projeto" : itens.length + " projetos");
     cobRenderizarResumo(itens, hojeCob);
     caixa.innerHTML = "";
     if(!itens.length){ caixa.innerHTML = '<p class="dev-vazio">Nenhum condomínio cadastrado ainda.</p>'; return; }
@@ -2859,6 +2897,7 @@ async function carregarListaCondominiosDev(){
     });
   }catch(e){
     console.error("Painel: erro ao listar condomínios", e);
+    devContar("festas", "Não foi possível contar");
     caixa.innerHTML = '<p class="dev-vazio">Não foi possível carregar os condomínios.</p><button class="btn btn-ghost" onclick="devVoltarLista()"><i class="ti ti-refresh"></i> Tentar de novo</button><p class="login-version" id="dev-erro-detalhe"></p>';
     document.getElementById("dev-erro-detalhe").textContent = "Detalhe: " + ((e && (e.code || e.message)) || "desconhecido");
   }
@@ -2988,8 +3027,9 @@ async function cliRenderizarArea(){
   if(!caixa) return;
   caixa.innerHTML = '<p class="dev-vazio">Carregando…</p>';
   let user = null;
-  try{ user = await cliUsuario(); }catch(e){ cliCartaoAviso("Não foi possível abrir o banco das clínicas.", "Tentar de novo", cliRenderizarArea); return; }
-  if(!user){ cliCartaoAviso("Entre no banco das clínicas para ver e cadastrar.", "Entrar no Atypical & Agendas", ()=> cliAbrirEntrar()); return; }
+  devContar("clinicas", "Carregando…");
+  try{ user = await cliUsuario(); }catch(e){ devContar("clinicas", "Não foi possível contar"); cliCartaoAviso("Não foi possível abrir o banco das clínicas.", "Tentar de novo", cliRenderizarArea); return; }
+  if(!user){ devContar("clinicas", "Entre para ver as clínicas"); cliCartaoAviso("Entre no banco das clínicas para ver e cadastrar.", "Entrar no Atypical & Agendas", ()=> cliAbrirEntrar()); return; }
   try{
     const snap = await getDocs(collection(cliDb, "Clinicas"));
     const itens = await Promise.all(snap.docs.map(async d=>{
@@ -3002,6 +3042,7 @@ async function cliRenderizarArea(){
       return { id: d.id, nome: (d.data().nome || d.id), usuarios, sups };
     }));
     itens.sort((a,b)=> a.nome.localeCompare(b.nome, "pt-BR"));
+    devContar("clinicas", itens.length === 1 ? "1 clínica" : itens.length + " clínicas");
     caixa.innerHTML = "";
     if(!itens.length){ caixa.innerHTML = '<p class="dev-vazio">Nenhuma clínica cadastrada ainda.</p>'; return; }
     itens.forEach(it=>{
@@ -3016,6 +3057,7 @@ async function cliRenderizarArea(){
       caixa.appendChild(b);
     });
   }catch(e){
+    devContar("clinicas", "Não foi possível contar");
     // Regra recusou: a conta não foi reconhecida como desenvolvedor naquele banco (e-mail não confirmado, por exemplo)
     if(e && e.code === "permission-denied") cliCartaoAviso("Sua conta não foi reconhecida como desenvolvedor no banco das clínicas.", "Entrar de novo", ()=> cliAbrirEntrar());
     else cliCartaoAviso("Não foi possível carregar as clínicas.", "Tentar de novo", cliRenderizarArea);
