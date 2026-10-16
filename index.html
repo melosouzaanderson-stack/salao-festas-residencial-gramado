@@ -703,6 +703,11 @@
   .dev-vazio{ font-size:16px; color:var(--muted); text-align:center; padding:24px 8px; margin:0; }
   .dev-condo{ display:flex; align-items:center; gap:12px; width:100%; text-align:left; background:#fff; border:1px solid var(--line); border-radius:16px; padding:14px; font-family:inherit; color:var(--deep); cursor:pointer; }
   .dev-condo:active{ transform:scale(.98); }
+  .cli-rec{ background:#fff; border:1px solid var(--line); border-top:0; border-radius:0 0 16px 16px; margin-top:-14px; padding:12px 14px; display:flex; align-items:center; gap:10px; font-size:14px; color:var(--deep); }
+  .cli-rec .tx{ flex:1; } .cli-rec small{ display:block; color:var(--muted); font-size:12px; }
+  .cli-rec .sw{ width:46px; height:26px; border-radius:13px; background:#CBD5E1; border:0; position:relative; flex:none; cursor:pointer; }
+  .cli-rec .sw::after{ content:""; position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:#fff; transition:left .15s; }
+  .cli-rec .sw.on{ background:var(--accent); } .cli-rec .sw.on::after{ left:23px; }
   .dev-condo-linha{ display:flex; align-items:stretch; gap:8px; }
   .dev-condo-linha .dev-condo{ flex:1; min-width:0; }
   .dev-opcoes{ flex:none; width:52px; border:1px solid var(--line); border-radius:16px; background:#fff; color:var(--accent-d); font-size:22px; display:flex; align-items:center; justify-content:center; cursor:pointer; }
@@ -2045,7 +2050,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026110003";
+const VERSAO_APP = "2026110004";
 
 /* ===================================================================== */
 
@@ -3039,7 +3044,8 @@ async function cliRenderizarArea(){
         usuarios = us.size;
         us.forEach(u=>{ const v = u.data(); if(v.tipo === "supervisora" && v.nome) sups.push(String(v.nome).trim().split(/\s+/)[0]); });
       }catch(e){ /* mostra a clínica mesmo sem a contagem */ }
-      return { id: d.id, nome: (d.data().nome || d.id), usuarios, sups };
+      const rec = d.data().recursos;
+      return { id: d.id, nome: (d.data().nome || d.id), usuarios, sups, recursos: rec && typeof rec === "object" ? rec : {} };
     }));
     itens.sort((a,b)=> a.nome.localeCompare(b.nome, "pt-BR"));
     devContar("clinicas", itens.length === 1 ? "1 clínica" : itens.length + " clínicas");
@@ -3054,7 +3060,17 @@ async function cliRenderizarArea(){
       tx[0].textContent = (it.usuarios === 1 ? "1 usuário" : `${it.usuarios} usuários`) + " · " + (it.sups.length ? "Supervisora: " + it.sups.join(", ") : "Sem supervisora");
       tx[1].textContent = "Código: " + it.id;
       b.onclick = ()=>{ window.open(linkDaClinica(it.id), "_blank", "noopener"); };
-      caixa.appendChild(b);
+      // Recursos da clinica ligados pelo desenvolvedor (v2026110004): importar pacientes por planilha
+      const w = document.createElement("div"), rec = document.createElement("div"), on = it.recursos.importarPacientes === true;
+      rec.className = "cli-rec"; rec.innerHTML = '<div class="tx">Importar pacientes por planilha<small></small></div><button type="button" class="sw" role="switch"></button>';
+      rec.querySelector("small").textContent = on ? 'Mostra o botão "Importar planilha" em Pacientes' : "Desligado: o botão não aparece";
+      const sw = rec.querySelector(".sw"); sw.classList.toggle("on", on); sw.setAttribute("aria-checked", on ? "true" : "false"); sw.setAttribute("aria-label", "Importar pacientes por planilha em " + it.nome);
+      sw.onclick = async ()=>{
+        sw.disabled = true;
+        try{ await updateDoc(doc(cliDb, "Clinicas", it.id), { recursos: { ...it.recursos, importarPacientes: !on } }); showToast(on ? "Importar planilha desligado." : "Importar planilha ligado."); cliRenderizarArea(); }
+        catch(e){ sw.disabled = false; showToast("Não foi possível salvar. Confira a internet e o login do desenvolvedor."); }
+      };
+      w.appendChild(b); w.appendChild(rec); caixa.appendChild(w);
     });
   }catch(e){
     devContar("clinicas", "Não foi possível contar");
