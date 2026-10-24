@@ -741,6 +741,36 @@
   .dev-etq{ flex:none; padding:4px 12px; border-radius:999px; background:#FEF3C7; color:#92400E; font-size:15px; font-weight:600; }
   .dev-rodape{ margin-top:auto; display:flex; flex-direction:column; gap:10px; padding-top:8px; }
   .dev-rodape .btn{ width:100%; display:flex; align-items:center; justify-content:center; gap:8px; }
+  /* ---- modelos comerciais (Gestão · Atypical & Agendas) ---- */
+  .mc-card{ background:#fff; border:1px solid var(--line); border-radius:16px; padding:14px; display:flex; flex-direction:column; }
+  .mc-card .field:last-child{ margin-bottom:0; }
+  .mc-h{ margin:0 0 12px; font-size:16px; font-weight:600; color:var(--deep); display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .mc-h i{ color:var(--accent-d); font-size:19px; }
+  .mc-h small{ font-weight:400; color:var(--muted); font-size:13px; }
+  .mc-seg{ display:flex; background:#E9EFF8; border-radius:12px; padding:4px; gap:4px; }
+  .mc-seg button{ flex:1 1 0; min-width:0; border:0; background:none; font-family:inherit; font-size:14px; font-weight:500; padding:10px 4px; border-radius:9px; color:var(--muted); cursor:pointer; line-height:1.25; }
+  .mc-seg button.on{ background:#fff; color:var(--deep); font-weight:600; box-shadow:0 1px 4px rgba(15,23,42,.12); }
+  .mc-sw-linha{ display:flex; align-items:center; gap:10px; margin:0 0 14px; font-size:15px; color:var(--deep); }
+  .mc-sw-linha .tx{ flex:1; } .mc-sw-linha small{ display:block; color:var(--muted); font-size:12px; }
+  .mc-sw{ width:46px; height:26px; border-radius:13px; background:#CBD5E1; border:0; position:relative; flex:none; cursor:pointer; }
+  .mc-sw::after{ content:""; position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:#fff; transition:left .15s; }
+  .mc-sw.on{ background:var(--accent); } .mc-sw.on::after{ left:23px; }
+  .mc-faixas{ display:flex; flex-direction:column; gap:8px; margin-bottom:8px; }
+  .mc-faixa{ display:grid; grid-template-columns:1fr 1fr 1.4fr 36px; gap:6px; align-items:end; }
+  .mc-faixa label{ font-size:12px; color:var(--muted); display:block; margin-bottom:3px; }
+  .mc-faixa input{ width:100%; box-sizing:border-box; padding:9px 8px; font-size:15px; border:1px solid var(--line); border-radius:10px; font-family:inherit; background:#fff; color:var(--deep); }
+  .mc-faixa .rm{ width:36px; height:38px; border:1px solid var(--line); border-radius:10px; background:#fff; color:var(--muted); font-size:17px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .mc-faixa .rm:disabled{ opacity:.35; cursor:default; }
+  .mc-faixa.erro input{ border-color:var(--red-bd); background:#FFF5F5; }
+  .mc-mais{ align-self:flex-start; border:1px dashed var(--accent); background:none; color:var(--accent-d); border-radius:10px; padding:8px 12px; font-family:inherit; font-size:14px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:6px; margin-bottom:14px; }
+  .mc-txt{ width:100%; box-sizing:border-box; padding:10px 12px; font-size:15px; border:1px solid var(--line); border-radius:12px; font-family:inherit; resize:vertical; color:var(--deep); }
+  .mc-item{ display:flex; flex-direction:column; gap:4px; width:100%; text-align:left; background:#fff; border:1px solid var(--line); border-radius:16px; padding:14px; font-family:inherit; color:var(--deep); cursor:pointer; }
+  .mc-item:active{ transform:scale(.99); }
+  .mc-item .cab{ display:flex; align-items:center; gap:8px; }
+  .mc-item .n{ flex:1; min-width:0; font-size:17px; font-weight:600; margin:0; }
+  .mc-item .l{ font-size:14px; color:var(--muted); margin:0; line-height:1.45; }
+  .mc-item.inativo{ opacity:.7; }
+  .mc-item .cob-tag{ margin-top:0; font-size:13px; padding:3px 9px; }
   /* ---- cobrança dos condomínios (painel do desenvolvedor) ---- */
   .dev-condo .ic svg{ width:30px; height:30px; }
   .dev-condo-bloco{ display:flex; flex-direction:column; gap:8px; }
@@ -961,6 +991,8 @@
           <p class="dev-secao">Clínicas cadastradas</p>
           <div id="cli-area" style="display:flex;flex-direction:column;gap:12px;"></div>
           <button class="btn btn-primary dev-largo" onclick="cliNova()"><i class="ti ti-plus"></i> Nova clínica</button>
+          <p class="dev-secao">Gestão</p>
+          <button class="dev-condo" id="dev-btn-mc" onclick="mcAbrirLista()"><div class="ic"><i class="ti ti-receipt-2"></i></div><div class="txt"><p class="t1">Modelos comerciais</p><p class="t2">Base, usuários ADM, profissionais e Módulo IA</p></div><div class="entrar">Abrir<i class="ti ti-chevron-right"></i></div></button>
         </div>
         <div class="dev-rodape">
           <button class="btn btn-ghost" onclick="fazerLogout()"><i class="ti ti-logout"></i> Sair</button>
@@ -1048,6 +1080,103 @@
           <button class="btn btn-ghost" onclick="cliCopiar()"><i class="ti ti-copy"></i> Copiar link e senha</button>
           <button class="btn btn-ghost" onclick="cliFecharPronto()">Voltar ao painel</button>
         </div>
+      </div>
+    </div>
+
+
+    <!-- ===== Gestão → Modelos comerciais do Atypical & Agendas (v2026240003) ===== -->
+    <div class="dev-vista" id="dev-view-mclista">
+      <div class="dev-top"><button class="volta" onclick="devVoltarLista()" aria-label="Voltar"><i class="ti ti-arrow-left"></i></button><b>Modelos comerciais<span class="sub2">Gestão · Atypical &amp; Agendas</span></b></div>
+      <div class="dev-corpo">
+        <div id="mc-lista" style="display:flex;flex-direction:column;gap:12px;"></div>
+        <div class="dev-rodape"><button class="btn btn-primary" onclick="mcNovo()"><i class="ti ti-plus"></i> Novo modelo</button></div>
+      </div>
+    </div>
+
+    <div class="dev-vista" id="dev-view-mcform">
+      <div class="dev-top"><button class="volta" onclick="mcSairDoForm()" aria-label="Voltar"><i class="ti ti-arrow-left"></i></button><b><span id="mcf-titulo">Novo modelo</span><span class="sub2">Modelo comercial · Atypical &amp; Agendas</span></b></div>
+      <div class="dev-corpo" id="mcf-corpo" oninput="mcMarcarAlterado()" onchange="mcMarcarAlterado()">
+        <div class="mc-card">
+          <p class="mc-h"><i class="ti ti-id"></i> Identificação</p>
+          <div class="field"><label for="mcf-nome">Nome do modelo *</label><input type="text" id="mcf-nome" maxlength="80" autocomplete="off" placeholder="Ex.: Clínica Essencial 2027"></div>
+          <div class="field"><label>App</label><input type="text" value="Atypical &amp; Agendas" disabled></div>
+          <div class="mc-sw-linha"><div class="tx">Modelo ativo<small id="mcf-ativo-dica"></small></div><button type="button" class="mc-sw" id="mcf-ativo" role="switch" aria-label="Modelo ativo" onclick="mcAlternar('mcf-ativo')"></button></div>
+          <div class="cob-duas">
+            <div class="field"><label for="mcf-ini">Vigência: início *</label><input type="date" id="mcf-ini"></div>
+            <div class="field"><label for="mcf-fim">Vigência: fim</label><input type="date" id="mcf-fim"></div>
+          </div>
+          <p class="dev-dica" style="margin-top:-8px;">Sem data de fim, o modelo vale por tempo indeterminado.</p>
+        </div>
+
+        <div class="mc-card">
+          <p class="mc-h"><i class="ti ti-building-hospital"></i> Base da clínica</p>
+          <div class="field"><label for="mcf-base">Valor mensal fixo (R$) *</label><input type="text" id="mcf-base" inputmode="decimal" autocomplete="off" placeholder="0,00" onblur="mcFormatarCampo(this)"></div>
+        </div>
+
+        <div class="mc-card">
+          <p class="mc-h"><i class="ti ti-users"></i> Usuários ADM <small>Supervisora + Recepção, por combo</small></p>
+          <div class="mc-faixas" id="mcf-adm-faixas"></div>
+          <button type="button" class="mc-mais" onclick="mcAddFaixa('adm')"><i class="ti ti-plus"></i> Adicionar faixa</button>
+          <div class="field"><label>Ao passar da última faixa</label><div class="mc-seg" id="mcf-adm-exc">
+            <button type="button" data-v="bloquear" onclick="mcSeg('mcf-adm-exc','bloquear')">Bloquear e avisar</button>
+            <button type="button" data-v="subir" onclick="mcSeg('mcf-adm-exc','subir')">Subir de combo e avisar</button></div></div>
+        </div>
+
+        <div class="mc-card">
+          <p class="mc-h"><i class="ti ti-stethoscope"></i> Profissionais</p>
+          <div class="field"><label>Forma de cobrança</label><div class="mc-seg" id="mcf-prof-forma">
+            <button type="button" data-v="usuario" onclick="mcSeg('mcf-prof-forma','usuario')">Por usuário</button>
+            <button type="button" data-v="combo" onclick="mcSeg('mcf-prof-forma','combo')">Por combo</button></div></div>
+          <div id="mcf-prof-usuario"><div class="field"><label for="mcf-prof-unit">Valor por profissional (R$/mês) *</label><input type="text" id="mcf-prof-unit" inputmode="decimal" autocomplete="off" placeholder="0,00" onblur="mcFormatarCampo(this)"></div></div>
+          <div id="mcf-prof-combo">
+            <div class="mc-faixas" id="mcf-prof-faixas"></div>
+            <button type="button" class="mc-mais" onclick="mcAddFaixa('prof')"><i class="ti ti-plus"></i> Adicionar faixa</button>
+            <div class="field"><label>Ao passar da última faixa</label><div class="mc-seg" id="mcf-prof-exc">
+              <button type="button" data-v="bloquear" onclick="mcSeg('mcf-prof-exc','bloquear')">Bloquear e avisar</button>
+              <button type="button" data-v="subir" onclick="mcSeg('mcf-prof-exc','subir')">Subir de combo e avisar</button></div></div>
+          </div>
+          <div class="dev-info"><i class="ti ti-info-circle"></i><span>Contagem: o maior número de profissionais ativas no mês. Sócia que atende conta como profissional.</span></div>
+        </div>
+
+        <div class="mc-card">
+          <p class="mc-h"><i class="ti ti-sparkles"></i> Módulo IA</p>
+          <div class="mc-sw-linha"><div class="tx">Disponível neste modelo</div><button type="button" class="mc-sw" id="mcf-ia" role="switch" aria-label="Módulo IA disponível" onclick="mcAlternar('mcf-ia')"></button></div>
+          <div id="mcf-ia-bloco">
+            <div class="field"><label>Modalidade</label><div class="mc-seg" id="mcf-ia-mod">
+              <button type="button" data-v="franquia" onclick="mcSeg('mcf-ia-mod','franquia')">Franquia Atypical</button>
+              <button type="button" data-v="ilimitado" onclick="mcSeg('mcf-ia-mod','ilimitado')">Ilimitado por profissional</button></div></div>
+            <div id="mcf-ia-franquia">
+              <p class="dev-dica" style="margin:-6px 0 10px;">Com gestão: controle e transparência de uso e consumo.</p>
+              <div class="cob-duas">
+                <div class="field"><label for="mcf-fr-qtd">Resumos por mês *</label><input type="text" id="mcf-fr-qtd" inputmode="numeric" autocomplete="off" placeholder="Ex.: 200"></div>
+                <div class="field"><label for="mcf-fr-exc">Valor do excedente (R$/resumo) *</label><input type="text" id="mcf-fr-exc" inputmode="decimal" autocomplete="off" placeholder="0,00" onblur="mcFormatarCampo(this)"></div>
+              </div>
+              <div class="field"><label>A franquia vale para</label><div class="mc-seg" id="mcf-fr-esc">
+                <button type="button" data-v="clinica" onclick="mcSeg('mcf-fr-esc','clinica')">A clínica inteira</button>
+                <button type="button" data-v="profissional" onclick="mcSeg('mcf-fr-esc','profissional')">Cada profissional</button></div></div>
+              <div class="field"><label>Ao estourar a franquia</label><div class="mc-seg" id="mcf-fr-est">
+                <button type="button" data-v="bloquear" onclick="mcSeg('mcf-fr-est','bloquear')">Bloquear</button>
+                <button type="button" data-v="cobrar" onclick="mcSeg('mcf-fr-est','cobrar')">Cobrar excedente</button></div></div>
+              <div class="dev-info"><i class="ti ti-chart-bar"></i><span>A clínica verá a tela "Consumo de IA" (barra do mês, quebra por profissional e histórico) e avisos em 80% e 100%. Essa tela vem numa etapa seguinte; o modelo já guarda os parâmetros.</span></div>
+            </div>
+            <div id="mcf-ia-ilimitado">
+              <p class="dev-dica" style="margin:-6px 0 10px;">Sem gestão de uso: valor fixo por profissional com IA.</p>
+              <div class="field"><label for="mcf-il-valor">Valor por profissional com IA (R$/mês) *</label><input type="text" id="mcf-il-valor" inputmode="decimal" autocomplete="off" placeholder="0,00" onblur="mcFormatarCampo(this)"></div>
+              <div class="field"><label>Origem da chave</label><div class="mc-seg" id="mcf-il-orig">
+                <button type="button" data-v="clinica" onclick="mcSeg('mcf-il-orig','clinica')">Chave da clínica</button>
+                <button type="button" data-v="atypical" onclick="mcSeg('mcf-il-orig','atypical')">Chave Atypical</button></div></div>
+              <div class="field" id="mcf-il-teto-campo"><label for="mcf-il-teto">Teto de segurança interno (resumos/mês por profissional) *</label><input type="text" id="mcf-il-teto" inputmode="numeric" autocomplete="off" placeholder="Ex.: 500">
+                <p class="dev-dica">Só para proteger a sua chave. A clínica não vê esse número.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mc-card">
+          <p class="mc-h"><i class="ti ti-notes"></i> Observações comerciais</p>
+          <div class="field"><textarea id="mcf-obs" class="mc-txt" maxlength="1000" rows="4" placeholder="Condições, combinados, exceções…"></textarea></div>
+        </div>
+        <p class="dev-dica" id="mcf-alterado" style="display:none;"></p>
+        <div class="dev-rodape"><button class="btn btn-primary" id="mcf-btn" onclick="mcSalvar()"><i class="ti ti-check"></i> Salvar modelo</button></div>
       </div>
     </div>
 
@@ -1960,6 +2089,16 @@
   </div>
 </div>
 
+<!-- ===================== MODAL: SAIR SEM SALVAR (modelo comercial) ===================== -->
+<div class="modal-wrap" id="modal-mc-sair" data-fixo="1" style="z-index:72;">
+  <div class="modal">
+    <h3>Sair sem salvar?</h3>
+    <p class="sub" style="margin:-6px 0 14px;font-size:16px;">Se sair agora, os dados digitados neste modelo serão perdidos.</p>
+    <button class="btn btn-primary btn-linha" onclick="fecharModal('modal-mc-sair')"><i class="ti ti-pencil"></i> Continuar editando</button>
+    <button class="btn btn-ghost btn-linha" id="mc-sair-sim" onclick="mcConfirmarSaida()">Sair e perder os dados</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.44.0/tabler-icons.min.css">
@@ -2055,7 +2194,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026240002";
+const VERSAO_APP = "2026240003";
 
 /* ===================================================================== */
 
@@ -2788,7 +2927,7 @@ window.devEscolherTipo = function(t){
 function devContar(qual, texto){ const e = document.getElementById("dev-conta-" + qual); if(e) e.textContent = texto; }
 function mostrarVistaDev(vista){
   if(vista === "lista") devRenderTipo();
-  ["lista","p1","p2","p3","pronto","cob","cobform","planos","plano","clientrar","clinova","clipronto"].forEach(n=>{
+  ["lista","p1","p2","p3","pronto","cob","cobform","planos","plano","clientrar","clinova","clipronto","mclista","mcform"].forEach(n=>{
     document.getElementById("dev-view-" + n).style.display = (n === vista) ? "flex" : "none";
   });
   window.scrollTo(0, 0);
@@ -3264,6 +3403,240 @@ window.cliCopiar = async function(){
   catch(e){ showToast("Não foi possível copiar. Selecione o texto e copie manualmente."); }
 };
 window.cliFecharPronto = function(){ cliNovo = null; document.getElementById("cn-ok-senha").textContent = ""; devVoltarLista(); };
+
+/* =====================================================================
+   GESTÃO → MODELOS COMERCIAIS DO ATYPICAL & AGENDAS (v2026240003)
+   Escopo: claude/modelo-comercial-escopo-2026-10-24.md. Fica no banco das clínicas,
+   coleção ModelosComerciais, que só o desenvolvedor lê e grava (regras v38).
+   As regras ainda em aberto viram opções do próprio cadastro.
+   O vínculo do modelo com a clínica fica para o menu Contratos (depois).
+   ===================================================================== */
+const MC_APP = "atypical-agendas";
+let mcItens = [], mcAtual = null, mcAlterado = false, mcFaixas = { adm: [], prof: [] };
+const mcReais = n => (Number(n) || 0).toLocaleString("pt-BR", { minimumFractionDigits:2, maximumFractionDigits:2 });
+const mcData = iso => /^\d{4}-\d{2}-\d{2}$/.test(iso || "") ? iso.slice(8,10) + "/" + iso.slice(5,7) + "/" + iso.slice(0,4) : "";
+function mcInteiro(txt){ const v = String(txt || "").replace(/\D/g, ""); return v ? Number(v) : NaN; }
+window.mcFormatarCampo = function(el){ const v = lerReais(el.value); if(isFinite(v)) el.value = mcReais(v); };
+window.mcMarcarAlterado = function(){ mcAlterado = true; };
+function mcSegValor(id){ const b = document.querySelector("#" + id + " button.on"); return b ? b.dataset.v : ""; }
+function mcSegPor(id, v){ document.querySelectorAll("#" + id + " button").forEach(b=>{ b.classList.toggle("on", b.dataset.v === v); b.setAttribute("aria-pressed", b.dataset.v === v ? "true" : "false"); }); }
+window.mcSeg = function(id, v){ mcSegPor(id, v); mcAlterado = true; mcVisibilidade(); };
+function mcSwPor(id, on){ const b = document.getElementById(id); b.classList.toggle("on", !!on); b.setAttribute("aria-checked", on ? "true" : "false"); }
+function mcSwValor(id){ return document.getElementById(id).classList.contains("on"); }
+window.mcAlternar = function(id){ mcSwPor(id, !mcSwValor(id)); mcAlterado = true; mcVisibilidade(); };
+function mcVisibilidade(){
+  const mostra = (id, sim)=>{ document.getElementById(id).style.display = sim ? "block" : "none"; };
+  const forma = mcSegValor("mcf-prof-forma"), ia = mcSwValor("mcf-ia"), mod = mcSegValor("mcf-ia-mod");
+  mostra("mcf-prof-usuario", forma === "usuario"); mostra("mcf-prof-combo", forma === "combo");
+  mostra("mcf-ia-bloco", ia); mostra("mcf-ia-franquia", ia && mod === "franquia"); mostra("mcf-ia-ilimitado", ia && mod === "ilimitado");
+  mostra("mcf-il-teto-campo", mcSegValor("mcf-il-orig") === "atypical");
+  document.getElementById("mcf-ativo-dica").textContent = mcSwValor("mcf-ativo") ? "Pode ser escolhido para novas clínicas" : "Inativo: fica guardado, mas não é oferecido";
+}
+
+/* ---- faixas (combos) ---- */
+function mcLerFaixasDaTela(qual){
+  const caixa = document.getElementById(qual === "adm" ? "mcf-adm-faixas" : "mcf-prof-faixas");
+  return [...caixa.querySelectorAll(".mc-faixa")].map(l=>({ de: l.querySelector(".de").value, ate: l.querySelector(".ate").value, valor: l.querySelector(".vl").value }));
+}
+function mcDesenharFaixas(qual){
+  const caixa = document.getElementById(qual === "adm" ? "mcf-adm-faixas" : "mcf-prof-faixas");
+  const lista = mcFaixas[qual];
+  caixa.innerHTML = "";
+  lista.forEach((f, i)=>{
+    const l = document.createElement("div"); l.className = "mc-faixa";
+    l.innerHTML = '<div><label>De</label><input class="de" inputmode="numeric" autocomplete="off"></div><div><label>Até</label><input class="ate" inputmode="numeric" autocomplete="off"></div><div><label>Valor (R$/mês)</label><input class="vl" inputmode="decimal" autocomplete="off" placeholder="0,00"></div><button type="button" class="rm" aria-label="Tirar esta faixa"><i class="ti ti-x"></i></button>';
+    l.querySelector(".de").value = f.de; l.querySelector(".ate").value = f.ate; l.querySelector(".vl").value = f.valor;
+    l.querySelector(".de").setAttribute("aria-label", "Faixa " + (i + 1) + ": de"); l.querySelector(".ate").setAttribute("aria-label", "Faixa " + (i + 1) + ": até"); l.querySelector(".vl").setAttribute("aria-label", "Faixa " + (i + 1) + ": valor");
+    l.querySelector(".vl").onblur = (e)=> mcFormatarCampo(e.target);
+    const rm = l.querySelector(".rm"); rm.disabled = lista.length <= 1;
+    rm.onclick = ()=>{ mcFaixas[qual] = mcLerFaixasDaTela(qual); mcFaixas[qual].splice(i, 1); mcAlterado = true; mcDesenharFaixas(qual); };
+    caixa.appendChild(l);
+  });
+}
+window.mcAddFaixa = function(qual){
+  const lista = mcLerFaixasDaTela(qual);
+  const ult = lista[lista.length - 1], ateUlt = ult ? mcInteiro(ult.ate) : NaN;
+  lista.push({ de: isFinite(ateUlt) ? String(ateUlt + 1) : (lista.length ? "" : "1"), ate: "", valor: "" });
+  mcFaixas[qual] = lista; mcAlterado = true; mcDesenharFaixas(qual);
+  const ins = document.querySelectorAll("#" + (qual === "adm" ? "mcf-adm-faixas" : "mcf-prof-faixas") + " .mc-faixa .ate");
+  if(ins.length) ins[ins.length - 1].focus();
+};
+// Confere e devolve [{de, ate, valor}] ou uma mensagem de erro. Faixas em sequência, sem buraco nem sobreposição.
+function mcConferirFaixas(qual, rotulo){
+  const caixa = document.getElementById(qual === "adm" ? "mcf-adm-faixas" : "mcf-prof-faixas");
+  const linhas = [...caixa.querySelectorAll(".mc-faixa")];
+  linhas.forEach(l=> l.classList.remove("erro"));
+  if(!linhas.length) return { erro: rotulo + ": inclua ao menos uma faixa." };
+  const out = [];
+  for(let i = 0; i < linhas.length; i++){
+    const l = linhas[i], de = mcInteiro(l.querySelector(".de").value), ate = mcInteiro(l.querySelector(".ate").value), valor = lerReais(l.querySelector(".vl").value);
+    const falha = msg => { l.classList.add("erro"); return { erro: rotulo + ", faixa " + (i + 1) + ": " + msg }; };
+    if(!(de >= 1) || !(ate >= 1)) return falha("preencha De e Até com números a partir de 1.");
+    if(ate < de) return falha("o Até precisa ser maior ou igual ao De.");
+    if(!isFinite(valor)) return falha("informe o valor.");
+    if(i === 0 && de !== 1) return falha("a primeira faixa começa em 1.");
+    if(i > 0 && de !== out[i - 1].ate + 1) return falha("deve começar em " + (out[i - 1].ate + 1) + ", logo depois da faixa anterior.");
+    if(ate > 999) return falha("o Até vai no máximo a 999.");
+    out.push({ de, ate, valor });
+  }
+  return { faixas: out };
+}
+
+/* ---- lista ---- */
+function mcResumo(m){
+  const partes = [];
+  const fx = a => (a && a.length ? a.length + (a.length === 1 ? " faixa" : " faixas") + " até " + a[a.length - 1].ate : "sem faixas");
+  partes.push("ADM: " + fx(m.adm && m.adm.faixas));
+  const pr = m.profissionais || {};
+  partes.push("Profissionais: " + (pr.forma === "combo" ? "combo, " + fx(pr.faixas) : "R$ " + mcReais(pr.valorUnitario) + " cada"));
+  const ia = m.ia || {};
+  if(!ia.disponivel) partes.push("IA: não disponível");
+  else if(ia.modalidade === "franquia") partes.push("IA: franquia de " + ((ia.franquia || {}).resumosMes || 0) + " resumos" + ((ia.franquia || {}).escopo === "profissional" ? " por profissional" : ""));
+  else partes.push("IA: ilimitado, R$ " + mcReais((ia.ilimitado || {}).valorProfissional) + " por profissional");
+  return partes;
+}
+window.mcAbrirLista = async function(){
+  const caixa = document.getElementById("mc-lista");
+  mostrarVistaDev("mclista");
+  caixa.innerHTML = '<p class="dev-vazio">Carregando…</p>';
+  let user = null;
+  try{ user = await cliUsuario(); }catch(e){ /* trata abaixo */ }
+  if(!user){ cliCartaoAvisoEm(caixa, "Entre no banco das clínicas para ver os modelos comerciais.", "Entrar no Atypical & Agendas", ()=> cliAbrirEntrar()); return; }
+  try{
+    const snap = await getDocs(collection(cliDb, "ModelosComerciais"));
+    mcItens = snap.docs.map(d=> Object.assign({ id: d.id }, d.data()));
+  }catch(e){
+    if(e && e.code === "permission-denied") cliCartaoAvisoEm(caixa, "O banco recusou a leitura. Publique as regras v38 no console do Firebase (projeto atypical-agendas) e tente de novo.", "Tentar de novo", mcAbrirLista);
+    else cliCartaoAvisoEm(caixa, "Não foi possível carregar os modelos.", "Tentar de novo", mcAbrirLista);
+    return;
+  }
+  mcItens.sort((a,b)=> (b.ativo === true) - (a.ativo === true) || String(a.nome || "").localeCompare(String(b.nome || ""), "pt-BR"));
+  caixa.innerHTML = "";
+  if(!mcItens.length){ caixa.innerHTML = '<p class="dev-vazio">Nenhum modelo comercial cadastrado ainda.</p>'; return; }
+  mcItens.forEach(m=>{
+    const b = document.createElement("button"); b.type = "button"; b.className = "mc-item" + (m.ativo ? "" : " inativo");
+    const cab = document.createElement("div"); cab.className = "cab";
+    const n = document.createElement("p"); n.className = "n"; n.textContent = m.nome || "(sem nome)";
+    const tag = document.createElement("span"); tag.className = "cob-tag " + (m.ativo ? "ok" : "neutra"); tag.textContent = m.ativo ? "Ativo" : "Inativo";
+    cab.appendChild(n); cab.appendChild(tag); b.appendChild(cab);
+    const l1 = document.createElement("p"); l1.className = "l";
+    l1.textContent = "Base R$ " + mcReais(m.baseMensal) + "/mês · Vigência " + mcData(m.vigenciaInicio) + (m.vigenciaFim ? " a " + mcData(m.vigenciaFim) : " em diante");
+    b.appendChild(l1);
+    mcResumo(m).forEach(t=>{ const p = document.createElement("p"); p.className = "l"; p.textContent = t; b.appendChild(p); });
+    b.onclick = ()=> mcAbrirForm(m);
+    caixa.appendChild(b);
+  });
+};
+function cliCartaoAvisoEm(caixa, texto, rotuloBotao, acao){
+  caixa.innerHTML = "";
+  const p = document.createElement("p"); p.className = "dev-vazio"; p.textContent = texto; caixa.appendChild(p);
+  if(rotuloBotao){ const b = document.createElement("button"); b.className = "btn btn-ghost"; b.textContent = rotuloBotao; b.onclick = acao; caixa.appendChild(b); }
+}
+
+/* ---- formulário ---- */
+window.mcNovo = function(){ mcAbrirForm(null); };
+function mcAbrirForm(m){
+  mcAtual = m;
+  const v = (id, x)=>{ document.getElementById(id).value = (x === undefined || x === null) ? "" : x; };
+  const r = x => (x === undefined || x === null || x === "") ? "" : mcReais(x);
+  document.getElementById("mcf-titulo").textContent = m ? "Editar modelo" : "Novo modelo";
+  v("mcf-nome", m ? m.nome : "");
+  mcSwPor("mcf-ativo", m ? m.ativo === true : true);
+  v("mcf-ini", m ? m.vigenciaInicio : hojeISO()); v("mcf-fim", m ? m.vigenciaFim : "");
+  v("mcf-base", m ? r(m.baseMensal) : "");
+  const adm = (m && m.adm) || {}, pr = (m && m.profissionais) || {}, ia = (m && m.ia) || {}, fr = ia.franquia || {}, il = ia.ilimitado || {};
+  const paraTela = a => (Array.isArray(a) && a.length ? a : [{ de: 1, ate: "", valor: "" }]).map(f=>({ de: f.de === "" ? "" : String(f.de), ate: f.ate === "" ? "" : String(f.ate), valor: r(f.valor) }));
+  mcFaixas.adm = paraTela(adm.faixas); mcFaixas.prof = paraTela(pr.faixas);
+  mcDesenharFaixas("adm"); mcDesenharFaixas("prof");
+  mcSegPor("mcf-adm-exc", adm.aoExceder || "subir");
+  mcSegPor("mcf-prof-forma", pr.forma || "usuario"); v("mcf-prof-unit", r(pr.valorUnitario));
+  mcSegPor("mcf-prof-exc", pr.aoExceder || "subir");
+  mcSwPor("mcf-ia", ia.disponivel === true);
+  mcSegPor("mcf-ia-mod", ia.modalidade || "franquia");
+  v("mcf-fr-qtd", fr.resumosMes || ""); v("mcf-fr-exc", r(fr.valorExcedente));
+  mcSegPor("mcf-fr-esc", fr.escopo || "clinica"); mcSegPor("mcf-fr-est", fr.aoEstourar || "cobrar");
+  v("mcf-il-valor", r(il.valorProfissional)); mcSegPor("mcf-il-orig", il.origemChave || "clinica"); v("mcf-il-teto", il.tetoSeguranca || "");
+  v("mcf-obs", m ? m.observacoes : "");
+  const alt = document.getElementById("mcf-alterado");
+  if(m && m.alteradoEm){ alt.style.display = "block"; alt.textContent = "Última alteração em " + new Date(m.alteradoEm).toLocaleString("pt-BR", { day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit" }) + "."; }
+  else alt.style.display = "none";
+  mcVisibilidade();
+  mcAlterado = false;
+  mostrarVistaDev("mcform");
+  if(!m) setTimeout(()=> document.getElementById("mcf-nome").focus(), 50);
+}
+window.mcSairDoForm = function(){
+  if(mcAlterado){ abrirModal("modal-mc-sair"); return; }
+  mcAbrirLista();
+};
+window.mcConfirmarSaida = function(){ fecharModal("modal-mc-sair"); mcAlterado = false; mcAbrirLista(); };
+function mcErro(msg, id){ showToast(msg); if(id){ const el = document.getElementById(id); if(el) el.focus(); } return null; }
+function mcMontar(){
+  const nome = document.getElementById("mcf-nome").value.replace(/\s+/g, " ").trim();
+  if(nome.length < 2) return mcErro("Informe o nome do modelo.", "mcf-nome");
+  if(mcItens.some(x=> x.id !== (mcAtual && mcAtual.id) && String(x.nome || "").toLowerCase() === nome.toLowerCase())) return mcErro("Já existe um modelo com esse nome.", "mcf-nome");
+  const ini = document.getElementById("mcf-ini").value, fim = document.getElementById("mcf-fim").value;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(ini)) return mcErro("Informe o início da vigência.", "mcf-ini");
+  if(fim && (!/^\d{4}-\d{2}-\d{2}$/.test(fim) || fim < ini)) return mcErro("O fim da vigência precisa ser depois do início.", "mcf-fim");
+  const base = lerReais(document.getElementById("mcf-base").value);
+  if(!isFinite(base)) return mcErro("Informe o valor mensal fixo da clínica.", "mcf-base");
+  const fa = mcConferirFaixas("adm", "Usuários ADM"); if(fa.erro) return mcErro(fa.erro);
+  const forma = mcSegValor("mcf-prof-forma");
+  const prof = { forma, contagem: "maior-ativas-mes" };
+  if(forma === "combo"){
+    const fp = mcConferirFaixas("prof", "Profissionais"); if(fp.erro) return mcErro(fp.erro);
+    prof.faixas = fp.faixas; prof.aoExceder = mcSegValor("mcf-prof-exc");
+  }else{
+    const u = lerReais(document.getElementById("mcf-prof-unit").value);
+    if(!isFinite(u)) return mcErro("Informe o valor por profissional.", "mcf-prof-unit");
+    prof.valorUnitario = u;
+  }
+  const ia = { disponivel: mcSwValor("mcf-ia") };
+  if(ia.disponivel){
+    ia.modalidade = mcSegValor("mcf-ia-mod");
+    if(ia.modalidade === "franquia"){
+      const q = mcInteiro(document.getElementById("mcf-fr-qtd").value), ex = lerReais(document.getElementById("mcf-fr-exc").value);
+      if(!(q >= 1 && q <= 100000)) return mcErro("Informe quantos resumos a franquia tem por mês.", "mcf-fr-qtd");
+      if(!isFinite(ex)) return mcErro("Informe o valor do excedente por resumo.", "mcf-fr-exc");
+      ia.franquia = { resumosMes: q, escopo: mcSegValor("mcf-fr-esc"), valorExcedente: ex, aoEstourar: mcSegValor("mcf-fr-est"), avisos: [80, 100] };
+    }else{
+      const vl = lerReais(document.getElementById("mcf-il-valor").value), orig = mcSegValor("mcf-il-orig");
+      if(!isFinite(vl)) return mcErro("Informe o valor por profissional com IA.", "mcf-il-valor");
+      ia.ilimitado = { valorProfissional: vl, origemChave: orig };
+      if(orig === "atypical"){
+        const t = mcInteiro(document.getElementById("mcf-il-teto").value);
+        if(!(t >= 1 && t <= 100000)) return mcErro("Informe o teto de segurança da Chave Atypical.", "mcf-il-teto");
+        ia.ilimitado.tetoSeguranca = t;
+      }
+    }
+  }
+  return {
+    nome, app: MC_APP, ativo: mcSwValor("mcf-ativo"), vigenciaInicio: ini, vigenciaFim: fim || "",
+    baseMensal: base,
+    adm: { faixas: fa.faixas, aoExceder: mcSegValor("mcf-adm-exc") },
+    profissionais: prof, ia,
+    observacoes: document.getElementById("mcf-obs").value.trim().slice(0, 1000)
+  };
+}
+window.mcSalvar = async function(){
+  const b = document.getElementById("mcf-btn");
+  if(b.disabled) return;
+  const dados = mcMontar(); if(!dados) return;
+  const agora = new Date().toISOString();
+  dados.alteradoEm = agora;
+  dados.criadoEm = (mcAtual && mcAtual.criadoEm) || agora;
+  b.disabled = true; b.innerHTML = '<i class="ti ti-loader-2"></i> Salvando...';
+  try{
+    cliPreparar();
+    const ref = mcAtual ? doc(cliDb, "ModelosComerciais", mcAtual.id) : doc(collection(cliDb, "ModelosComerciais"));
+    await setDoc(ref, dados);
+    mcAlterado = false;
+    showToast(mcAtual ? "Modelo atualizado." : "Modelo comercial criado.");
+    await mcAbrirLista();
+  }catch(e){
+    showToast(e && e.code === "permission-denied" ? "O banco recusou. Publique as regras v38 e tente de novo." : "Não foi possível salvar. Confira a internet e tente de novo.");
+  }finally{ b.disabled = false; b.innerHTML = '<i class="ti ti-check"></i> Salvar modelo'; }
+};
 
 window.devVoltarLista = async function(){ mostrarVistaDev("lista"); cliRenderizarArea(); await carregarListaCondominiosDev(); };
 
