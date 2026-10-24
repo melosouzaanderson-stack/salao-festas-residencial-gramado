@@ -708,6 +708,7 @@
   .cli-rec .sw{ width:46px; height:26px; border-radius:13px; background:#CBD5E1; border:0; position:relative; flex:none; cursor:pointer; }
   .cli-rec .sw::after{ content:""; position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:#fff; transition:left .15s; }
   .cli-rec .sw.on{ background:var(--accent); } .cli-rec .sw.on::after{ left:23px; }
+  .cli-rec:not(:last-child){ border-radius:0; } .cli-rec + .cli-rec{ margin-top:0; border-top:1px dashed var(--line); }
   .dev-condo-linha{ display:flex; align-items:stretch; gap:8px; }
   .dev-condo-linha .dev-condo{ flex:1; min-width:0; }
   .dev-opcoes{ flex:none; width:52px; border:1px solid var(--line); border-radius:16px; background:#fff; color:var(--accent-d); font-size:22px; display:flex; align-items:center; justify-content:center; cursor:pointer; }
@@ -2050,7 +2051,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026110004";
+const VERSAO_APP = "2026240001";
 
 /* ===================================================================== */
 
@@ -3070,7 +3071,21 @@ async function cliRenderizarArea(){
         try{ await updateDoc(doc(cliDb, "Clinicas", it.id), { recursos: { ...it.recursos, importarPacientes: !on } }); showToast(on ? "Importar planilha desligado." : "Importar planilha ligado."); cliRenderizarArea(); }
         catch(e){ sw.disabled = false; showToast("Não foi possível salvar. Confira a internet e o login do desenvolvedor."); }
       };
-      w.appendChild(b); w.appendChild(rec); caixa.appendChild(w);
+      // Modulo IA (v2026240001): libera o resumo por IA na clinica. Sem ele, o parametro "Permitir uso de IA" aparece sombreado la.
+      const ia = it.recursos.moduloIA === true, rec2 = document.createElement("div");
+      const hist = Array.isArray(it.recursos.historico) ? it.recursos.historico : [];
+      const ult = hist.find(h => h && h.recurso === "moduloIA" && typeof h.em === "number");
+      rec2.className = "cli-rec"; rec2.innerHTML = '<div class="tx">Módulo IA<small></small></div><button type="button" class="sw" role="switch"></button>';
+      rec2.querySelector("small").textContent = (ia ? "Liberado: a sócia pode ligar o resumo por IA em Parâmetros" : "Não liberado: o recurso aparece sombreado na clínica")
+        + (ult ? " · alterado em " + new Date(ult.em).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "");
+      const sw2 = rec2.querySelector(".sw"); sw2.classList.toggle("on", ia); sw2.setAttribute("aria-checked", ia ? "true" : "false"); sw2.setAttribute("aria-label", "Módulo IA em " + it.nome);
+      sw2.onclick = async ()=>{
+        sw2.disabled = true;
+        const historico = [{ recurso: "moduloIA", valor: !ia, em: Date.now(), por: "Desenvolvedor" }].concat(hist).slice(0, 50);
+        try{ await updateDoc(doc(cliDb, "Clinicas", it.id), { recursos: { ...it.recursos, moduloIA: !ia, historico } }); showToast(ia ? "Módulo IA desligado." : "Módulo IA liberado."); cliRenderizarArea(); }
+        catch(e){ sw2.disabled = false; showToast("Não foi possível salvar. Confira a internet e o login do desenvolvedor."); }
+      };
+      w.appendChild(b); w.appendChild(rec); w.appendChild(rec2); caixa.appendChild(w);
     });
   }catch(e){
     devContar("clinicas", "Não foi possível contar");
