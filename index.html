@@ -708,6 +708,10 @@
   .cli-rec .sw{ width:46px; height:26px; border-radius:13px; background:#CBD5E1; border:0; position:relative; flex:none; cursor:pointer; }
   .cli-rec .sw::after{ content:""; position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:#fff; transition:left .15s; }
   .cli-rec .sw.on{ background:var(--accent); } .cli-rec .sw.on::after{ left:23px; }
+  .cli-rec.origem{ flex-wrap:wrap; }
+  .cli-orig{ display:flex; gap:6px; flex-wrap:wrap; }
+  .cli-orig button{ border:1px solid var(--line); background:#fff; color:var(--deep); border-radius:10px; padding:6px 10px; font-size:13px; cursor:pointer; }
+  .cli-orig button.on{ background:var(--accent); border-color:var(--accent); color:#fff; font-weight:600; }
   .cli-rec:not(:last-child){ border-radius:0; } .cli-rec + .cli-rec{ margin-top:0; border-top:1px dashed var(--line); }
   .dev-condo-linha{ display:flex; align-items:stretch; gap:8px; }
   .dev-condo-linha .dev-condo{ flex:1; min-width:0; }
@@ -2051,7 +2055,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026240001";
+const VERSAO_APP = "2026240002";
 
 /* ===================================================================== */
 
@@ -3085,7 +3089,31 @@ async function cliRenderizarArea(){
         try{ await updateDoc(doc(cliDb, "Clinicas", it.id), { recursos: { ...it.recursos, moduloIA: !ia, historico } }); showToast(ia ? "Módulo IA desligado." : "Módulo IA liberado."); cliRenderizarArea(); }
         catch(e){ sw2.disabled = false; showToast("Não foi possível salvar. Confira a internet e o login do desenvolvedor."); }
       };
-      w.appendChild(b); w.appendChild(rec); w.appendChild(rec2); caixa.appendChild(w);
+      // Origem da chave ChatGPT (v2026240002): so com o Modulo IA liberado. "Chave da clinica" = cada profissional com a sua (como ja era);
+      // "Chave Atypical (propria)" = a chave do Anderson, guardada SO no servidor do app (Vercel -> ATYPICAL_OPENAI_KEY), nunca no banco.
+      w.appendChild(b); w.appendChild(rec); w.appendChild(rec2);
+      if(ia){
+        const orig = it.recursos.origemIA === "atypical" ? "atypical" : "clinica", rec3 = document.createElement("div");
+        const ultO = hist.find(h => h && h.recurso === "origemIA" && typeof h.em === "number");
+        rec3.className = "cli-rec origem"; rec3.innerHTML = '<div class="tx">Origem da chave ChatGPT<small></small></div><div class="cli-orig" role="radiogroup"></div>';
+        rec3.querySelector("small").textContent = (orig === "atypical" ? "Chave Atypical: a clínica não configura nada; a chave fica no servidor do app (Vercel → ATYPICAL_OPENAI_KEY)" : "Chave da clínica: a supervisora cola a chave de cada profissional no cadastro dela")
+          + (ultO ? " · alterado em " + new Date(ultO.em).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "");
+        const grupo = rec3.querySelector(".cli-orig"); grupo.setAttribute("aria-label", "Origem da chave ChatGPT em " + it.nome);
+        [["clinica", "Chave da clínica"], ["atypical", "Chave Atypical (própria)"]].forEach(([v, t])=>{
+          const o = document.createElement("button"); o.type = "button"; o.textContent = t; o.dataset.v = v; o.setAttribute("role", "radio");
+          o.classList.toggle("on", v === orig); o.setAttribute("aria-checked", v === orig ? "true" : "false");
+          o.onclick = async ()=>{
+            if(v === orig) return;
+            grupo.querySelectorAll("button").forEach(x => x.disabled = true);
+            const historico = [{ recurso: "origemIA", valor: v, em: Date.now(), por: "Desenvolvedor" }].concat(hist).slice(0, 50);
+            try{ await updateDoc(doc(cliDb, "Clinicas", it.id), { recursos: { ...it.recursos, origemIA: v, historico } }); showToast(v === "atypical" ? "Origem da chave: Chave Atypical." : "Origem da chave: Chave da clínica."); cliRenderizarArea(); }
+            catch(e){ grupo.querySelectorAll("button").forEach(x => x.disabled = false); showToast("Não foi possível salvar. Confira a internet e o login do desenvolvedor."); }
+          };
+          grupo.appendChild(o);
+        });
+        w.appendChild(rec3);
+      }
+      caixa.appendChild(w);
     });
   }catch(e){
     devContar("clinicas", "Não foi possível contar");
