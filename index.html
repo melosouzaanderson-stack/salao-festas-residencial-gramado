@@ -768,6 +768,17 @@
   .mc-item:active{ transform:scale(.99); }
   .mc-item .cab{ display:flex; align-items:center; gap:8px; }
   .mc-item .n{ flex:1; min-width:0; font-size:17px; font-weight:600; margin:0; }
+  /* ---- contratos (vínculo modelo × clínica) v2026250001 ---- */
+  .ct-sel{ width:100%; box-sizing:border-box; padding:11px 12px; font-size:16px; border:1px solid var(--line); border-radius:12px; font-family:inherit; background:#fff; color:var(--deep); }
+  .ct-resumo{ margin:0; font-size:15px; line-height:1.55; color:var(--deep); }
+  .ct-resumo span{ color:var(--muted); }
+  .ct-prev{ background:#F4F8FD; border:1px dashed #BFD3EC; border-radius:12px; padding:10px 12px; font-size:14px; line-height:1.5; color:var(--deep); }
+  .ct-prev:empty{ display:none; }
+  .ct-acoes{ display:flex; flex-direction:column; gap:10px; }
+  .ct-acoes .btn{ width:100%; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .ct-hist{ display:flex; flex-direction:column; gap:8px; margin:0; padding:0; list-style:none; }
+  .ct-hist li{ font-size:14px; line-height:1.45; color:var(--deep); padding:8px 10px; background:#fff; border:1px solid var(--line); border-radius:10px; }
+  .ct-hist li small{ display:block; color:var(--muted); font-size:12px; }
   .mc-item .l{ font-size:14px; color:var(--muted); margin:0; line-height:1.45; }
   .mc-item.inativo{ opacity:.7; }
   .mc-item .cob-tag{ margin-top:0; font-size:13px; padding:3px 9px; }
@@ -993,6 +1004,7 @@
           <button class="btn btn-primary dev-largo" onclick="cliNova()"><i class="ti ti-plus"></i> Nova clínica</button>
           <p class="dev-secao">Gestão</p>
           <button class="dev-condo" id="dev-btn-mc" onclick="mcAbrirLista()"><div class="ic"><i class="ti ti-receipt-2"></i></div><div class="txt"><p class="t1">Modelos comerciais</p><p class="t2">Base, usuários ADM, profissionais e Módulo IA</p></div><div class="entrar">Abrir<i class="ti ti-chevron-right"></i></div></button>
+          <button class="dev-condo" id="dev-btn-ct" onclick="ctAbrirLista()"><div class="ic"><i class="ti ti-file-certificate"></i></div><div class="txt"><p class="t1">Contratos</p><p class="t2">Vínculo do modelo comercial com cada clínica</p></div><div class="entrar">Abrir<i class="ti ti-chevron-right"></i></div></button>
         </div>
         <div class="dev-rodape">
           <button class="btn btn-ghost" onclick="fazerLogout()"><i class="ti ti-logout"></i> Sair</button>
@@ -1109,6 +1121,31 @@
         </div>
 
         <div class="mc-card">
+          <p class="mc-h"><i class="ti ti-flag"></i> Tipo e condições <small>v2026250001</small></p>
+          <div class="field"><label>Tipo do modelo</label><div class="mc-seg" id="mcf-tipo">
+            <button type="button" data-v="regular" onclick="mcSeg('mcf-tipo','regular')">Regular</button>
+            <button type="button" data-v="piloto" onclick="mcSeg('mcf-tipo','piloto')">Piloto</button></div></div>
+          <div id="mcf-piloto-bloco">
+            <div class="field"><label for="mcf-dias">Duração do piloto (dias) *</label><input type="text" id="mcf-dias" inputmode="numeric" autocomplete="off" placeholder="Ex.: 30">
+              <p class="dev-dica">Conta a partir do vínculo de cada clínica. No vínculo você escolhe o modelo regular de destino.</p></div>
+          </div>
+          <div class="mc-sw-linha"><div class="tx">Prevê desconto<small>Só aparece no vínculo se estiver ligado aqui</small></div><button type="button" class="mc-sw" id="mcf-desc" role="switch" aria-label="Prevê desconto" onclick="mcAlternar('mcf-desc')"></button></div>
+          <div id="mcf-desc-bloco">
+            <div class="field"><label>Desconto em</label><div class="mc-seg" id="mcf-desc-tipo">
+              <button type="button" data-v="percentual" onclick="mcSeg('mcf-desc-tipo','percentual')">Percentual (%)</button>
+              <button type="button" data-v="valor" onclick="mcSeg('mcf-desc-tipo','valor')">Valor (R$)</button></div></div>
+            <div class="cob-duas">
+              <div class="field"><label for="mcf-desc-valor" id="mcf-desc-rot">Desconto (%) *</label><input type="text" id="mcf-desc-valor" inputmode="decimal" autocomplete="off" placeholder="0,00" onblur="mcFormatarCampo(this)"></div>
+              <div class="field"><label for="mcf-desc-meses">Por quantos meses *</label><input type="text" id="mcf-desc-meses" inputmode="numeric" autocomplete="off" placeholder="Ex.: 3"></div>
+            </div>
+          </div>
+          <div class="mc-sw-linha"><div class="tx">Prevê cortesia<small>Meses grátis no começo do contrato</small></div><button type="button" class="mc-sw" id="mcf-cort" role="switch" aria-label="Prevê cortesia" onclick="mcAlternar('mcf-cort')"></button></div>
+          <div id="mcf-cort-bloco">
+            <div class="field"><label for="mcf-cort-meses">Meses grátis *</label><input type="text" id="mcf-cort-meses" inputmode="numeric" autocomplete="off" placeholder="Ex.: 1"></div>
+          </div>
+        </div>
+
+        <div class="mc-card">
           <p class="mc-h"><i class="ti ti-building-hospital"></i> Base da clínica</p>
           <div class="field"><label for="mcf-base">Valor mensal fixo (R$) *</label><input type="text" id="mcf-base" inputmode="decimal" autocomplete="off" placeholder="0,00" onblur="mcFormatarCampo(this)"></div>
         </div>
@@ -1177,6 +1214,64 @@
         </div>
         <p class="dev-dica" id="mcf-alterado" style="display:none;"></p>
         <div class="dev-rodape"><button class="btn btn-primary" id="mcf-btn" onclick="mcSalvar()"><i class="ti ti-check"></i> Salvar modelo</button></div>
+      </div>
+    </div>
+
+    <!-- ===== Gestão → Contratos: vínculo do modelo comercial com a clínica (v2026250001) ===== -->
+    <div class="dev-vista" id="dev-view-ctlista">
+      <div class="dev-top"><button class="volta" onclick="devVoltarLista()" aria-label="Voltar"><i class="ti ti-arrow-left"></i></button><b>Contratos<span class="sub2">Gestão · Atypical &amp; Agendas</span></b></div>
+      <div class="dev-corpo">
+        <div class="dev-info"><i class="ti ti-info-circle"></i><span>Clínica sem contrato fica sem limites e sem bloqueio até ser vinculada.</span></div>
+        <div id="ct-lista" style="display:flex;flex-direction:column;gap:12px;"></div>
+      </div>
+    </div>
+
+    <div class="dev-vista" id="dev-view-ctclinica">
+      <div class="dev-top"><button class="volta" onclick="ctAbrirLista()" aria-label="Voltar"><i class="ti ti-arrow-left"></i></button><b><span id="ctc-titulo">Contrato</span><span class="sub2">Contrato · Atypical &amp; Agendas</span></b></div>
+      <div class="dev-corpo">
+        <div class="mc-card">
+          <p class="mc-h"><i class="ti ti-file-certificate"></i> Contrato vigente <span id="ctc-tag"></span></p>
+          <p class="ct-resumo" id="ctc-resumo"></p>
+        </div>
+        <div class="ct-acoes">
+          <button class="btn btn-primary" id="ctc-btn-efetivar" onclick="ctEfetivar()"><i class="ti ti-rosette-discount-check"></i> Efetivar contrato</button>
+          <button class="btn btn-ghost" onclick="ctAlterar()"><i class="ti ti-edit"></i> Alterar contrato</button>
+          <button class="btn btn-ghost" onclick="ctPerguntarReaplicar()"><i class="ti ti-refresh"></i> Reaplicar modelo</button>
+        </div>
+        <p class="dev-secao">Histórico</p>
+        <ul class="ct-hist" id="ctc-hist"></ul>
+      </div>
+    </div>
+
+    <div class="dev-vista" id="dev-view-ctform">
+      <div class="dev-top"><button class="volta" onclick="ctSairDoForm()" aria-label="Voltar"><i class="ti ti-arrow-left"></i></button><b><span id="ctf-titulo">Vincular modelo</span><span class="sub2" id="ctf-sub"></span></b></div>
+      <div class="dev-corpo" id="ctf-corpo" oninput="ctAlterado = true" onchange="ctAlterado = true">
+        <div class="mc-card">
+          <p class="mc-h"><i class="ti ti-receipt-2"></i> Modelo comercial</p>
+          <div class="field"><label for="ctf-modelo">Modelo *</label><select id="ctf-modelo" class="ct-sel" onchange="ctAoTrocarModelo()"></select>
+            <p class="dev-dica">Só aparecem os modelos ativos.</p></div>
+          <div id="ctf-piloto">
+            <div class="field"><label for="ctf-destino">Modelo de destino (depois do piloto) *</label><select id="ctf-destino" class="ct-sel"></select>
+              <p class="dev-dica">Modelo regular usado no botão "Efetivar contrato".</p></div>
+          </div>
+        </div>
+        <div class="mc-card">
+          <p class="mc-h"><i class="ti ti-calendar"></i> Datas</p>
+          <div class="cob-duas">
+            <div class="field"><label for="ctf-inicio">Início *</label><input type="date" id="ctf-inicio" onchange="ctPrevia()"></div>
+            <div class="field"><label for="ctf-dia">Dia do vencimento *</label><select id="ctf-dia" class="ct-sel"></select></div>
+          </div>
+          <div id="ctf-fim-campo"><div class="field"><label for="ctf-fim">Fim do contrato</label><input type="date" id="ctf-fim" onchange="ctPrevia()">
+            <p class="dev-dica">Sem data de fim, vale por tempo indeterminado.</p></div></div>
+          <p class="dev-dica" id="ctf-fim-piloto"></p>
+        </div>
+        <div class="mc-card" id="ctf-cond">
+          <p class="mc-h"><i class="ti ti-discount"></i> Condições previstas no modelo</p>
+          <div class="mc-sw-linha" id="ctf-desc-linha"><div class="tx">Aplicar desconto<small id="ctf-desc-txt"></small></div><button type="button" class="mc-sw" id="ctf-desc" role="switch" aria-label="Aplicar desconto" onclick="ctAlternar('ctf-desc')"></button></div>
+          <div class="mc-sw-linha" id="ctf-cort-linha"><div class="tx">Aplicar cortesia<small id="ctf-cort-txt"></small></div><button type="button" class="mc-sw" id="ctf-cort" role="switch" aria-label="Aplicar cortesia" onclick="ctAlternar('ctf-cort')"></button></div>
+        </div>
+        <div class="ct-prev" id="ctf-previa"></div>
+        <div class="dev-rodape"><button class="btn btn-primary" id="ctf-btn" onclick="ctSalvar()"><i class="ti ti-check"></i> Salvar contrato</button></div>
       </div>
     </div>
 
@@ -2099,6 +2194,24 @@
   </div>
 </div>
 
+<!-- ===================== MODAIS: CONTRATOS (v2026250001) ===================== -->
+<div class="modal-wrap" id="modal-ct-sair" data-fixo="1" style="z-index:72;">
+  <div class="modal">
+    <h3>Sair sem salvar?</h3>
+    <p class="sub" style="margin:-6px 0 14px;font-size:16px;">Se sair agora, os dados digitados neste contrato serão perdidos.</p>
+    <button class="btn btn-primary btn-linha" onclick="fecharModal('modal-ct-sair')"><i class="ti ti-pencil"></i> Continuar editando</button>
+    <button class="btn btn-ghost btn-linha" id="ct-sair-sim" onclick="ctConfirmarSaida()">Sair e perder os dados</button>
+  </div>
+</div>
+<div class="modal-wrap" id="modal-ct-reaplicar" data-fixo="1" style="z-index:72;">
+  <div class="modal">
+    <h3>Reaplicar o modelo?</h3>
+    <p class="sub" id="ct-reap-txt" style="margin:-6px 0 14px;font-size:16px;"></p>
+    <button class="btn btn-primary btn-linha" id="ct-reap-sim" onclick="ctReaplicar()"><i class="ti ti-refresh"></i> Reaplicar</button>
+    <button class="btn btn-ghost btn-linha" onclick="fecharModal('modal-ct-reaplicar')">Cancelar</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.44.0/tabler-icons.min.css">
@@ -2194,7 +2307,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026240003";
+const VERSAO_APP = "2026250001";
 
 /* ===================================================================== */
 
@@ -2927,7 +3040,7 @@ window.devEscolherTipo = function(t){
 function devContar(qual, texto){ const e = document.getElementById("dev-conta-" + qual); if(e) e.textContent = texto; }
 function mostrarVistaDev(vista){
   if(vista === "lista") devRenderTipo();
-  ["lista","p1","p2","p3","pronto","cob","cobform","planos","plano","clientrar","clinova","clipronto","mclista","mcform"].forEach(n=>{
+  ["lista","p1","p2","p3","pronto","cob","cobform","planos","plano","clientrar","clinova","clipronto","mclista","mcform","ctlista","ctclinica","ctform"].forEach(n=>{
     document.getElementById("dev-view-" + n).style.display = (n === vista) ? "flex" : "none";
   });
   window.scrollTo(0, 0);
@@ -3430,6 +3543,9 @@ function mcVisibilidade(){
   mostra("mcf-prof-usuario", forma === "usuario"); mostra("mcf-prof-combo", forma === "combo");
   mostra("mcf-ia-bloco", ia); mostra("mcf-ia-franquia", ia && mod === "franquia"); mostra("mcf-ia-ilimitado", ia && mod === "ilimitado");
   mostra("mcf-il-teto-campo", mcSegValor("mcf-il-orig") === "atypical");
+  mostra("mcf-piloto-bloco", mcSegValor("mcf-tipo") === "piloto");
+  mostra("mcf-desc-bloco", mcSwValor("mcf-desc")); mostra("mcf-cort-bloco", mcSwValor("mcf-cort"));
+  document.getElementById("mcf-desc-rot").textContent = mcSegValor("mcf-desc-tipo") === "valor" ? "Desconto (R$/mês) *" : "Desconto (%) *";
   document.getElementById("mcf-ativo-dica").textContent = mcSwValor("mcf-ativo") ? "Pode ser escolhido para novas clínicas" : "Inativo: fica guardado, mas não é oferecido";
 }
 
@@ -3483,9 +3599,14 @@ function mcConferirFaixas(qual, rotulo){
 }
 
 /* ---- lista ---- */
+function mcTextoDesconto(d){ return d ? (d.tipo === "valor" ? "R$ " + mcReais(d.valor) : String(d.valor).replace(".", ",") + "%") + " por " + d.meses + (d.meses === 1 ? " mês" : " meses") : ""; }
+function mcTextoCortesia(n){ return n === 1 ? "1 mês grátis" : n + " meses grátis"; }
 function mcResumo(m){
   const partes = [];
   const fx = a => (a && a.length ? a.length + (a.length === 1 ? " faixa" : " faixas") + " até " + a[a.length - 1].ate : "sem faixas");
+  partes.push(m.tipo === "piloto" ? "Piloto de " + (m.duracaoDias || 0) + " dias" : "Regular");
+  if(m.desconto) partes.push("Desconto: " + mcTextoDesconto(m.desconto));
+  if(m.cortesiaMeses > 0) partes.push("Cortesia: " + mcTextoCortesia(m.cortesiaMeses));
   partes.push("ADM: " + fx(m.adm && m.adm.faixas));
   const pr = m.profissionais || {};
   partes.push("Profissionais: " + (pr.forma === "combo" ? "combo, " + fx(pr.faixas) : "R$ " + mcReais(pr.valorUnitario) + " cada"));
@@ -3556,6 +3677,11 @@ function mcAbrirForm(m){
   v("mcf-fr-qtd", fr.resumosMes || ""); v("mcf-fr-exc", r(fr.valorExcedente));
   mcSegPor("mcf-fr-esc", fr.escopo || "clinica"); mcSegPor("mcf-fr-est", fr.aoEstourar || "cobrar");
   v("mcf-il-valor", r(il.valorProfissional)); mcSegPor("mcf-il-orig", il.origemChave || "clinica"); v("mcf-il-teto", il.tetoSeguranca || "");
+  mcSegPor("mcf-tipo", (m && m.tipo === "piloto") ? "piloto" : "regular"); v("mcf-dias", m && m.duracaoDias ? m.duracaoDias : "");
+  const dsc = (m && m.desconto) || null;
+  mcSwPor("mcf-desc", !!dsc); mcSegPor("mcf-desc-tipo", dsc && dsc.tipo === "valor" ? "valor" : "percentual");
+  v("mcf-desc-valor", dsc ? r(dsc.valor) : ""); v("mcf-desc-meses", dsc ? dsc.meses : "");
+  mcSwPor("mcf-cort", !!(m && m.cortesiaMeses > 0)); v("mcf-cort-meses", m && m.cortesiaMeses > 0 ? m.cortesiaMeses : "");
   v("mcf-obs", m ? m.observacoes : "");
   const alt = document.getElementById("mcf-alterado");
   if(m && m.alteradoEm){ alt.style.display = "block"; alt.textContent = "Última alteração em " + new Date(m.alteradoEm).toLocaleString("pt-BR", { day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit" }) + "."; }
@@ -3610,8 +3736,27 @@ function mcMontar(){
       }
     }
   }
+  const tipo = mcSegValor("mcf-tipo") === "piloto" ? "piloto" : "regular";
+  let duracaoDias = 0;
+  if(tipo === "piloto"){
+    duracaoDias = mcInteiro(document.getElementById("mcf-dias").value);
+    if(!(duracaoDias >= 1 && duracaoDias <= 365)) return mcErro("Informe a duração do piloto, de 1 a 365 dias.", "mcf-dias");
+  }
+  let desconto = null;
+  if(mcSwValor("mcf-desc")){
+    const dt = mcSegValor("mcf-desc-tipo") === "valor" ? "valor" : "percentual", dv = lerReais(document.getElementById("mcf-desc-valor").value), dm = mcInteiro(document.getElementById("mcf-desc-meses").value);
+    if(!(isFinite(dv) && dv > 0) || (dt === "percentual" && dv > 100)) return mcErro(dt === "percentual" ? "Informe o desconto, de 0,01 a 100%." : "Informe o valor do desconto.", "mcf-desc-valor");
+    if(!(dm >= 1 && dm <= 36)) return mcErro("Informe por quantos meses vale o desconto (1 a 36).", "mcf-desc-meses");
+    desconto = { tipo: dt, valor: dv, meses: dm };
+  }
+  let cortesiaMeses = 0;
+  if(mcSwValor("mcf-cort")){
+    cortesiaMeses = mcInteiro(document.getElementById("mcf-cort-meses").value);
+    if(!(cortesiaMeses >= 1 && cortesiaMeses <= 12)) return mcErro("Informe os meses grátis da cortesia (1 a 12).", "mcf-cort-meses");
+  }
   return {
     nome, app: MC_APP, ativo: mcSwValor("mcf-ativo"), vigenciaInicio: ini, vigenciaFim: fim || "",
+    tipo, duracaoDias, desconto, cortesiaMeses,
     baseMensal: base,
     adm: { faixas: fa.faixas, aoExceder: mcSegValor("mcf-adm-exc") },
     profissionais: prof, ia,
@@ -3636,6 +3781,290 @@ window.mcSalvar = async function(){
   }catch(e){
     showToast(e && e.code === "permission-denied" ? "O banco recusou. Publique as regras v38 e tente de novo." : "Não foi possível salvar. Confira a internet e tente de novo.");
   }finally{ b.disabled = false; b.innerHTML = '<i class="ti ti-check"></i> Salvar modelo'; }
+};
+
+/* =====================================================================
+   GESTÃO → CONTRATOS: VÍNCULO DO MODELO COMERCIAL COM A CLÍNICA (v2026250001)
+   Escopo: claude/contratos-cobranca-clinicas-escopo-2026-10-24.md (seções 1, 2 e 3).
+   - Clinicas/{c}/privado/contrato: fotografia do contrato (valores em reais, histórico). Só o desenvolvedor lê e grava.
+   - Clinicas/{c}/privado/limites: só os limites (sem valores), que a equipe da clínica lê. Só o desenvolvedor grava.
+   Mudar o modelo depois não muda as clínicas já vinculadas: para levar a mudança, "Reaplicar modelo".
+   ===================================================================== */
+let ctItens = [], ctModelos = [], ctAtual = null, ctModo = "novo", ctAlterado = false;
+const ctDiaMs = 86400000;
+function ctSomarDias(iso, n){ const d = new Date(iso + "T12:00:00"); d.setTime(d.getTime() + n * ctDiaMs); return d.toISOString().slice(0, 10); }
+function ctModeloPorId(id){ return ctModelos.find(m => m.id === id) || null; }
+function ctRotuloModelo(m){ return (m.nome || "(sem nome)") + (m.tipo === "piloto" ? " · Piloto " + (m.duracaoDias || 0) + " dias" : " · Regular") + (m.ativo ? "" : " (inativo)"); }
+function ctSituacao(ct, hoje){
+  if(!ct) return { classe: "neutra", texto: "Sem contrato" };
+  const piloto = ct.tipo === "piloto";
+  if(!ct.fim) return { classe: "ok", texto: piloto ? "Piloto" : "Ativo" };
+  const n = cobDiasEntre(hoje, ct.fim);
+  if(n < 0) return { classe: "atraso", texto: (piloto ? "Piloto vencido" : "Vencido") + (n === -1 ? " há 1 dia" : " há " + (-n) + " dias") };
+  if(n <= 7) return { classe: "avencer", texto: (piloto ? "Piloto vence " : "Vence ") + (n === 0 ? "hoje" : n === 1 ? "amanhã" : "em " + n + " dias") };
+  return { classe: "ok", texto: (piloto ? "Piloto até " : "Ativo até ") + mcData(ct.fim) };
+}
+// O que a clínica pode ler: só os limites, sem nenhum valor em reais e sem o teto interno da Chave Atypical.
+function ctLimites(m, ct){
+  const pr = m.profissionais || {}, ia = m.ia || {};
+  const semValor = a => (Array.isArray(a) ? a : []).map(f => ({ de: f.de, ate: f.ate }));
+  const prof = { forma: pr.forma === "combo" ? "combo" : "usuario", contagem: "maior-ativas-mes" };
+  if(prof.forma === "combo"){ prof.faixas = semValor(pr.faixas); prof.aoExceder = pr.aoExceder === "bloquear" ? "bloquear" : "subir"; }
+  const iaL = { disponivel: ia.disponivel === true };
+  if(iaL.disponivel){
+    iaL.modalidade = ia.modalidade === "ilimitado" ? "ilimitado" : "franquia";
+    if(iaL.modalidade === "franquia"){ const fr = ia.franquia || {}; iaL.franquia = { resumosMes: fr.resumosMes || 0, escopo: fr.escopo === "profissional" ? "profissional" : "clinica", aoEstourar: fr.aoEstourar === "bloquear" ? "bloquear" : "cobrar", avisos: [80, 100] }; }
+  }
+  return {
+    tipo: ct.tipo, inicio: ct.inicio, fim: ct.fim || "",
+    adm: { faixas: semValor((m.adm || {}).faixas), aoExceder: (m.adm || {}).aoExceder === "bloquear" ? "bloquear" : "subir" },
+    profissionais: prof, ia: iaL, alteradoEm: new Date().toISOString()
+  };
+}
+// Fotografia do modelo copiada para dentro do contrato (fica só no Painel)
+function ctCondicoes(m){
+  const c = { nome: m.nome, tipo: m.tipo === "piloto" ? "piloto" : "regular", duracaoDias: m.duracaoDias || 0, baseMensal: Number(m.baseMensal) || 0,
+    adm: m.adm || {}, profissionais: m.profissionais || {}, ia: m.ia || {}, desconto: m.desconto || null, cortesiaMeses: m.cortesiaMeses || 0,
+    vigenciaInicio: m.vigenciaInicio || "", vigenciaFim: m.vigenciaFim || "", modeloAlteradoEm: m.alteradoEm || "" };
+  return JSON.parse(JSON.stringify(c));
+}
+
+/* ---- lista ---- */
+window.ctAbrirLista = async function(){
+  const caixa = document.getElementById("ct-lista");
+  mostrarVistaDev("ctlista");
+  caixa.innerHTML = '<p class="dev-vazio">Carregando…</p>';
+  let user = null;
+  try{ user = await cliUsuario(); }catch(e){ /* trata abaixo */ }
+  if(!user){ cliCartaoAvisoEm(caixa, "Entre no banco das clínicas para ver os contratos.", "Entrar no Atypical & Agendas", ()=> cliAbrirEntrar()); return; }
+  try{
+    const [sc, sm] = await Promise.all([getDocs(collection(cliDb, "Clinicas")), getDocs(collection(cliDb, "ModelosComerciais"))]);
+    ctModelos = sm.docs.map(d => Object.assign({ id: d.id }, d.data()));
+    mcItens = ctModelos.slice();
+    ctItens = await Promise.all(sc.docs.map(async d => {
+      let contrato = null;
+      try{ const x = await getDoc(doc(cliDb, "Clinicas", d.id, "privado", "contrato")); contrato = x.exists() ? x.data() : null; }
+      catch(e){ if(e && e.code === "permission-denied") throw e; }
+      return { id: d.id, nome: d.data().nome || d.id, contrato };
+    }));
+  }catch(e){
+    if(e && e.code === "permission-denied") cliCartaoAvisoEm(caixa, "O banco recusou a leitura. Publique as regras v40 no console do Firebase (projeto atypical-agendas) e tente de novo.", "Tentar de novo", ctAbrirLista);
+    else cliCartaoAvisoEm(caixa, "Não foi possível carregar os contratos.", "Tentar de novo", ctAbrirLista);
+    return;
+  }
+  ctItens.sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+  caixa.innerHTML = "";
+  if(!ctItens.length){ caixa.innerHTML = '<p class="dev-vazio">Nenhuma clínica cadastrada ainda.</p>'; return; }
+  const hoje = hojeISO();
+  ctItens.forEach(it => {
+    const ct = it.contrato, st = ctSituacao(ct, hoje);
+    const b = document.createElement("button"); b.type = "button"; b.className = "mc-item";
+    const cab = document.createElement("div"); cab.className = "cab";
+    const n = document.createElement("p"); n.className = "n"; n.textContent = it.nome;
+    const tag = document.createElement("span"); tag.className = "cob-tag " + st.classe; tag.textContent = st.texto;
+    cab.appendChild(n); cab.appendChild(tag); b.appendChild(cab);
+    const l = document.createElement("p"); l.className = "l";
+    l.textContent = ct ? (ct.modeloNome || "Modelo") + " · desde " + mcData(ct.inicio) + " · vence todo dia " + ct.diaVencimento : "Toque para vincular um modelo comercial";
+    b.appendChild(l);
+    b.onclick = () => ct ? ctAbrirClinica(it) : ctAbrirForm(it, "novo");
+    caixa.appendChild(b);
+  });
+};
+
+/* ---- contrato de uma clínica ---- */
+function ctTextoContrato(ct){
+  const c = ct.condicoes || {}, linhas = [];
+  linhas.push(["Modelo", (ct.modeloNome || "") + (ct.tipo === "piloto" ? " (piloto)" : "")]);
+  linhas.push(["Início", mcData(ct.inicio)]);
+  linhas.push([ct.tipo === "piloto" ? "Fim do piloto" : "Fim", ct.fim ? mcData(ct.fim) : "Indeterminado"]);
+  linhas.push(["Vencimento", "todo dia " + ct.diaVencimento]);
+  linhas.push(["Base", "R$ " + mcReais(c.baseMensal) + "/mês"]);
+  if(ct.tipo === "piloto") linhas.push(["Depois do piloto", ct.destinoNome || "—"]);
+  if(ct.desconto) linhas.push(["Desconto", mcTextoDesconto(ct.desconto)]);
+  if(ct.cortesiaMeses > 0) linhas.push(["Cortesia", mcTextoCortesia(ct.cortesiaMeses)]);
+  mcResumo(c).filter(t => !/^(Regular|Piloto|Desconto|Cortesia)/.test(t)).forEach(t => { const i = t.indexOf(": "); linhas.push([t.slice(0, i), t.slice(i + 2)]); });
+  return linhas;
+}
+function ctPreencherResumo(el, linhas){
+  el.innerHTML = "";
+  linhas.forEach(([r, v], i) => {
+    const s = document.createElement("span"); s.textContent = r + ": "; el.appendChild(s);
+    const b = document.createElement("b"); b.textContent = v; el.appendChild(b);
+    if(i < linhas.length - 1) el.appendChild(document.createElement("br"));
+  });
+}
+function ctAbrirClinica(it){
+  ctAtual = it;
+  const ct = it.contrato, st = ctSituacao(ct, hojeISO());
+  document.getElementById("ctc-titulo").textContent = it.nome;
+  const tag = document.getElementById("ctc-tag"); tag.className = "cob-tag " + st.classe; tag.textContent = st.texto;
+  ctPreencherResumo(document.getElementById("ctc-resumo"), ctTextoContrato(ct));
+  document.getElementById("ctc-btn-efetivar").style.display = ct.tipo === "piloto" ? "flex" : "none";
+  const ul = document.getElementById("ctc-hist"); ul.innerHTML = "";
+  (Array.isArray(ct.historico) ? ct.historico : []).forEach(h => {
+    const li = document.createElement("li"); li.textContent = h.detalhe || h.acao;
+    const sm = document.createElement("small"); sm.textContent = new Date(h.em).toLocaleString("pt-BR", { day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit" }) + " · " + (h.por || "Desenvolvedor");
+    li.appendChild(sm); ul.appendChild(li);
+  });
+  if(!ul.children.length) ul.innerHTML = '<li>Sem registros.</li>';
+  mostrarVistaDev("ctclinica");
+}
+window.ctAlterar = function(){ if(ctAtual) ctAbrirForm(ctAtual, "alterar"); };
+window.ctEfetivar = function(){
+  if(!ctAtual) return;
+  const dest = ctModeloPorId(ctAtual.contrato.destinoId);
+  if(!dest || !dest.ativo){ showToast("O modelo de destino não está ativo. Escolha outro modelo regular."); }
+  ctAbrirForm(ctAtual, "efetivar");
+};
+
+/* ---- formulário ---- */
+function ctOpcoes(sel, lista, vazio){
+  sel.innerHTML = "";
+  const o0 = document.createElement("option"); o0.value = ""; o0.textContent = vazio; sel.appendChild(o0);
+  lista.forEach(m => { const o = document.createElement("option"); o.value = m.id; o.textContent = ctRotuloModelo(m); sel.appendChild(o); });
+}
+function ctAbrirForm(it, modo){
+  ctAtual = it; ctModo = modo;
+  const ct = it.contrato || null;
+  const atual = ct ? ctModeloPorId(ct.modeloId) : null;
+  // Ativos; ao alterar, o modelo atual continua na lista mesmo inativo
+  const lista = ctModelos.filter(m => m.ativo || (modo === "alterar" && atual && m.id === atual.id));
+  lista.sort((a, b) => String(a.nome || "").localeCompare(String(b.nome || ""), "pt-BR"));
+  ctOpcoes(document.getElementById("ctf-modelo"), modo === "efetivar" ? lista.filter(m => m.tipo !== "piloto") : lista, "Escolha o modelo");
+  const dia = document.getElementById("ctf-dia"); dia.innerHTML = "";
+  for(let i = 1; i <= 28; i++){ const o = document.createElement("option"); o.value = String(i); o.textContent = "Dia " + i; dia.appendChild(o); }
+  document.getElementById("ctf-titulo").textContent = modo === "novo" ? "Vincular modelo" : modo === "efetivar" ? "Efetivar contrato" : "Alterar contrato";
+  document.getElementById("ctf-sub").textContent = it.nome;
+  const selM = document.getElementById("ctf-modelo");
+  if(modo === "efetivar") selM.value = ct.destinoId && [...selM.options].some(o => o.value === ct.destinoId) ? ct.destinoId : "";
+  else selM.value = ct && [...selM.options].some(o => o.value === ct.modeloId) ? ct.modeloId : "";
+  document.getElementById("ctf-inicio").value = modo === "alterar" && ct ? ct.inicio : hojeISO();
+  dia.value = ct ? String(ct.diaVencimento) : String(Math.min(28, new Date().getDate()));
+  document.getElementById("ctf-fim").value = modo === "alterar" && ct && ct.tipo !== "piloto" ? (ct.fim || "") : "";
+  ctAoTrocarModelo(true);
+  if(modo === "alterar" && ct){
+    if(ct.destinoId) document.getElementById("ctf-destino").value = ct.destinoId;
+    ctSwPor("ctf-desc", !!ct.desconto); ctSwPor("ctf-cort", ct.cortesiaMeses > 0);
+  }
+  ctPrevia();
+  ctAlterado = false;
+  mostrarVistaDev("ctform");
+}
+function ctSwPor(id, on){ mcSwPor(id, on); }
+window.ctAlternar = function(id){ mcSwPor(id, !mcSwValor(id)); ctAlterado = true; ctPrevia(); };
+window.ctAoTrocarModelo = function(inicial){
+  const m = ctModeloPorId(document.getElementById("ctf-modelo").value);
+  const piloto = !!(m && m.tipo === "piloto");
+  document.getElementById("ctf-piloto").style.display = piloto ? "block" : "none";
+  document.getElementById("ctf-fim-campo").style.display = piloto ? "none" : "block";
+  const regulares = ctModelos.filter(x => x.ativo && x.tipo !== "piloto").sort((a, b) => String(a.nome || "").localeCompare(String(b.nome || ""), "pt-BR"));
+  const selD = document.getElementById("ctf-destino"), antes = selD.value;
+  ctOpcoes(selD, regulares, "Escolha o modelo regular");
+  if([...selD.options].some(o => o.value === antes)) selD.value = antes;
+  const temD = !!(m && m.desconto), temC = !!(m && m.cortesiaMeses > 0);
+  document.getElementById("ctf-cond").style.display = (temD || temC) ? "flex" : "none";
+  document.getElementById("ctf-desc-linha").style.display = temD ? "flex" : "none";
+  document.getElementById("ctf-cort-linha").style.display = temC ? "flex" : "none";
+  document.getElementById("ctf-desc-txt").textContent = temD ? "Previsto no modelo: " + mcTextoDesconto(m.desconto) : "";
+  document.getElementById("ctf-cort-txt").textContent = temC ? "Previsto no modelo: " + mcTextoCortesia(m.cortesiaMeses) : "";
+  // Ao escolher um modelo, as condições previstas já vêm ligadas (pode desligar)
+  mcSwPor("ctf-desc", temD); mcSwPor("ctf-cort", temC);
+  if(inicial !== true) ctAlterado = true;
+  ctPrevia();
+};
+function ctLerForm(){
+  const m = ctModeloPorId(document.getElementById("ctf-modelo").value);
+  const inicio = document.getElementById("ctf-inicio").value, dia = Number(document.getElementById("ctf-dia").value);
+  const piloto = !!(m && m.tipo === "piloto");
+  const fim = !m || !/^\d{4}-\d{2}-\d{2}$/.test(inicio) ? "" : piloto ? ctSomarDias(inicio, Number(m.duracaoDias) || 0) : document.getElementById("ctf-fim").value;
+  const dest = piloto ? ctModeloPorId(document.getElementById("ctf-destino").value) : null;
+  return { m, inicio, dia, piloto, fim, dest,
+    desconto: m && m.desconto && mcSwValor("ctf-desc") ? m.desconto : null,
+    cortesiaMeses: m && m.cortesiaMeses > 0 && mcSwValor("ctf-cort") ? m.cortesiaMeses : 0 };
+}
+window.ctPrevia = function(){
+  const f = ctLerForm(), el = document.getElementById("ctf-previa");
+  const fp = document.getElementById("ctf-fim-piloto");
+  fp.textContent = f.piloto && f.fim ? "O piloto termina em " + mcData(f.fim) + " (" + f.m.duracaoDias + " dias a partir do início)." : "";
+  fp.style.display = fp.textContent ? "block" : "none";
+  if(!f.m){ el.textContent = ""; return; }
+  const linhas = [["A clínica vai ler", "só os limites (faixas de usuários ADM, profissionais e IA), sem valores"]];
+  linhas.push(["Base", "R$ " + mcReais(f.m.baseMensal) + "/mês"]);
+  if(f.desconto) linhas.push(["Desconto", mcTextoDesconto(f.desconto)]);
+  if(f.cortesiaMeses) linhas.push(["Cortesia", mcTextoCortesia(f.cortesiaMeses)]);
+  ctPreencherResumo(el, linhas);
+};
+window.ctSairDoForm = function(){
+  if(ctAlterado){ abrirModal("modal-ct-sair"); return; }
+  ctVoltarDoForm();
+};
+window.ctConfirmarSaida = function(){ fecharModal("modal-ct-sair"); ctAlterado = false; ctVoltarDoForm(); };
+function ctVoltarDoForm(){ if(ctAtual && ctAtual.contrato) ctAbrirClinica(ctAtual); else ctAbrirLista(); }
+async function ctGravar(it, contrato, m){
+  cliPreparar();
+  const lote = writeBatch(cliDb);
+  lote.set(doc(cliDb, "Clinicas", it.id, "privado", "contrato"), contrato);
+  lote.set(doc(cliDb, "Clinicas", it.id, "privado", "limites"), ctLimites(m, contrato));
+  await lote.commit();
+}
+window.ctSalvar = async function(){
+  const b = document.getElementById("ctf-btn");
+  if(b.disabled || !ctAtual) return;
+  const f = ctLerForm();
+  if(!f.m) return mcErro("Escolha o modelo comercial.", "ctf-modelo");
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(f.inicio)) return mcErro("Informe a data de início.", "ctf-inicio");
+  if(!(f.dia >= 1 && f.dia <= 28)) return mcErro("Escolha o dia do vencimento.", "ctf-dia");
+  if(!f.piloto && f.fim && f.fim <= f.inicio) return mcErro("O fim do contrato precisa ser depois do início.", "ctf-fim");
+  if(f.piloto && !f.dest) return mcErro("Escolha o modelo regular de destino do piloto.", "ctf-destino");
+  const antigo = ctAtual.contrato || null, agora = Date.now();
+  const detalhe = ctModo === "novo" ? "Vinculado ao modelo " + f.m.nome
+    : ctModo === "efetivar" ? "Piloto efetivado: " + (antigo && antigo.modeloNome) + " → " + f.m.nome
+    : "Contrato alterado" + (antigo && antigo.modeloId !== f.m.id ? ": " + antigo.modeloNome + " → " + f.m.nome : "");
+  const contrato = {
+    modeloId: f.m.id, modeloNome: f.m.nome, tipo: f.piloto ? "piloto" : "regular",
+    inicio: f.inicio, fim: f.fim || "", diaVencimento: f.dia,
+    destinoId: f.dest ? f.dest.id : "", destinoNome: f.dest ? f.dest.nome : "",
+    desconto: f.desconto, cortesiaMeses: f.cortesiaMeses,
+    condicoes: ctCondicoes(f.m),
+    historico: [{ acao: ctModo === "novo" ? "vinculado" : ctModo === "efetivar" ? "efetivado" : "alterado", em: agora, por: "Desenvolvedor", detalhe }].concat(antigo && Array.isArray(antigo.historico) ? antigo.historico : []).slice(0, 50),
+    criadoEm: (antigo && antigo.criadoEm) || new Date(agora).toISOString(), alteradoEm: new Date(agora).toISOString()
+  };
+  b.disabled = true; b.innerHTML = '<i class="ti ti-loader-2"></i> Salvando...';
+  try{
+    await ctGravar(ctAtual, contrato, f.m);
+    ctAlterado = false; ctAtual.contrato = contrato;
+    showToast(ctModo === "novo" ? "Contrato vinculado." : ctModo === "efetivar" ? "Contrato efetivado." : "Contrato alterado.");
+    ctAbrirClinica(ctAtual);
+  }catch(e){
+    showToast(e && e.code === "permission-denied" ? "O banco recusou. Publique as regras v40 e tente de novo." : "Não foi possível salvar. Confira a internet e tente de novo.");
+  }finally{ b.disabled = false; b.innerHTML = '<i class="ti ti-check"></i> Salvar contrato'; }
+};
+
+/* ---- reaplicar o modelo (leva a versão atual do modelo para o contrato) ---- */
+window.ctPerguntarReaplicar = function(){
+  if(!ctAtual || !ctAtual.contrato) return;
+  const m = ctModeloPorId(ctAtual.contrato.modeloId);
+  if(!m){ showToast("O modelo deste contrato não foi encontrado."); return; }
+  document.getElementById("ct-reap-txt").textContent = "As condições atuais do modelo " + m.nome + " vão substituir as copiadas para " + ctAtual.nome + ". Datas, vencimento, desconto e cortesia continuam como estão. Fica registrado no histórico.";
+  abrirModal("modal-ct-reaplicar");
+};
+window.ctReaplicar = async function(){
+  const btn = document.getElementById("ct-reap-sim");
+  if(btn.disabled || !ctAtual || !ctAtual.contrato) return;
+  const antigo = ctAtual.contrato, m = ctModeloPorId(antigo.modeloId);
+  if(!m){ fecharModal("modal-ct-reaplicar"); showToast("O modelo deste contrato não foi encontrado."); return; }
+  const agora = Date.now();
+  const contrato = Object.assign({}, antigo, {
+    modeloNome: m.nome, condicoes: ctCondicoes(m), alteradoEm: new Date(agora).toISOString(),
+    historico: [{ acao: "reaplicado", em: agora, por: "Desenvolvedor", detalhe: "Modelo reaplicado: " + m.nome }].concat(Array.isArray(antigo.historico) ? antigo.historico : []).slice(0, 50)
+  });
+  btn.disabled = true;
+  try{
+    await ctGravar(ctAtual, contrato, m);
+    ctAtual.contrato = contrato; fecharModal("modal-ct-reaplicar"); showToast("Modelo reaplicado."); ctAbrirClinica(ctAtual);
+  }catch(e){
+    showToast(e && e.code === "permission-denied" ? "O banco recusou. Publique as regras v40 e tente de novo." : "Não foi possível salvar. Confira a internet e tente de novo.");
+  }finally{ btn.disabled = false; }
 };
 
 window.devVoltarLista = async function(){ mostrarVistaDev("lista"); cliRenderizarArea(); await carregarListaCondominiosDev(); };
