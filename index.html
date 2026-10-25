@@ -2347,7 +2347,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026250006";
+const VERSAO_APP = "2026250007";
 
 /* ===================================================================== */
 
@@ -3842,23 +3842,25 @@ function ctProfCombo(m){ return !!(m && m.profissionais && m.profissionais.forma
 function ctFaixasProf(m){ return ctProfCombo(m) ? ((m.profissionais.faixas) || []).filter(f => f && f.de >= 1 && f.ate >= f.de) : []; }
 function ctRegraExcesso(v){ return v === "bloquear" ? "bloqueia o excedente" : "sobe de faixa e avisa"; }
 // Valor mensal previsto do contrato: base + faixa ADM + profissionais + IA (se contratada). Por usuario sem faixa = variavel.
-function ctPrevisto(m, admFaixa, profFaixa, iaContratada){
+function ctPrevisto(m, admFaixa, profFaixa, iaContratada, profAtivas){
   if(!m) return null;
   const itens = [], fA = ctFaixasAdm(m)[admFaixa - 1], pr = m.profissionais || {}, ia = m.ia || {};
   itens.push(["Base da clínica", Number(m.baseMensal) || 0, ""]);
   if(fA) itens.push(["Usuários ADM (faixa " + admFaixa + ")", Number(fA.valor) || 0, ""]);
   let maxProf = null;
   if(ctProfCombo(m)){ const fP = ctFaixasProf(m)[profFaixa - 1]; if(fP){ maxProf = fP.ate; itens.push(["Profissionais (faixa " + profFaixa + ", até " + fP.ate + ")", Number(fP.valor) || 0, ""]); } }
+  else if(Number(profAtivas) >= 0 && profAtivas !== null && profAtivas !== undefined){ maxProf = Number(profAtivas);
+    itens.push(["Profissionais (" + maxProf + " × R$ " + mcReais(pr.valorUnitario) + ", ativas no contrato)", (Number(pr.valorUnitario) || 0) * maxProf, ""]); }
   else itens.push(["Profissionais", null, "R$ " + mcReais(pr.valorUnitario) + " × profissionais ativas no mês"]);
   if(iaContratada && ia.disponivel){
     const porProf = ia.modalidade === "ilimitado" || (ia.franquia || {}).escopo === "profissional";
     const vu = ia.modalidade === "ilimitado" ? Number((ia.ilimitado || {}).valorProfissional) || 0 : Number((ia.franquia || {}).valorMensal) || 0;
     if(!porProf) itens.push(["Módulo IA (por clínica)", vu, ""]);
-    else if(maxProf) itens.push(["Módulo IA (" + maxProf + " × R$ " + mcReais(vu) + ", máximo da faixa)", vu * maxProf, ""]);
+    else if(maxProf !== null) itens.push(["Módulo IA (" + maxProf + " × R$ " + mcReais(vu) + (ctProfCombo(m) ? ", máximo da faixa)" : ", ativas no contrato)"), vu * maxProf, ""]);
     else itens.push(["Módulo IA", null, "R$ " + mcReais(vu) + " × profissionais ativas no mês"]);
   }
   const total = Math.round(itens.reduce((a, x) => a + (x[1] || 0), 0) * 100) / 100;
-  return { itens, total, variavel: itens.some(x => x[1] === null) };
+  return { itens, total, variavel: itens.some(x => x[1] === null), profAtivas: ctProfCombo(m) ? null : (maxProf === null ? null : maxProf) };
 }
 function ctModeloPorId(id){ return ctModelos.find(m => m.id === id) || null; }
 function ctRotuloModelo(m){ return (m.nome || "(sem nome)") + (m.tipo === "piloto" ? " · Piloto " + (m.duracaoDias || 0) + " dias" : " · Regular") + (m.ativo ? "" : " (inativo)"); }
@@ -3964,7 +3966,7 @@ function ctTextoContrato(ct){
     linhas.push(["Profissionais contratadas", fP ? ctTextoFaixa(ct.profFaixa, fP, "profissional").replace("profissionals", "profissionais") + " (" + ctRegraExcesso(c.profissionais.aoExceder) + ")" : "faixa não definida — use Alterar contrato"]);
   }
   if((c.ia || {}).disponivel) linhas.push(["Módulo IA", ct.iaContratada ? "contratado" : "não contratado"]);
-  const pv = ctPrevisto(c, ct.admFaixa, ct.profFaixa, ct.iaContratada);
+  const pv = ctPrevisto(c, ct.admFaixa, ct.profFaixa, ct.iaContratada, (ct.previsto || {}).profAtivas);
   if(pv) linhas.push(["Valor previsto", "R$ " + mcReais(pv.total) + "/mês" + (pv.variavel ? " + parte variável" : "")]);
   mcResumo(c).filter(t => !/^(Regular|Piloto|Desconto|Cortesia|ADM)/.test(t) && !(ctProfCombo(c) && /^Profissionais/.test(t)) && !(/^IA:/.test(t) && !ct.iaContratada)).forEach(t => { const i = t.indexOf(": "); linhas.push([t.slice(0, i), t.slice(i + 2)]); });
   return linhas;
@@ -3996,7 +3998,7 @@ function ctRenderPreAcordo(el, it, ct){
     const fP = ct.profFaixa ? ctFaixasProf(c)[ct.profFaixa - 1] : null;
     item(fP ? "Profissionais: até " + fP.ate + " ativas — faixa " + ct.profFaixa : "Profissionais: faixa não definida — use Alterar contrato",
       "Sócia que atende conta como profissional. Acima do contratado: " + ctRegraExcesso(c.profissionais.aoExceder) + ".");
-  }else item("Profissionais: sem limite", "Cobrança pelo maior número de profissionais ativas no mês.");
+  }else item("Profissionais: sem limite" + (((ct.previsto || {}).profAtivas >= 0 && (ct.previsto || {}).profAtivas !== null) ? " — " + ct.previsto.profAtivas + " ativas no contrato" : ""), "Cobrança pelo maior número de profissionais ativas no mês.");
   const ia = c.ia || {};
   if(!ia.disponivel) item("Módulo IA: não disponível neste modelo");
   else if(!ct.iaContratada) item("Módulo IA: não contratado");
@@ -4008,12 +4010,13 @@ function ctRenderPreAcordo(el, it, ct){
   if(ct.cortesiaMeses > 0) item("Cortesia: " + mcTextoCortesia(ct.cortesiaMeses));
   // 4. Valores
   const s4 = sec("4. Valores mensais previstos"), tb = mk("table", "pa-val"); s4.appendChild(tb);
-  const pv = ctPrevisto(c, ct.admFaixa, ct.profFaixa, ct.iaContratada);
+  const pv = ctPrevisto(c, ct.admFaixa, ct.profFaixa, ct.iaContratada, (ct.previsto || {}).profAtivas);
   pv.itens.forEach(x => { const tr = mk("tr"), a = mk("td", "", x[0]), b = mk("td", "", x[1] === null ? "variável" : "R$ " + mcReais(x[1])); if(x[1] === null) a.appendChild(mk("small", "", x[2])); tr.appendChild(a); tr.appendChild(b); tb.appendChild(tr); });
   const tot = mk("div", "pa-total"); tot.appendChild(mk("b", "", "Total previsto")); tot.appendChild(mk("strong", "", "R$ " + mcReais(pv.total) + "/mês")); s4.appendChild(tot);
   // texto corrido (para leitura e testes): "Valor previsto: R$ x/mês"
   tot.setAttribute("aria-label", "Valor previsto: R$ " + mcReais(pv.total) + "/mês" + (pv.variavel ? " + parte variável" : ""));
   const notas = [];
+  if(pv.profAtivas !== null && pv.profAtivas !== undefined) notas.push("Profissionais por usuário: previsão com as " + pv.profAtivas + " profissionais ativas" + ((ct.previsto || {}).em ? " em " + mcData(ct.previsto.em) : " no contrato") + ". A cobrança real acompanha o maior número de profissionais ativas no mês.");
   if(pv.variavel) notas.push("Valor previsto: R$ " + mcReais(pv.total) + "/mês + parte variável (itens por profissional ativa no mês).");
   if(ct.cortesiaMeses > 0) notas.push("Cortesia: " + (ct.cortesiaMeses === 1 ? "o 1º mês é grátis." : "os " + ct.cortesiaMeses + " primeiros meses são grátis."));
   if(ct.desconto){ const d = ct.desconto, comD = d.tipo === "valor" ? Math.max(0, pv.total - d.valor) : pv.total * (1 - d.valor / 100);
@@ -4172,7 +4175,7 @@ window.ctPrevia = function(){
   usoP.style.color = fP && ctProfAtivos > fP.ate ? "var(--red-ink)" : "";
   if(!f.m){ el.textContent = ""; return; }
   const linhas = [["A clínica vai ler", "só os limites (faixas de usuários ADM, profissionais e IA), sem valores"]];
-  const pv = ctPrevisto(f.m, f.admFaixa, f.profFaixa, f.iaContratada);
+  const pv = ctPrevisto(f.m, f.admFaixa, f.profFaixa, f.iaContratada, ctProfAtivos);
   pv.itens.forEach(x => linhas.push([x[0], x[1] === null ? x[2] : "R$ " + mcReais(x[1]) + "/mês"]));
   linhas.push(["Valor previsto", "R$ " + mcReais(pv.total) + "/mês" + (pv.variavel ? " + parte variável" : "")]);
   if(f.desconto) linhas.push(["Desconto", mcTextoDesconto(f.desconto)]);
@@ -4219,7 +4222,7 @@ window.ctSalvar = async function(){
     inicio: f.inicio, fim: f.fim || "", diaVencimento: f.dia,
     destinoId: f.dest ? f.dest.id : "", destinoNome: f.dest ? f.dest.nome : "",
     desconto: f.desconto, cortesiaMeses: f.cortesiaMeses, admFaixa: f.admFaixa, profFaixa: f.profFaixa, iaContratada: f.iaContratada,
-    previsto: (()=>{ const pv = ctPrevisto(f.m, f.admFaixa, f.profFaixa, f.iaContratada); return { total: pv.total, variavel: pv.variavel, itens: pv.itens.map(x => ({ item: x[0], valor: x[1], obs: x[2] })) }; })(),
+    previsto: (()=>{ const pv = ctPrevisto(f.m, f.admFaixa, f.profFaixa, f.iaContratada, ctProfAtivos); return { total: pv.total, variavel: pv.variavel, profAtivas: pv.profAtivas, em: hojeISO(), itens: pv.itens.map(x => ({ item: x[0], valor: x[1], obs: x[2] })) }; })(),
     condicoes: ctCondicoes(f.m),
     historico: [{ acao: ctModo === "novo" ? "vinculado" : ctModo === "efetivar" ? "efetivado" : "alterado", em: agora, por: "Desenvolvedor", detalhe }].concat(antigo && Array.isArray(antigo.historico) ? antigo.historico : []).slice(0, 50),
     criadoEm: (antigo && antigo.criadoEm) || new Date(agora).toISOString(), alteradoEm: new Date(agora).toISOString()
@@ -4255,7 +4258,7 @@ window.ctReaplicar = async function(){
   const iaC = typeof antigo.iaContratada === "boolean" ? antigo.iaContratada : (ctAtual.recursos || {}).moduloIA === true;
   const contrato = Object.assign({}, antigo, { iaContratada: iaC,
     modeloNome: m.nome, condicoes: ctCondicoes(m), alteradoEm: new Date(agora).toISOString(),
-    previsto: (()=>{ const pv = ctPrevisto(m, antigo.admFaixa, antigo.profFaixa, iaC); return { total: pv.total, variavel: pv.variavel, itens: pv.itens.map(x => ({ item: x[0], valor: x[1], obs: x[2] })) }; })(),
+    previsto: (()=>{ const pa = (antigo.previsto || {}).profAtivas, pv = ctPrevisto(m, antigo.admFaixa, antigo.profFaixa, iaC, pa); return { total: pv.total, variavel: pv.variavel, profAtivas: pv.profAtivas, em: (antigo.previsto || {}).em || hojeISO(), itens: pv.itens.map(x => ({ item: x[0], valor: x[1], obs: x[2] })) }; })(),
     historico: [{ acao: "reaplicado", em: agora, por: "Desenvolvedor", detalhe: "Modelo reaplicado: " + m.nome }].concat(Array.isArray(antigo.historico) ? antigo.historico : []).slice(0, 50)
   });
   btn.disabled = true;
