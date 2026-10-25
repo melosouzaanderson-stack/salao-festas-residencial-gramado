@@ -776,6 +776,26 @@
   .ct-prev:empty{ display:none; }
   .ct-acoes{ display:flex; flex-direction:column; gap:10px; }
   .ct-acoes .btn{ width:100%; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .pa-doc{ background:#fff; border:1px solid var(--line); border-radius:16px; padding:16px; color:var(--deep); }
+  .pa-cab{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; padding-bottom:12px; border-bottom:2px solid var(--deep); margin-bottom:4px; }
+  .pa-cab .cob-tag{ margin-top:2px; flex:none; }
+  .pa-tit{ margin:0; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); font-weight:700; }
+  .pa-sub{ margin:2px 0 0; font-size:18px; font-weight:700; }
+  .pa-sec{ padding:12px 0; border-bottom:1px solid var(--line); }
+  .pa-sec:last-child{ border-bottom:0; padding-bottom:0; }
+  .pa-sec h4{ margin:0 0 8px; font-size:13px; letter-spacing:.04em; text-transform:uppercase; color:var(--accent-d); }
+  .pa-lin{ display:flex; justify-content:space-between; gap:12px; font-size:15px; line-height:1.45; padding:2px 0; }
+  .pa-lin span:first-child{ color:var(--muted); }
+  .pa-lin span:last-child{ text-align:right; font-weight:600; }
+  .pa-esc{ margin:0; padding-left:18px; font-size:15px; line-height:1.5; }
+  .pa-esc li{ margin-bottom:4px; } .pa-esc small{ display:block; color:var(--muted); font-size:13px; }
+  .pa-val{ width:100%; border-collapse:collapse; font-size:15px; }
+  .pa-val td{ padding:6px 0; border-bottom:1px dashed var(--line); vertical-align:top; }
+  .pa-val td:last-child{ text-align:right; white-space:nowrap; font-weight:600; padding-left:10px; }
+  .pa-val td small{ display:block; color:var(--muted); font-size:12px; font-weight:400; }
+  .pa-total{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; margin-top:10px; padding:12px; background:#F1F6FD; border-radius:12px; }
+  .pa-total b{ font-size:15px; } .pa-total strong{ font-size:22px; color:var(--deep); white-space:nowrap; }
+  .pa-nota{ margin:8px 0 0; font-size:13px; color:var(--muted); line-height:1.45; }
   .ct-hist{ display:flex; flex-direction:column; gap:8px; margin:0; padding:0; list-style:none; }
   .ct-hist li{ font-size:14px; line-height:1.45; color:var(--deep); padding:8px 10px; background:#fff; border:1px solid var(--line); border-radius:10px; }
   .ct-hist li small{ display:block; color:var(--muted); font-size:12px; }
@@ -1231,9 +1251,9 @@
     <div class="dev-vista" id="dev-view-ctclinica">
       <div class="dev-top"><button class="volta" onclick="ctAbrirLista()" aria-label="Voltar"><i class="ti ti-arrow-left"></i></button><b><span id="ctc-titulo">Contrato</span><span class="sub2">Contrato · Atypical &amp; Agendas</span></b></div>
       <div class="dev-corpo">
-        <div class="mc-card">
-          <p class="mc-h"><i class="ti ti-file-certificate"></i> Contrato vigente <span id="ctc-tag"></span></p>
-          <p class="ct-resumo" id="ctc-resumo"></p>
+        <div class="pa-doc">
+          <div class="pa-cab"><div><p class="pa-tit">Pré-acordo comercial</p><p class="pa-sub" id="ctc-sub"></p></div><span id="ctc-tag"></span></div>
+          <div id="ctc-resumo"></div>
         </div>
         <div class="ct-acoes">
           <button class="btn btn-primary" id="ctc-btn-efetivar" onclick="ctEfetivar()"><i class="ti ti-rosette-discount-check"></i> Efetivar contrato</button>
@@ -1262,6 +1282,18 @@
           <div class="field"><label for="ctf-adm">Faixa contratada *</label><select id="ctf-adm" class="ct-sel" onchange="ctPrevia()"></select>
             <p class="dev-dica" id="ctf-adm-regra"></p></div>
           <p class="dev-dica" id="ctf-adm-uso"></p>
+        </div>
+        <div class="mc-card" id="ctf-prof-card">
+          <p class="mc-h"><i class="ti ti-stethoscope"></i> Profissionais <small>Sócia que atende conta como profissional</small></p>
+          <div id="ctf-prof-combo"><div class="field"><label for="ctf-prof">Faixa contratada *</label><select id="ctf-prof" class="ct-sel" onchange="ctPrevia()"></select>
+            <p class="dev-dica" id="ctf-prof-regra"></p></div></div>
+          <p class="dev-dica" id="ctf-prof-usuario"></p>
+          <p class="dev-dica" id="ctf-prof-uso"></p>
+        </div>
+        <div class="mc-card" id="ctf-ia-card">
+          <p class="mc-h"><i class="ti ti-sparkles"></i> Módulo IA</p>
+          <div class="mc-sw-linha"><div class="tx">Módulo IA contratado<small id="ctf-ia-txt"></small></div><button type="button" class="mc-sw" id="ctf-ia" role="switch" aria-label="Módulo IA contratado" onclick="ctAlternar('ctf-ia')"></button></div>
+          <p class="dev-dica" style="margin-top:-6px;">Ao salvar, o Módulo IA da clínica é ligado ou desligado conforme esta escolha.</p>
         </div>
         <div class="mc-card">
           <p class="mc-h"><i class="ti ti-calendar"></i> Datas</p>
@@ -2315,7 +2347,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026250003";
+const VERSAO_APP = "2026250006";
 
 /* ===================================================================== */
 
@@ -3805,8 +3837,29 @@ let ctItens = [], ctModelos = [], ctAtual = null, ctModo = "novo", ctAlterado = 
 const ctDiaMs = 86400000;
 function ctSomarDias(iso, n){ const d = new Date(iso + "T12:00:00"); d.setTime(d.getTime() + n * ctDiaMs); return d.toISOString().slice(0, 10); }
 function ctFaixasAdm(m){ return ((m && m.adm && m.adm.faixas) || []).filter(f => f && f.de >= 1 && f.ate >= f.de); }
-function ctTextoFaixa(n, f){ return "Faixa " + n + ": de " + f.de + " a " + f.ate + (f.ate === 1 ? " usuário" : " usuários"); }
+function ctTextoFaixa(n, f, nome){ const u = nome || "usuário", us = nome ? nome + "s" : "usuários"; return "Faixa " + n + ": de " + f.de + " a " + f.ate + " " + (f.ate === 1 ? u : us); }
+function ctProfCombo(m){ return !!(m && m.profissionais && m.profissionais.forma === "combo"); }
+function ctFaixasProf(m){ return ctProfCombo(m) ? ((m.profissionais.faixas) || []).filter(f => f && f.de >= 1 && f.ate >= f.de) : []; }
 function ctRegraExcesso(v){ return v === "bloquear" ? "bloqueia o excedente" : "sobe de faixa e avisa"; }
+// Valor mensal previsto do contrato: base + faixa ADM + profissionais + IA (se contratada). Por usuario sem faixa = variavel.
+function ctPrevisto(m, admFaixa, profFaixa, iaContratada){
+  if(!m) return null;
+  const itens = [], fA = ctFaixasAdm(m)[admFaixa - 1], pr = m.profissionais || {}, ia = m.ia || {};
+  itens.push(["Base da clínica", Number(m.baseMensal) || 0, ""]);
+  if(fA) itens.push(["Usuários ADM (faixa " + admFaixa + ")", Number(fA.valor) || 0, ""]);
+  let maxProf = null;
+  if(ctProfCombo(m)){ const fP = ctFaixasProf(m)[profFaixa - 1]; if(fP){ maxProf = fP.ate; itens.push(["Profissionais (faixa " + profFaixa + ", até " + fP.ate + ")", Number(fP.valor) || 0, ""]); } }
+  else itens.push(["Profissionais", null, "R$ " + mcReais(pr.valorUnitario) + " × profissionais ativas no mês"]);
+  if(iaContratada && ia.disponivel){
+    const porProf = ia.modalidade === "ilimitado" || (ia.franquia || {}).escopo === "profissional";
+    const vu = ia.modalidade === "ilimitado" ? Number((ia.ilimitado || {}).valorProfissional) || 0 : Number((ia.franquia || {}).valorMensal) || 0;
+    if(!porProf) itens.push(["Módulo IA (por clínica)", vu, ""]);
+    else if(maxProf) itens.push(["Módulo IA (" + maxProf + " × R$ " + mcReais(vu) + ", máximo da faixa)", vu * maxProf, ""]);
+    else itens.push(["Módulo IA", null, "R$ " + mcReais(vu) + " × profissionais ativas no mês"]);
+  }
+  const total = Math.round(itens.reduce((a, x) => a + (x[1] || 0), 0) * 100) / 100;
+  return { itens, total, variavel: itens.some(x => x[1] === null) };
+}
 function ctModeloPorId(id){ return ctModelos.find(m => m.id === id) || null; }
 function ctRotuloModelo(m){ return (m.nome || "(sem nome)") + (m.tipo === "piloto" ? " · Piloto " + (m.duracaoDias || 0) + " dias" : " · Regular") + (m.ativo ? "" : " (inativo)"); }
 function ctSituacao(ct, hoje){
@@ -3823,8 +3876,12 @@ function ctLimites(m, ct){
   const pr = m.profissionais || {}, ia = m.ia || {};
   const semValor = a => (Array.isArray(a) ? a : []).map(f => ({ de: f.de, ate: f.ate }));
   const prof = { forma: pr.forma === "combo" ? "combo" : "usuario", contagem: "maior-ativas-mes" };
-  if(prof.forma === "combo"){ prof.faixas = semValor(pr.faixas); prof.aoExceder = pr.aoExceder === "bloquear" ? "bloquear" : "subir"; }
-  const iaL = { disponivel: ia.disponivel === true };
+  if(prof.forma === "combo"){
+    prof.faixas = semValor(pr.faixas); prof.aoExceder = pr.aoExceder === "bloquear" ? "bloquear" : "subir";
+    const n = Math.min(Math.max(1, Number(ct.profFaixa) || 1), Math.max(1, prof.faixas.length)), f = prof.faixas[n - 1];
+    prof.faixa = n; if(f) prof.limite = f.ate;
+  }
+  const iaL = { disponivel: ia.disponivel === true && ct.iaContratada === true };
   if(iaL.disponivel){
     iaL.modalidade = ia.modalidade === "ilimitado" ? "ilimitado" : "franquia";
     if(iaL.modalidade === "franquia"){ const fr = ia.franquia || {}; iaL.franquia = { resumosMes: fr.resumosMes || 0, escopo: fr.escopo === "profissional" ? "profissional" : "clinica", aoEstourar: fr.aoEstourar === "bloquear" ? "bloquear" : "cobrar", avisos: [80, 100] }; }
@@ -3862,7 +3919,8 @@ window.ctAbrirLista = async function(){
       let contrato = null;
       try{ const x = await getDoc(doc(cliDb, "Clinicas", d.id, "privado", "contrato")); contrato = x.exists() ? x.data() : null; }
       catch(e){ if(e && e.code === "permission-denied") throw e; }
-      return { id: d.id, nome: d.data().nome || d.id, contrato };
+      const rec = d.data().recursos;
+      return { id: d.id, nome: d.data().nome || d.id, contrato, recursos: rec && typeof rec === "object" ? rec : {} };
     }));
   }catch(e){
     if(e && e.code === "permission-denied") cliCartaoAvisoEm(caixa, "O banco recusou a leitura. Publique as regras v40 no console do Firebase (projeto atypical-agendas) e tente de novo.", "Tentar de novo", ctAbrirLista);
@@ -3901,8 +3959,67 @@ function ctTextoContrato(ct){
   if(ct.cortesiaMeses > 0) linhas.push(["Cortesia", mcTextoCortesia(ct.cortesiaMeses)]);
   const fxA = ctFaixasAdm(c), fA = ct.admFaixa ? fxA[ct.admFaixa - 1] : null;
   linhas.push(["ADM contratado", fA ? ctTextoFaixa(ct.admFaixa, fA) + " (" + ctRegraExcesso((c.adm || {}).aoExceder) + ")" : "faixa não definida — use Alterar contrato"]);
-  mcResumo(c).filter(t => !/^(Regular|Piloto|Desconto|Cortesia|ADM)/.test(t)).forEach(t => { const i = t.indexOf(": "); linhas.push([t.slice(0, i), t.slice(i + 2)]); });
+  if(ctProfCombo(c)){
+    const fP = ct.profFaixa ? ctFaixasProf(c)[ct.profFaixa - 1] : null;
+    linhas.push(["Profissionais contratadas", fP ? ctTextoFaixa(ct.profFaixa, fP, "profissional").replace("profissionals", "profissionais") + " (" + ctRegraExcesso(c.profissionais.aoExceder) + ")" : "faixa não definida — use Alterar contrato"]);
+  }
+  if((c.ia || {}).disponivel) linhas.push(["Módulo IA", ct.iaContratada ? "contratado" : "não contratado"]);
+  const pv = ctPrevisto(c, ct.admFaixa, ct.profFaixa, ct.iaContratada);
+  if(pv) linhas.push(["Valor previsto", "R$ " + mcReais(pv.total) + "/mês" + (pv.variavel ? " + parte variável" : "")]);
+  mcResumo(c).filter(t => !/^(Regular|Piloto|Desconto|Cortesia|ADM)/.test(t) && !(ctProfCombo(c) && /^Profissionais/.test(t)) && !(/^IA:/.test(t) && !ct.iaContratada)).forEach(t => { const i = t.indexOf(": "); linhas.push([t.slice(0, i), t.slice(i + 2)]); });
   return linhas;
+}
+// Pré-acordo comercial: vigência, escopo contratado e valores, com o total previsto no fim
+function ctRenderPreAcordo(el, it, ct){
+  const c = ct.condicoes || {}, mk = (tag, cls, txt) => { const e = document.createElement(tag); if(cls) e.className = cls; if(txt !== undefined) e.textContent = txt; return e; };
+  const sec = (titulo) => { const d = mk("div", "pa-sec"); d.appendChild(mk("h4", "", titulo)); el.appendChild(d); return d; };
+  const lin = (pai, r, v) => { const d = mk("div", "pa-lin"); d.appendChild(mk("span", "", r)); d.appendChild(mk("span", "", v)); pai.appendChild(d); };
+  el.innerHTML = "";
+  // 1. Partes e modelo
+  const s1 = sec("1. Partes");
+  lin(s1, "Clínica", it.nome); lin(s1, "Contratada", "Souza IA Tech · Atypical & Agendas");
+  lin(s1, "Modelo comercial", (ct.modeloNome || "") + (ct.tipo === "piloto" ? " (piloto)" : ""));
+  // 2. Vigência
+  const s2 = sec("2. Vigência");
+  lin(s2, "Início", mcData(ct.inicio));
+  lin(s2, ct.tipo === "piloto" ? "Fim do piloto" : "Término", ct.fim ? mcData(ct.fim) : "Prazo indeterminado");
+  lin(s2, "Vencimento da mensalidade", "Todo dia " + ct.diaVencimento);
+  if(ct.tipo === "piloto") lin(s2, "Depois do piloto", ct.destinoNome || "—");
+  // 3. Escopo contratado
+  const s3 = sec("3. Escopo contratado"), ul = mk("ul", "pa-esc"); s3.appendChild(ul);
+  const item = (txt, obs) => { const li = mk("li", "", txt); if(obs) li.appendChild(mk("small", "", obs)); ul.appendChild(li); };
+  item("Agenda, pacientes, documentos, financeiro e demais telas do app");
+  const fA = ct.admFaixa ? ctFaixasAdm(c)[ct.admFaixa - 1] : null;
+  item(fA ? "Usuários administrativos (supervisora e recepção): até " + fA.ate + " ativos — faixa " + ct.admFaixa : "Usuários administrativos: faixa não definida — use Alterar contrato",
+    "Acima do contratado: " + ctRegraExcesso((c.adm || {}).aoExceder) + ".");
+  if(ctProfCombo(c)){
+    const fP = ct.profFaixa ? ctFaixasProf(c)[ct.profFaixa - 1] : null;
+    item(fP ? "Profissionais: até " + fP.ate + " ativas — faixa " + ct.profFaixa : "Profissionais: faixa não definida — use Alterar contrato",
+      "Sócia que atende conta como profissional. Acima do contratado: " + ctRegraExcesso(c.profissionais.aoExceder) + ".");
+  }else item("Profissionais: sem limite", "Cobrança pelo maior número de profissionais ativas no mês.");
+  const ia = c.ia || {};
+  if(!ia.disponivel) item("Módulo IA: não disponível neste modelo");
+  else if(!ct.iaContratada) item("Módulo IA: não contratado");
+  else if(ia.modalidade === "ilimitado") item("Módulo IA: resumos ilimitados por profissional");
+  else { const fr = ia.franquia || {};
+    item("Módulo IA: franquia de " + (fr.resumosMes || 0) + " resumos por mês " + (fr.escopo === "profissional" ? "para cada profissional" : "para a clínica"),
+      "Ao estourar a franquia: " + (fr.aoEstourar === "bloquear" ? "bloqueia até o mês seguinte" : "cobra R$ " + mcReais(fr.valorExcedente) + " por resumo excedente") + ". Avisos em 80% e 100%."); }
+  if(ct.desconto) item("Desconto: " + mcTextoDesconto(ct.desconto));
+  if(ct.cortesiaMeses > 0) item("Cortesia: " + mcTextoCortesia(ct.cortesiaMeses));
+  // 4. Valores
+  const s4 = sec("4. Valores mensais previstos"), tb = mk("table", "pa-val"); s4.appendChild(tb);
+  const pv = ctPrevisto(c, ct.admFaixa, ct.profFaixa, ct.iaContratada);
+  pv.itens.forEach(x => { const tr = mk("tr"), a = mk("td", "", x[0]), b = mk("td", "", x[1] === null ? "variável" : "R$ " + mcReais(x[1])); if(x[1] === null) a.appendChild(mk("small", "", x[2])); tr.appendChild(a); tr.appendChild(b); tb.appendChild(tr); });
+  const tot = mk("div", "pa-total"); tot.appendChild(mk("b", "", "Total previsto")); tot.appendChild(mk("strong", "", "R$ " + mcReais(pv.total) + "/mês")); s4.appendChild(tot);
+  // texto corrido (para leitura e testes): "Valor previsto: R$ x/mês"
+  tot.setAttribute("aria-label", "Valor previsto: R$ " + mcReais(pv.total) + "/mês" + (pv.variavel ? " + parte variável" : ""));
+  const notas = [];
+  if(pv.variavel) notas.push("Valor previsto: R$ " + mcReais(pv.total) + "/mês + parte variável (itens por profissional ativa no mês).");
+  if(ct.cortesiaMeses > 0) notas.push("Cortesia: " + (ct.cortesiaMeses === 1 ? "o 1º mês é grátis." : "os " + ct.cortesiaMeses + " primeiros meses são grátis."));
+  if(ct.desconto){ const d = ct.desconto, comD = d.tipo === "valor" ? Math.max(0, pv.total - d.valor) : pv.total * (1 - d.valor / 100);
+    notas.push("Com o desconto, " + (d.meses === 1 ? "no 1º mês pago" : "nos " + d.meses + " primeiros meses pagos") + ": R$ " + mcReais(Math.round(comD * 100) / 100) + "/mês."); }
+  notas.push("Valores do modelo na data do contrato. Mudanças no modelo só valem para esta clínica com \"Reaplicar modelo\".");
+  notas.forEach(n => s4.appendChild(mk("p", "pa-nota", n)));
 }
 function ctPreencherResumo(el, linhas){
   el.innerHTML = "";
@@ -3917,7 +4034,8 @@ function ctAbrirClinica(it){
   const ct = it.contrato, st = ctSituacao(ct, hojeISO());
   document.getElementById("ctc-titulo").textContent = it.nome;
   const tag = document.getElementById("ctc-tag"); tag.className = "cob-tag " + st.classe; tag.textContent = st.texto;
-  ctPreencherResumo(document.getElementById("ctc-resumo"), ctTextoContrato(ct));
+  document.getElementById("ctc-sub").textContent = it.nome;
+  ctRenderPreAcordo(document.getElementById("ctc-resumo"), it, ct);
   document.getElementById("ctc-btn-efetivar").style.display = ct.tipo === "piloto" ? "flex" : "none";
   const ul = document.getElementById("ctc-hist"); ul.innerHTML = "";
   (Array.isArray(ct.historico) ? ct.historico : []).forEach(h => {
@@ -3963,6 +4081,9 @@ function ctAbrirForm(it, modo){
   ctAoTrocarModelo(true);
   const selA = document.getElementById("ctf-adm");
   if(ct && ct.admFaixa && [...selA.options].some(o => o.value === String(ct.admFaixa))) selA.value = String(ct.admFaixa);
+  mcSwPor("ctf-ia", ct && typeof ct.iaContratada === "boolean" ? ct.iaContratada : (it.recursos || {}).moduloIA === true);
+  const selP = document.getElementById("ctf-prof");
+  if(ct && ct.profFaixa && [...selP.options].some(o => o.value === String(ct.profFaixa))) selP.value = String(ct.profFaixa);
   ctContarAdm(it);
   if(modo === "alterar" && ct){
     if(ct.destinoId) document.getElementById("ctf-destino").value = ct.destinoId;
@@ -3995,18 +4116,32 @@ window.ctAoTrocarModelo = function(inicial){
   if([...selA.options].some(o => o.value === antesA)) selA.value = antesA;
   document.getElementById("ctf-adm-card").style.display = m ? "flex" : "none";
   document.getElementById("ctf-adm-regra").textContent = m ? "Ao passar da faixa contratada: " + ctRegraExcesso((m.adm || {}).aoExceder) + " (regra do modelo)." : "";
+  const selP = document.getElementById("ctf-prof"), antesP = selP.value, fxP = ctFaixasProf(m), combo = ctProfCombo(m);
+  selP.innerHTML = "";
+  fxP.forEach((f, i) => { const o = document.createElement("option"); o.value = String(i + 1); o.textContent = ctTextoFaixa(i + 1, f, "profissional").replace("profissionals", "profissionais"); selP.appendChild(o); });
+  if([...selP.options].some(o => o.value === antesP)) selP.value = antesP;
+  document.getElementById("ctf-prof-card").style.display = m ? "flex" : "none";
+  const iaM = (m && m.ia) || {};
+  document.getElementById("ctf-ia-card").style.display = iaM.disponivel ? "flex" : "none";
+  document.getElementById("ctf-ia-txt").textContent = !iaM.disponivel ? "" : iaM.modalidade === "ilimitado" ? "Ilimitado: R$ " + mcReais((iaM.ilimitado || {}).valorProfissional) + "/mês por profissional"
+    : "Franquia de " + ((iaM.franquia || {}).resumosMes || 0) + " resumos: R$ " + mcReais((iaM.franquia || {}).valorMensal) + "/mês " + ((iaM.franquia || {}).escopo === "profissional" ? "por profissional" : "por clínica");
+  document.getElementById("ctf-prof-combo").style.display = combo ? "block" : "none";
+  document.getElementById("ctf-prof-regra").textContent = combo ? "Ao passar da faixa contratada: " + ctRegraExcesso(m.profissionais.aoExceder) + " (regra do modelo)." : "";
+  document.getElementById("ctf-prof-usuario").textContent = m && !combo ? "Cobrança por profissional (R$ " + mcReais((m.profissionais || {}).valorUnitario) + " cada): sem faixa e sem limite." : "";
   // Ao escolher um modelo, as condições previstas já vêm ligadas (pode desligar)
   mcSwPor("ctf-desc", temD); mcSwPor("ctf-cort", temC);
   if(inicial !== true) ctAlterado = true;
   ctPrevia();
 };
-let ctAdmAtivos = null;
+let ctAdmAtivos = null, ctProfAtivos = null;
 async function ctContarAdm(it){
-  ctAdmAtivos = null; const el = document.getElementById("ctf-adm-uso"); el.textContent = "";
+  ctAdmAtivos = null; ctProfAtivos = null; const el = document.getElementById("ctf-adm-uso"); el.textContent = "";
   try{
     const us = await getDocs(collection(cliDb, "Clinicas", it.id, "usuarios"));
-    ctAdmAtivos = us.docs.map(d => d.data()).filter(u => u.ativo === true && (u.tipo === "supervisora" || u.tipo === "recepcionista")).length;
-  }catch(e){ ctAdmAtivos = null; }
+    const lista = us.docs.map(d => d.data()).filter(u => u.ativo === true);
+    ctAdmAtivos = lista.filter(u => u.tipo === "supervisora" || u.tipo === "recepcionista").length;
+    ctProfAtivos = lista.filter(u => u.tipo === "profissional").length;
+  }catch(e){ ctAdmAtivos = null; ctProfAtivos = null; }
   ctPrevia();
 }
 function ctLerForm(){
@@ -4018,7 +4153,9 @@ function ctLerForm(){
   return { m, inicio, dia, piloto, fim, dest,
     desconto: m && m.desconto && mcSwValor("ctf-desc") ? m.desconto : null,
     cortesiaMeses: m && m.cortesiaMeses > 0 && mcSwValor("ctf-cort") ? m.cortesiaMeses : 0,
-    admFaixa: Number(document.getElementById("ctf-adm").value) || 0 };
+    admFaixa: Number(document.getElementById("ctf-adm").value) || 0,
+    profFaixa: ctProfCombo(m) ? (Number(document.getElementById("ctf-prof").value) || 0) : 0,
+    iaContratada: !!(m && m.ia && m.ia.disponivel && mcSwValor("ctf-ia")) };
 }
 window.ctPrevia = function(){
   const f = ctLerForm(), el = document.getElementById("ctf-previa");
@@ -4029,9 +4166,15 @@ window.ctPrevia = function(){
   uso.textContent = ctAdmAtivos === null ? "" : "Hoje a clínica tem " + ctAdmAtivos + (ctAdmAtivos === 1 ? " usuário ADM ativo." : " usuários ADM ativos.")
     + (fA && ctAdmAtivos > fA.ate ? " Acima da faixa: os atuais continuam, mas novos ADM seguem a regra do modelo." : "");
   uso.style.color = fA && ctAdmAtivos > fA.ate ? "var(--red-ink)" : "";
+  const usoP = document.getElementById("ctf-prof-uso"), fP = f.m && f.profFaixa ? ctFaixasProf(f.m)[f.profFaixa - 1] : null;
+  usoP.textContent = ctProfAtivos === null ? "" : "Hoje a clínica tem " + ctProfAtivos + (ctProfAtivos === 1 ? " profissional ativa." : " profissionais ativas.")
+    + (fP && ctProfAtivos > fP.ate ? " Acima da faixa: as atuais continuam, mas novas profissionais seguem a regra do modelo." : "");
+  usoP.style.color = fP && ctProfAtivos > fP.ate ? "var(--red-ink)" : "";
   if(!f.m){ el.textContent = ""; return; }
   const linhas = [["A clínica vai ler", "só os limites (faixas de usuários ADM, profissionais e IA), sem valores"]];
-  linhas.push(["Base", "R$ " + mcReais(f.m.baseMensal) + "/mês"]);
+  const pv = ctPrevisto(f.m, f.admFaixa, f.profFaixa, f.iaContratada);
+  pv.itens.forEach(x => linhas.push([x[0], x[1] === null ? x[2] : "R$ " + mcReais(x[1]) + "/mês"]));
+  linhas.push(["Valor previsto", "R$ " + mcReais(pv.total) + "/mês" + (pv.variavel ? " + parte variável" : "")]);
   if(f.desconto) linhas.push(["Desconto", mcTextoDesconto(f.desconto)]);
   if(f.cortesiaMeses) linhas.push(["Cortesia", mcTextoCortesia(f.cortesiaMeses)]);
   ctPreencherResumo(el, linhas);
@@ -4047,6 +4190,13 @@ async function ctGravar(it, contrato, m){
   const lote = writeBatch(cliDb);
   lote.set(doc(cliDb, "Clinicas", it.id, "privado", "contrato"), contrato);
   lote.set(doc(cliDb, "Clinicas", it.id, "privado", "limites"), ctLimites(m, contrato));
+  // O contrato comanda o Modulo IA da clinica (mesmo campo do botao da lista de clinicas)
+  const rec = it.recursos || {}, quer = contrato.iaContratada === true;
+  if((rec.moduloIA === true) !== quer){
+    const historico = [{ recurso: "moduloIA", valor: quer, em: Date.now(), por: "Desenvolvedor (contrato)" }].concat(Array.isArray(rec.historico) ? rec.historico : []).slice(0, 50);
+    lote.update(doc(cliDb, "Clinicas", it.id), { recursos: { ...rec, moduloIA: quer, historico } });
+    it.recursos = { ...rec, moduloIA: quer, historico };
+  }
   await lote.commit();
 }
 window.ctSalvar = async function(){
@@ -4059,6 +4209,7 @@ window.ctSalvar = async function(){
   if(!f.piloto && f.fim && f.fim <= f.inicio) return mcErro("O fim do contrato precisa ser depois do início.", "ctf-fim");
   if(f.piloto && !f.dest) return mcErro("Escolha o modelo regular de destino do piloto.", "ctf-destino");
   if(!(f.admFaixa >= 1)) return mcErro("Escolha a faixa contratada de usuários ADM.", "ctf-adm");
+  if(ctProfCombo(f.m) && !(f.profFaixa >= 1)) return mcErro("Escolha a faixa contratada de profissionais.", "ctf-prof");
   const antigo = ctAtual.contrato || null, agora = Date.now();
   const detalhe = ctModo === "novo" ? "Vinculado ao modelo " + f.m.nome
     : ctModo === "efetivar" ? "Piloto efetivado: " + (antigo && antigo.modeloNome) + " → " + f.m.nome
@@ -4067,7 +4218,8 @@ window.ctSalvar = async function(){
     modeloId: f.m.id, modeloNome: f.m.nome, tipo: f.piloto ? "piloto" : "regular",
     inicio: f.inicio, fim: f.fim || "", diaVencimento: f.dia,
     destinoId: f.dest ? f.dest.id : "", destinoNome: f.dest ? f.dest.nome : "",
-    desconto: f.desconto, cortesiaMeses: f.cortesiaMeses, admFaixa: f.admFaixa,
+    desconto: f.desconto, cortesiaMeses: f.cortesiaMeses, admFaixa: f.admFaixa, profFaixa: f.profFaixa, iaContratada: f.iaContratada,
+    previsto: (()=>{ const pv = ctPrevisto(f.m, f.admFaixa, f.profFaixa, f.iaContratada); return { total: pv.total, variavel: pv.variavel, itens: pv.itens.map(x => ({ item: x[0], valor: x[1], obs: x[2] })) }; })(),
     condicoes: ctCondicoes(f.m),
     historico: [{ acao: ctModo === "novo" ? "vinculado" : ctModo === "efetivar" ? "efetivado" : "alterado", em: agora, por: "Desenvolvedor", detalhe }].concat(antigo && Array.isArray(antigo.historico) ? antigo.historico : []).slice(0, 50),
     criadoEm: (antigo && antigo.criadoEm) || new Date(agora).toISOString(), alteradoEm: new Date(agora).toISOString()
@@ -4096,10 +4248,14 @@ window.ctReaplicar = async function(){
   if(btn.disabled || !ctAtual || !ctAtual.contrato) return;
   const antigo = ctAtual.contrato, m = ctModeloPorId(antigo.modeloId);
   if(!m){ fecharModal("modal-ct-reaplicar"); showToast("O modelo deste contrato não foi encontrado."); return; }
+  if(ctProfCombo(m) && !(antigo.profFaixa && ctFaixasProf(m)[antigo.profFaixa - 1])){ fecharModal("modal-ct-reaplicar"); showToast("Defina a faixa de profissionais: use Alterar contrato."); return; }
   if(antigo.admFaixa && !ctFaixasAdm(m)[antigo.admFaixa - 1]){ fecharModal("modal-ct-reaplicar"); showToast("O modelo não tem mais a faixa ADM " + antigo.admFaixa + ". Use Alterar contrato e escolha a faixa."); return; }
   const agora = Date.now();
-  const contrato = Object.assign({}, antigo, {
+  // Contrato gravado antes da opção do Módulo IA: mantém o que a clínica já tem ligado
+  const iaC = typeof antigo.iaContratada === "boolean" ? antigo.iaContratada : (ctAtual.recursos || {}).moduloIA === true;
+  const contrato = Object.assign({}, antigo, { iaContratada: iaC,
     modeloNome: m.nome, condicoes: ctCondicoes(m), alteradoEm: new Date(agora).toISOString(),
+    previsto: (()=>{ const pv = ctPrevisto(m, antigo.admFaixa, antigo.profFaixa, iaC); return { total: pv.total, variavel: pv.variavel, itens: pv.itens.map(x => ({ item: x[0], valor: x[1], obs: x[2] })) }; })(),
     historico: [{ acao: "reaplicado", em: agora, por: "Desenvolvedor", detalhe: "Modelo reaplicado: " + m.nome }].concat(Array.isArray(antigo.historico) ? antigo.historico : []).slice(0, 50)
   });
   btn.disabled = true;
