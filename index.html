@@ -1184,6 +1184,8 @@
               <button type="button" data-v="ilimitado" onclick="mcSeg('mcf-ia-mod','ilimitado')">Ilimitado por profissional</button></div></div>
             <div id="mcf-ia-franquia">
               <p class="dev-dica" style="margin:-6px 0 10px;">Com gestão: controle e transparência de uso e consumo.</p>
+              <div class="field"><label for="mcf-fr-valor" id="mcf-fr-valor-rot">Valor para liberar a IA (R$/mês por clínica) *</label><input type="text" id="mcf-fr-valor" inputmode="decimal" autocomplete="off" placeholder="0,00" onblur="mcFormatarCampo(this)">
+                <p class="dev-dica">Segue a escolha "A franquia vale para": por clínica ou por profissional.</p></div>
               <div class="cob-duas">
                 <div class="field"><label for="mcf-fr-qtd">Resumos por mês *</label><input type="text" id="mcf-fr-qtd" inputmode="numeric" autocomplete="off" placeholder="Ex.: 200"></div>
                 <div class="field"><label for="mcf-fr-exc">Valor do excedente (R$/resumo) *</label><input type="text" id="mcf-fr-exc" inputmode="decimal" autocomplete="off" placeholder="0,00" onblur="mcFormatarCampo(this)"></div>
@@ -1254,6 +1256,12 @@
             <div class="field"><label for="ctf-destino">Modelo de destino (depois do piloto) *</label><select id="ctf-destino" class="ct-sel"></select>
               <p class="dev-dica">Modelo regular usado no botão "Efetivar contrato".</p></div>
           </div>
+        </div>
+        <div class="mc-card" id="ctf-adm-card">
+          <p class="mc-h"><i class="ti ti-users"></i> Usuários ADM <small>Supervisora + Recepção</small></p>
+          <div class="field"><label for="ctf-adm">Faixa contratada *</label><select id="ctf-adm" class="ct-sel" onchange="ctPrevia()"></select>
+            <p class="dev-dica" id="ctf-adm-regra"></p></div>
+          <p class="dev-dica" id="ctf-adm-uso"></p>
         </div>
         <div class="mc-card">
           <p class="mc-h"><i class="ti ti-calendar"></i> Datas</p>
@@ -2307,7 +2315,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026250001";
+const VERSAO_APP = "2026250003";
 
 /* ===================================================================== */
 
@@ -3544,6 +3552,7 @@ function mcVisibilidade(){
   mostra("mcf-ia-bloco", ia); mostra("mcf-ia-franquia", ia && mod === "franquia"); mostra("mcf-ia-ilimitado", ia && mod === "ilimitado");
   mostra("mcf-il-teto-campo", mcSegValor("mcf-il-orig") === "atypical");
   mostra("mcf-piloto-bloco", mcSegValor("mcf-tipo") === "piloto");
+  document.getElementById("mcf-fr-valor-rot").textContent = "Valor para liberar a IA (R$/mês " + (mcSegValor("mcf-fr-esc") === "profissional" ? "por profissional" : "por clínica") + ") *";
   mostra("mcf-desc-bloco", mcSwValor("mcf-desc")); mostra("mcf-cort-bloco", mcSwValor("mcf-cort"));
   document.getElementById("mcf-desc-rot").textContent = mcSegValor("mcf-desc-tipo") === "valor" ? "Desconto (R$/mês) *" : "Desconto (%) *";
   document.getElementById("mcf-ativo-dica").textContent = mcSwValor("mcf-ativo") ? "Pode ser escolhido para novas clínicas" : "Inativo: fica guardado, mas não é oferecido";
@@ -3612,7 +3621,8 @@ function mcResumo(m){
   partes.push("Profissionais: " + (pr.forma === "combo" ? "combo, " + fx(pr.faixas) : "R$ " + mcReais(pr.valorUnitario) + " cada"));
   const ia = m.ia || {};
   if(!ia.disponivel) partes.push("IA: não disponível");
-  else if(ia.modalidade === "franquia") partes.push("IA: franquia de " + ((ia.franquia || {}).resumosMes || 0) + " resumos" + ((ia.franquia || {}).escopo === "profissional" ? " por profissional" : ""));
+  else if(ia.modalidade === "franquia"){ const fr = ia.franquia || {}, porProf = fr.escopo === "profissional";
+    partes.push("IA: franquia de " + (fr.resumosMes || 0) + " resumos" + (porProf ? " por profissional" : "") + (fr.valorMensal === undefined ? " · valor para liberar não informado" : " · R$ " + mcReais(fr.valorMensal) + "/mês " + (porProf ? "por profissional" : "por clínica"))); }
   else partes.push("IA: ilimitado, R$ " + mcReais((ia.ilimitado || {}).valorProfissional) + " por profissional");
   return partes;
 }
@@ -3674,7 +3684,7 @@ function mcAbrirForm(m){
   mcSegPor("mcf-prof-exc", pr.aoExceder || "subir");
   mcSwPor("mcf-ia", ia.disponivel === true);
   mcSegPor("mcf-ia-mod", ia.modalidade || "franquia");
-  v("mcf-fr-qtd", fr.resumosMes || ""); v("mcf-fr-exc", r(fr.valorExcedente));
+  v("mcf-fr-qtd", fr.resumosMes || ""); v("mcf-fr-exc", r(fr.valorExcedente)); v("mcf-fr-valor", r(fr.valorMensal));
   mcSegPor("mcf-fr-esc", fr.escopo || "clinica"); mcSegPor("mcf-fr-est", fr.aoEstourar || "cobrar");
   v("mcf-il-valor", r(il.valorProfissional)); mcSegPor("mcf-il-orig", il.origemChave || "clinica"); v("mcf-il-teto", il.tetoSeguranca || "");
   mcSegPor("mcf-tipo", (m && m.tipo === "piloto") ? "piloto" : "regular"); v("mcf-dias", m && m.duracaoDias ? m.duracaoDias : "");
@@ -3721,10 +3731,11 @@ function mcMontar(){
   if(ia.disponivel){
     ia.modalidade = mcSegValor("mcf-ia-mod");
     if(ia.modalidade === "franquia"){
-      const q = mcInteiro(document.getElementById("mcf-fr-qtd").value), ex = lerReais(document.getElementById("mcf-fr-exc").value);
+      const q = mcInteiro(document.getElementById("mcf-fr-qtd").value), ex = lerReais(document.getElementById("mcf-fr-exc").value), vm = lerReais(document.getElementById("mcf-fr-valor").value);
+      if(!isFinite(vm)) return mcErro("Informe o valor para liberar a IA.", "mcf-fr-valor");
       if(!(q >= 1 && q <= 100000)) return mcErro("Informe quantos resumos a franquia tem por mês.", "mcf-fr-qtd");
       if(!isFinite(ex)) return mcErro("Informe o valor do excedente por resumo.", "mcf-fr-exc");
-      ia.franquia = { resumosMes: q, escopo: mcSegValor("mcf-fr-esc"), valorExcedente: ex, aoEstourar: mcSegValor("mcf-fr-est"), avisos: [80, 100] };
+      ia.franquia = { valorMensal: vm, resumosMes: q, escopo: mcSegValor("mcf-fr-esc"), valorExcedente: ex, aoEstourar: mcSegValor("mcf-fr-est"), avisos: [80, 100] };
     }else{
       const vl = lerReais(document.getElementById("mcf-il-valor").value), orig = mcSegValor("mcf-il-orig");
       if(!isFinite(vl)) return mcErro("Informe o valor por profissional com IA.", "mcf-il-valor");
@@ -3793,6 +3804,9 @@ window.mcSalvar = async function(){
 let ctItens = [], ctModelos = [], ctAtual = null, ctModo = "novo", ctAlterado = false;
 const ctDiaMs = 86400000;
 function ctSomarDias(iso, n){ const d = new Date(iso + "T12:00:00"); d.setTime(d.getTime() + n * ctDiaMs); return d.toISOString().slice(0, 10); }
+function ctFaixasAdm(m){ return ((m && m.adm && m.adm.faixas) || []).filter(f => f && f.de >= 1 && f.ate >= f.de); }
+function ctTextoFaixa(n, f){ return "Faixa " + n + ": de " + f.de + " a " + f.ate + (f.ate === 1 ? " usuário" : " usuários"); }
+function ctRegraExcesso(v){ return v === "bloquear" ? "bloqueia o excedente" : "sobe de faixa e avisa"; }
 function ctModeloPorId(id){ return ctModelos.find(m => m.id === id) || null; }
 function ctRotuloModelo(m){ return (m.nome || "(sem nome)") + (m.tipo === "piloto" ? " · Piloto " + (m.duracaoDias || 0) + " dias" : " · Regular") + (m.ativo ? "" : " (inativo)"); }
 function ctSituacao(ct, hoje){
@@ -3817,7 +3831,10 @@ function ctLimites(m, ct){
   }
   return {
     tipo: ct.tipo, inicio: ct.inicio, fim: ct.fim || "",
-    adm: { faixas: semValor((m.adm || {}).faixas), aoExceder: (m.adm || {}).aoExceder === "bloquear" ? "bloquear" : "subir" },
+    adm: (()=>{ const fx = semValor((m.adm || {}).faixas), n = Math.min(Math.max(1, Number(ct.admFaixa) || 1), Math.max(1, fx.length)), f = fx[n - 1];
+      const a = { faixas: fx, aoExceder: (m.adm || {}).aoExceder === "bloquear" ? "bloquear" : "subir", faixa: n };
+      if(f) a.limite = f.ate;
+      return a; })(),
     profissionais: prof, ia: iaL, alteradoEm: new Date().toISOString()
   };
 }
@@ -3882,7 +3899,9 @@ function ctTextoContrato(ct){
   if(ct.tipo === "piloto") linhas.push(["Depois do piloto", ct.destinoNome || "—"]);
   if(ct.desconto) linhas.push(["Desconto", mcTextoDesconto(ct.desconto)]);
   if(ct.cortesiaMeses > 0) linhas.push(["Cortesia", mcTextoCortesia(ct.cortesiaMeses)]);
-  mcResumo(c).filter(t => !/^(Regular|Piloto|Desconto|Cortesia)/.test(t)).forEach(t => { const i = t.indexOf(": "); linhas.push([t.slice(0, i), t.slice(i + 2)]); });
+  const fxA = ctFaixasAdm(c), fA = ct.admFaixa ? fxA[ct.admFaixa - 1] : null;
+  linhas.push(["ADM contratado", fA ? ctTextoFaixa(ct.admFaixa, fA) + " (" + ctRegraExcesso((c.adm || {}).aoExceder) + ")" : "faixa não definida — use Alterar contrato"]);
+  mcResumo(c).filter(t => !/^(Regular|Piloto|Desconto|Cortesia|ADM)/.test(t)).forEach(t => { const i = t.indexOf(": "); linhas.push([t.slice(0, i), t.slice(i + 2)]); });
   return linhas;
 }
 function ctPreencherResumo(el, linhas){
@@ -3942,6 +3961,9 @@ function ctAbrirForm(it, modo){
   dia.value = ct ? String(ct.diaVencimento) : String(Math.min(28, new Date().getDate()));
   document.getElementById("ctf-fim").value = modo === "alterar" && ct && ct.tipo !== "piloto" ? (ct.fim || "") : "";
   ctAoTrocarModelo(true);
+  const selA = document.getElementById("ctf-adm");
+  if(ct && ct.admFaixa && [...selA.options].some(o => o.value === String(ct.admFaixa))) selA.value = String(ct.admFaixa);
+  ctContarAdm(it);
   if(modo === "alterar" && ct){
     if(ct.destinoId) document.getElementById("ctf-destino").value = ct.destinoId;
     ctSwPor("ctf-desc", !!ct.desconto); ctSwPor("ctf-cort", ct.cortesiaMeses > 0);
@@ -3967,11 +3989,26 @@ window.ctAoTrocarModelo = function(inicial){
   document.getElementById("ctf-cort-linha").style.display = temC ? "flex" : "none";
   document.getElementById("ctf-desc-txt").textContent = temD ? "Previsto no modelo: " + mcTextoDesconto(m.desconto) : "";
   document.getElementById("ctf-cort-txt").textContent = temC ? "Previsto no modelo: " + mcTextoCortesia(m.cortesiaMeses) : "";
+  const selA = document.getElementById("ctf-adm"), antesA = selA.value, fxA = ctFaixasAdm(m);
+  selA.innerHTML = "";
+  fxA.forEach((f, i) => { const o = document.createElement("option"); o.value = String(i + 1); o.textContent = ctTextoFaixa(i + 1, f); selA.appendChild(o); });
+  if([...selA.options].some(o => o.value === antesA)) selA.value = antesA;
+  document.getElementById("ctf-adm-card").style.display = m ? "flex" : "none";
+  document.getElementById("ctf-adm-regra").textContent = m ? "Ao passar da faixa contratada: " + ctRegraExcesso((m.adm || {}).aoExceder) + " (regra do modelo)." : "";
   // Ao escolher um modelo, as condições previstas já vêm ligadas (pode desligar)
   mcSwPor("ctf-desc", temD); mcSwPor("ctf-cort", temC);
   if(inicial !== true) ctAlterado = true;
   ctPrevia();
 };
+let ctAdmAtivos = null;
+async function ctContarAdm(it){
+  ctAdmAtivos = null; const el = document.getElementById("ctf-adm-uso"); el.textContent = "";
+  try{
+    const us = await getDocs(collection(cliDb, "Clinicas", it.id, "usuarios"));
+    ctAdmAtivos = us.docs.map(d => d.data()).filter(u => u.ativo === true && (u.tipo === "supervisora" || u.tipo === "recepcionista")).length;
+  }catch(e){ ctAdmAtivos = null; }
+  ctPrevia();
+}
 function ctLerForm(){
   const m = ctModeloPorId(document.getElementById("ctf-modelo").value);
   const inicio = document.getElementById("ctf-inicio").value, dia = Number(document.getElementById("ctf-dia").value);
@@ -3980,13 +4017,18 @@ function ctLerForm(){
   const dest = piloto ? ctModeloPorId(document.getElementById("ctf-destino").value) : null;
   return { m, inicio, dia, piloto, fim, dest,
     desconto: m && m.desconto && mcSwValor("ctf-desc") ? m.desconto : null,
-    cortesiaMeses: m && m.cortesiaMeses > 0 && mcSwValor("ctf-cort") ? m.cortesiaMeses : 0 };
+    cortesiaMeses: m && m.cortesiaMeses > 0 && mcSwValor("ctf-cort") ? m.cortesiaMeses : 0,
+    admFaixa: Number(document.getElementById("ctf-adm").value) || 0 };
 }
 window.ctPrevia = function(){
   const f = ctLerForm(), el = document.getElementById("ctf-previa");
   const fp = document.getElementById("ctf-fim-piloto");
   fp.textContent = f.piloto && f.fim ? "O piloto termina em " + mcData(f.fim) + " (" + f.m.duracaoDias + " dias a partir do início)." : "";
   fp.style.display = fp.textContent ? "block" : "none";
+  const uso = document.getElementById("ctf-adm-uso"), fA = f.m ? ctFaixasAdm(f.m)[f.admFaixa - 1] : null;
+  uso.textContent = ctAdmAtivos === null ? "" : "Hoje a clínica tem " + ctAdmAtivos + (ctAdmAtivos === 1 ? " usuário ADM ativo." : " usuários ADM ativos.")
+    + (fA && ctAdmAtivos > fA.ate ? " Acima da faixa: os atuais continuam, mas novos ADM seguem a regra do modelo." : "");
+  uso.style.color = fA && ctAdmAtivos > fA.ate ? "var(--red-ink)" : "";
   if(!f.m){ el.textContent = ""; return; }
   const linhas = [["A clínica vai ler", "só os limites (faixas de usuários ADM, profissionais e IA), sem valores"]];
   linhas.push(["Base", "R$ " + mcReais(f.m.baseMensal) + "/mês"]);
@@ -4016,6 +4058,7 @@ window.ctSalvar = async function(){
   if(!(f.dia >= 1 && f.dia <= 28)) return mcErro("Escolha o dia do vencimento.", "ctf-dia");
   if(!f.piloto && f.fim && f.fim <= f.inicio) return mcErro("O fim do contrato precisa ser depois do início.", "ctf-fim");
   if(f.piloto && !f.dest) return mcErro("Escolha o modelo regular de destino do piloto.", "ctf-destino");
+  if(!(f.admFaixa >= 1)) return mcErro("Escolha a faixa contratada de usuários ADM.", "ctf-adm");
   const antigo = ctAtual.contrato || null, agora = Date.now();
   const detalhe = ctModo === "novo" ? "Vinculado ao modelo " + f.m.nome
     : ctModo === "efetivar" ? "Piloto efetivado: " + (antigo && antigo.modeloNome) + " → " + f.m.nome
@@ -4024,7 +4067,7 @@ window.ctSalvar = async function(){
     modeloId: f.m.id, modeloNome: f.m.nome, tipo: f.piloto ? "piloto" : "regular",
     inicio: f.inicio, fim: f.fim || "", diaVencimento: f.dia,
     destinoId: f.dest ? f.dest.id : "", destinoNome: f.dest ? f.dest.nome : "",
-    desconto: f.desconto, cortesiaMeses: f.cortesiaMeses,
+    desconto: f.desconto, cortesiaMeses: f.cortesiaMeses, admFaixa: f.admFaixa,
     condicoes: ctCondicoes(f.m),
     historico: [{ acao: ctModo === "novo" ? "vinculado" : ctModo === "efetivar" ? "efetivado" : "alterado", em: agora, por: "Desenvolvedor", detalhe }].concat(antigo && Array.isArray(antigo.historico) ? antigo.historico : []).slice(0, 50),
     criadoEm: (antigo && antigo.criadoEm) || new Date(agora).toISOString(), alteradoEm: new Date(agora).toISOString()
@@ -4053,6 +4096,7 @@ window.ctReaplicar = async function(){
   if(btn.disabled || !ctAtual || !ctAtual.contrato) return;
   const antigo = ctAtual.contrato, m = ctModeloPorId(antigo.modeloId);
   if(!m){ fecharModal("modal-ct-reaplicar"); showToast("O modelo deste contrato não foi encontrado."); return; }
+  if(antigo.admFaixa && !ctFaixasAdm(m)[antigo.admFaixa - 1]){ fecharModal("modal-ct-reaplicar"); showToast("O modelo não tem mais a faixa ADM " + antigo.admFaixa + ". Use Alterar contrato e escolha a faixa."); return; }
   const agora = Date.now();
   const contrato = Object.assign({}, antigo, {
     modeloNome: m.nome, condicoes: ctCondicoes(m), alteradoEm: new Date(agora).toISOString(),
