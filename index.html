@@ -796,6 +796,10 @@
   .pa-total{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; margin-top:10px; padding:12px; background:#F1F6FD; border-radius:12px; }
   .pa-total b{ font-size:15px; } .pa-total strong{ font-size:22px; color:var(--deep); white-space:nowrap; }
   .pa-nota{ margin:8px 0 0; font-size:13px; color:var(--muted); line-height:1.45; }
+  .pa-envio{ font-size:14px; line-height:1.5; color:var(--muted); background:var(--soft); border-radius:12px; padding:10px 12px; }
+  .pa-envio:empty{ display:none; }
+  .pa-envio b{ color:var(--deep); }
+  .pa-envio .ok{ color:var(--green-ink); font-weight:700; }
   .ct-hist{ display:flex; flex-direction:column; gap:8px; margin:0; padding:0; list-style:none; }
   .ct-hist li{ font-size:14px; line-height:1.45; color:var(--deep); padding:8px 10px; background:#fff; border:1px solid var(--line); border-radius:10px; }
   .ct-hist li small{ display:block; color:var(--muted); font-size:12px; }
@@ -1255,7 +1259,10 @@
           <div class="pa-cab"><div><p class="pa-tit">Pré-acordo comercial</p><p class="pa-sub" id="ctc-sub"></p></div><span id="ctc-tag"></span></div>
           <div id="ctc-resumo"></div>
         </div>
+        <div class="pa-envio" id="ctc-envio"></div>
         <div class="ct-acoes">
+          <button class="btn btn-primary" id="ctc-btn-acordo" onclick="ctAbrirAcordo()"><i class="ti ti-mail-forward"></i> Enviar acordo por e-mail</button>
+          <button class="btn btn-ghost" id="ctc-btn-aceite" onclick="ctAbrirAceite()"><i class="ti ti-circle-check"></i> Registrar aceite</button>
           <button class="btn btn-primary" id="ctc-btn-efetivar" onclick="ctEfetivar()"><i class="ti ti-rosette-discount-check"></i> Efetivar contrato</button>
           <button class="btn btn-ghost" onclick="ctAlterar()"><i class="ti ti-edit"></i> Alterar contrato</button>
           <button class="btn btn-ghost" onclick="ctPerguntarReaplicar()"><i class="ti ti-refresh"></i> Reaplicar modelo</button>
@@ -2243,6 +2250,29 @@
     <button class="btn btn-ghost btn-linha" id="ct-sair-sim" onclick="ctConfirmarSaida()">Sair e perder os dados</button>
   </div>
 </div>
+<div class="modal-wrap" id="modal-ct-acordo" data-fixo="1" style="z-index:72;">
+  <div class="modal">
+    <h3>Enviar acordo comercial?</h3>
+    <p class="sub" id="cta-sub" style="margin:-8px 0 10px;"></p>
+    <p class="dev-resumo" id="cta-para" style="margin:0 0 10px;"></p>
+    <div class="rs-aviso" id="cta-aviso" style="display:none;"><i class="ti ti-alert-triangle"></i> <span id="cta-aviso-texto"></span></div>
+    <p class="cob-previa-rot">Prévia do e-mail, com os dados reais</p>
+    <p class="cob-previa-msg" id="cta-msg">Carregando a prévia…</p>
+    <iframe class="cob-previa" id="cta-previa" title="Prévia do e-mail do acordo comercial" sandbox="" style="display:none;"></iframe>
+    <button class="btn btn-primary btn-linha" id="cta-btn" onclick="ctEnviarAcordo()"><i class="ti ti-send"></i> Enviar e-mail</button>
+    <button class="btn btn-ghost btn-linha" onclick="fecharModal('modal-ct-acordo')">Cancelar</button>
+  </div>
+</div>
+<div class="modal-wrap" id="modal-ct-aceite" data-fixo="1" style="z-index:72;">
+  <div class="modal">
+    <h3>Registrar aceite do acordo</h3>
+    <p class="sub" style="margin:-6px 0 12px;font-size:15px;">Use quando a clínica responder “De acordo”.</p>
+    <div class="field"><label for="cte-data">Data do aceite *</label><input type="date" id="cte-data"></div>
+    <div class="field"><label for="cte-obs">Observação</label><input type="text" id="cte-obs" maxlength="120" autocomplete="off" placeholder="Ex.: respondido por Marina por e-mail"></div>
+    <button class="btn btn-primary btn-linha" id="cte-btn" onclick="ctSalvarAceite()"><i class="ti ti-check"></i> Registrar aceite</button>
+    <button class="btn btn-ghost btn-linha" onclick="fecharModal('modal-ct-aceite')">Cancelar</button>
+  </div>
+</div>
 <div class="modal-wrap" id="modal-ct-reaplicar" data-fixo="1" style="z-index:72;">
   <div class="modal">
     <h3>Reaplicar o modelo?</h3>
@@ -2347,7 +2377,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026250007";
+const VERSAO_APP = "2026250008";
 
 /* ===================================================================== */
 
@@ -4040,6 +4070,13 @@ function ctAbrirClinica(it){
   document.getElementById("ctc-sub").textContent = it.nome;
   ctRenderPreAcordo(document.getElementById("ctc-resumo"), it, ct);
   document.getElementById("ctc-btn-efetivar").style.display = ct.tipo === "piloto" ? "flex" : "none";
+  const env = document.getElementById("ctc-envio"); env.innerHTML = "";
+  const fmt = iso => new Date(iso).toLocaleString("pt-BR", { day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit" });
+  if(ct.acordoEnviadoEm){ env.appendChild(document.createTextNode("Acordo enviado em ")); const b = document.createElement("b"); b.textContent = fmt(ct.acordoEnviadoEm); env.appendChild(b); env.appendChild(document.createTextNode(" para " + (ct.acordoEnviadoPara || "a supervisora") + ". ")); }
+  if(ct.aceiteEm){ const a = document.createElement("span"); a.className = "ok"; a.textContent = "Aceito em " + mcData(ct.aceiteEm) + (ct.aceiteObs ? " · " + ct.aceiteObs : "") + "."; env.appendChild(a); }
+  else if(ct.acordoEnviadoEm) env.appendChild(document.createTextNode("Aguardando a resposta “De acordo”."));
+  document.getElementById("ctc-btn-aceite").style.display = ct.acordoEnviadoEm && !ct.aceiteEm ? "flex" : "none";
+  document.getElementById("ctc-btn-acordo").innerHTML = '<i class="ti ti-mail-forward"></i> ' + (ct.acordoEnviadoEm ? "Reenviar acordo por e-mail" : "Enviar acordo por e-mail");
   const ul = document.getElementById("ctc-hist"); ul.innerHTML = "";
   (Array.isArray(ct.historico) ? ct.historico : []).forEach(h => {
     const li = document.createElement("li"); li.textContent = h.detalhe || h.acao;
@@ -4224,6 +4261,7 @@ window.ctSalvar = async function(){
     desconto: f.desconto, cortesiaMeses: f.cortesiaMeses, admFaixa: f.admFaixa, profFaixa: f.profFaixa, iaContratada: f.iaContratada,
     previsto: (()=>{ const pv = ctPrevisto(f.m, f.admFaixa, f.profFaixa, f.iaContratada, ctProfAtivos); return { total: pv.total, variavel: pv.variavel, profAtivas: pv.profAtivas, em: hojeISO(), itens: pv.itens.map(x => ({ item: x[0], valor: x[1], obs: x[2] })) }; })(),
     condicoes: ctCondicoes(f.m),
+    acordoEnviadoEm: "", acordoEnviadoPara: "", aceiteEm: "", aceiteObs: "",
     historico: [{ acao: ctModo === "novo" ? "vinculado" : ctModo === "efetivar" ? "efetivado" : "alterado", em: agora, por: "Desenvolvedor", detalhe }].concat(antigo && Array.isArray(antigo.historico) ? antigo.historico : []).slice(0, 50),
     criadoEm: (antigo && antigo.criadoEm) || new Date(agora).toISOString(), alteradoEm: new Date(agora).toISOString()
   };
@@ -4236,6 +4274,78 @@ window.ctSalvar = async function(){
   }catch(e){
     showToast(e && e.code === "permission-denied" ? "O banco recusou. Publique as regras v40 e tente de novo." : "Não foi possível salvar. Confira a internet e tente de novo.");
   }finally{ b.disabled = false; b.innerHTML = '<i class="ti ti-check"></i> Salvar contrato'; }
+};
+
+/* ---- acordo comercial por e-mail (script de e-mail da souza.iatech, v8) e aceite ---- */
+const URL_CLI_EMAIL = "https://script.google.com/macros/s/AKfycbx7z9_UbUQT2IZP3XXJJJeiE1m17_kdl_PfsTOEw_ZlTun7M2mViHqg6js-EACIFCk3/exec";
+let ctAcordoAlvo = null;
+async function ctPedirAcordo(it, previa){
+  cliPreparar();
+  const token = await cliAuth.currentUser.getIdToken();
+  if(!cobConfig.chavePix && !cobDisponivel){ try{ await cobCarregarTudo(); }catch(e){} }
+  const r = await fetch(URL_CLI_EMAIL, { method: "POST", credentials: "omit", headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({ acao: "acordo", token, clinica: it.id, previa: previa === true, pix: cobConfig.chavePix || "", recebedor: cobConfig.recebedor || "" }) });
+  const t = await r.text(); let d = null; try{ d = JSON.parse(t); }catch(e){ d = null; }
+  if(!d) throw new Error(/^[a-z-]+$/.test(t.trim()) ? "O envio do acordo ainda não está publicado no script de e-mail (versão 8)." : "Resposta inesperada do script de e-mail.");
+  return d;
+}
+function ctErroAcordo(e){
+  return { "nao-autorizado": "O script não reconheceu o seu login de desenvolvedor no banco das clínicas. Entre de novo.", "sem-previsto": "Este contrato é anterior ao valor previsto. Use Alterar contrato e salve.",
+    "sem-destinatario": "A clínica não tem supervisora ativa com e-mail.", "limite": "Muitos envios deste acordo nas últimas horas. Tente mais tarde.", "pedido-invalido": "Pedido inválido." }[e] || ("Não foi possível: " + e);
+}
+window.ctAbrirAcordo = async function(){
+  const it = ctAtual; if(!it || !it.contrato) return;
+  ctAcordoAlvo = it;
+  document.getElementById("cta-sub").textContent = it.nome;
+  document.getElementById("cta-para").textContent = "Para: carregando…";
+  const msg = document.getElementById("cta-msg"), q = document.getElementById("cta-previa"), b = document.getElementById("cta-btn"), av = document.getElementById("cta-aviso");
+  q.style.display = "none"; q.removeAttribute("srcdoc"); msg.style.display = "block"; msg.textContent = "Carregando a prévia…"; b.disabled = true; b.innerHTML = '<i class="ti ti-send"></i> Enviar e-mail';
+  const avisos = []; if(it.contrato.acordoEnviadoEm) avisos.push("Já enviado em " + mcData(it.contrato.acordoEnviadoEm.slice(0, 10)) + ". Enviar de novo manda outro e-mail.");
+  av.style.display = "none";
+  abrirModal("modal-ct-acordo");
+  try{
+    const d = await ctPedirAcordo(it, true);
+    if(ctAcordoAlvo !== it) return;
+    if(!d.ok){ msg.textContent = ctErroAcordo(d.erro); document.getElementById("cta-para").textContent = ""; return; }
+    document.getElementById("cta-para").textContent = "Para: " + d.para.join(", ") + " · resposta para souza.iatech@gmail.com";
+    if(!cobConfig.chavePix) avisos.push("Sem chave Pix cadastrada (Agende & Festas → Meus dados de recebimento): o e-mail diz que os dados de pagamento seguem depois.");
+    if(avisos.length){ av.style.display = "block"; document.getElementById("cta-aviso-texto").textContent = avisos.join(" "); }
+    q.setAttribute("srcdoc", d.html); q.style.display = "block"; msg.style.display = "none"; b.disabled = false;
+  }catch(e){ if(ctAcordoAlvo === it){ msg.textContent = e.message || "Não foi possível carregar a prévia. Confira a internet e tente de novo."; } }
+};
+window.ctEnviarAcordo = async function(){
+  const it = ctAcordoAlvo, b = document.getElementById("cta-btn"); if(!it || b.disabled) return;
+  b.disabled = true; b.textContent = "Enviando...";
+  try{
+    const d = await ctPedirAcordo(it, false);
+    if(!d.ok) throw new Error(ctErroAcordo(d.erro));
+    const para = d.para.join(", ").slice(0, 300), agora = Date.now();
+    const contrato = Object.assign({}, it.contrato, { acordoEnviadoEm: d.em || new Date(agora).toISOString(), acordoEnviadoPara: para, aceiteEm: "", aceiteObs: "",
+      historico: [{ acao: "acordo-enviado", em: agora, por: "Desenvolvedor", detalhe: "Acordo comercial enviado por e-mail para " + para }].concat(it.contrato.historico || []).slice(0, 50) });
+    try{ await setDoc(doc(cliDb, "Clinicas", it.id, "privado", "contrato"), contrato); it.contrato = contrato; }
+    catch(e){ showToast("E-mail enviado, mas o registro do envio não foi gravado (publique as regras v43)."); }
+    fecharModal("modal-ct-acordo"); ctAcordoAlvo = null;
+    showToast("Acordo enviado para " + para + ".");
+    ctAbrirClinica(it);
+  }catch(e){ showToast(e.message || "Não foi possível enviar o e-mail."); b.disabled = false; b.innerHTML = '<i class="ti ti-send"></i> Enviar e-mail'; }
+};
+window.ctAbrirAceite = function(){
+  if(!ctAtual || !ctAtual.contrato) return;
+  document.getElementById("cte-data").value = hojeISO(); document.getElementById("cte-obs").value = "";
+  abrirModal("modal-ct-aceite");
+};
+window.ctSalvarAceite = async function(){
+  const it = ctAtual, b = document.getElementById("cte-btn"); if(!it || !it.contrato || b.disabled) return;
+  const data = document.getElementById("cte-data").value, obs = document.getElementById("cte-obs").value.replace(/\s+/g, " ").trim().slice(0, 120);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(data)) return mcErro("Informe a data do aceite.", "cte-data");
+  if(data > hojeISO()) return mcErro("A data do aceite não pode ser no futuro.", "cte-data");
+  const agora = Date.now();
+  const contrato = Object.assign({}, it.contrato, { aceiteEm: data, aceiteObs: obs,
+    historico: [{ acao: "aceite", em: agora, por: "Desenvolvedor", detalhe: "Aceite registrado (" + mcData(data) + ")" + (obs ? ": " + obs : "") }].concat(it.contrato.historico || []).slice(0, 50) });
+  b.disabled = true;
+  try{ await setDoc(doc(cliDb, "Clinicas", it.id, "privado", "contrato"), contrato); it.contrato = contrato; fecharModal("modal-ct-aceite"); showToast("Aceite registrado."); ctAbrirClinica(it); }
+  catch(e){ showToast(e && e.code === "permission-denied" ? "O banco recusou. Publique as regras v43 e tente de novo." : "Não foi possível salvar. Confira a internet e tente de novo."); }
+  finally{ b.disabled = false; }
 };
 
 /* ---- reaplicar o modelo (leva a versão atual do modelo para o contrato) ---- */
@@ -4256,7 +4366,7 @@ window.ctReaplicar = async function(){
   const agora = Date.now();
   // Contrato gravado antes da opção do Módulo IA: mantém o que a clínica já tem ligado
   const iaC = typeof antigo.iaContratada === "boolean" ? antigo.iaContratada : (ctAtual.recursos || {}).moduloIA === true;
-  const contrato = Object.assign({}, antigo, { iaContratada: iaC,
+  const contrato = Object.assign({}, antigo, { iaContratada: iaC, acordoEnviadoEm: "", acordoEnviadoPara: "", aceiteEm: "", aceiteObs: "",
     modeloNome: m.nome, condicoes: ctCondicoes(m), alteradoEm: new Date(agora).toISOString(),
     previsto: (()=>{ const pa = (antigo.previsto || {}).profAtivas, pv = ctPrevisto(m, antigo.admFaixa, antigo.profFaixa, iaC, pa); return { total: pv.total, variavel: pv.variavel, profAtivas: pv.profAtivas, em: (antigo.previsto || {}).em || hojeISO(), itens: pv.itens.map(x => ({ item: x[0], valor: x[1], obs: x[2] })) }; })(),
     historico: [{ acao: "reaplicado", em: agora, por: "Desenvolvedor", detalhe: "Modelo reaplicado: " + m.nome }].concat(Array.isArray(antigo.historico) ? antigo.historico : []).slice(0, 50)
