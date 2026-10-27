@@ -1226,7 +1226,7 @@
               <p class="dev-dica" style="margin:-6px 0 10px;">Sem gestão de uso: valor fixo por profissional com IA.</p>
               <div class="field"><label for="mcf-il-valor">Valor por profissional com IA (R$/mês) *</label><input type="text" id="mcf-il-valor" inputmode="decimal" autocomplete="off" placeholder="0,00" onblur="mcFormatarCampo(this)"></div>
               <div class="field"><label>Origem da chave</label><div class="mc-seg" id="mcf-il-orig">
-                <button type="button" data-v="clinica" onclick="mcSeg('mcf-il-orig','clinica')">Chave da clínica</button>
+                <button type="button" data-v="clinica" style="display:none" onclick="mcSeg('mcf-il-orig','clinica')">Chave da clínica</button>
                 <button type="button" data-v="atypical" onclick="mcSeg('mcf-il-orig','atypical')">Chave Atypical</button></div></div>
               <div class="field" id="mcf-il-teto-campo"><label for="mcf-il-teto">Teto de segurança interno (resumos/mês por profissional) *</label><input type="text" id="mcf-il-teto" inputmode="numeric" autocomplete="off" placeholder="Ex.: 500">
                 <p class="dev-dica">Só para proteger a sua chave. A clínica não vê esse número.</p></div>
@@ -2286,6 +2286,7 @@
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.44.0/tabler-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="lib/supabase-2.118.0.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
@@ -2377,7 +2378,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026250008";
+const VERSAO_APP = "2026270001-S1";   // S = cópia Supabase (Etapa 7c)
 
 /* ===================================================================== */
 
@@ -3308,44 +3309,52 @@ window.devConfirmarExclusao = async function(){
 };
 
 /* =====================================================================
-   PONTE COM O ATYPICAL & AGENDAS (v2026110001)
-   As clínicas ficam em outro projeto Firebase (banco próprio). O painel abre uma
-   segunda conexão só com esse banco, com a mesma conta de desenvolvedor.
-   Nada é copiado entre os bancos. Quem confere a permissão são as regras de lá.
+   PONTE COM O ATYPICAL & AGENDAS — VERSÃO SUPABASE (Etapa 7c, 27/10/2026)
+   As clínicas ficam no Supabase (banco próprio do Atypical & Agendas). O painel abre
+   uma conexão só com esse banco, com o login de desenvolvedor de lá (souza.iatech).
+   Quem confere a permissão são as regras do banco (RLS + funções que conferem eh_dev).
+   Ambiente pelo endereço, como no app: só o endereço oficial do Painel usa a produção;
+   qualquer outro (preview da Vercel, computador local) usa a homologação.
+   O salão de festas (condomínios e cobranças) continua no Firebase dele, sem mudança.
    ===================================================================== */
-const cliConfig = {
-  apiKey: "AIzaSyBldXzQQBETrMj-uruiQqYsIdPAazr9Mxc",
-  authDomain: "atypical-agendas.firebaseapp.com",
-  projectId: "atypical-agendas",
-  storageBucket: "atypical-agendas.firebasestorage.app",
-  messagingSenderId: "305368058260",
-  appId: "1:305368058260:web:80c00e488229a782e62781"
+const PAINEL_OFICIAL = "agende-festas.vercel.app";
+const CLI_AMBIENTES = {
+  producao: { nome: "Produção", url: "https://ybzujcqwdlqcyjcwofqp.supabase.co", chave: "sb_publishable_qKZxKleDmFcmsHUH1GCxFg_XtgZdren",
+    app: "https://atypical-agendas.vercel.app/",
+    email: "https://script.google.com/macros/s/AKfycbx7z9_UbUQT2IZP3XXJJJeiE1m17_kdl_PfsTOEw_ZlTun7M2mViHqg6js-EACIFCk3/exec" },
+  homologacao: { nome: "Homologação", url: "https://gvvdcdyahroftlvhxcfx.supabase.co", chave: "sb_publishable_VuOG2eMV23YFIxq8OKOusQ_AX5g9Nt7",
+    app: "https://atypical-agendas-git-supabase-souza-9299.vercel.app/",
+    email: "https://script.google.com/macros/s/AKfycbyUUYPTgEPE2akCg89WZl7ivX3tcQXjW0Rt6XLMtrLPWUwe6JZBVhlL8ny-E3S2CWUN/exec" }
 };
-const URL_CLINICAS = "https://atypical-agendas.vercel.app/";
+const CLI_AMBIENTE = location.hostname === PAINEL_OFICIAL ? "producao" : "homologacao";
+const CLI = CLI_AMBIENTES[CLI_AMBIENTE];
+const URL_CLINICAS = CLI.app;
 const CLI_CODIGOS_RESERVADOS = ["dev", "admin", "clinicas", "codigo-invalido"];
-let cliApp = null, cliDb = null, cliAuth = null, cliAuthSec = null;
+let cliSb = null;
 let cliCodigoEditado = false, cliNovo = null;   // cliNovo guarda a senha inicial só em memória
 function cliPreparar(){
-  if(cliApp) return;
-  cliApp = initializeApp(cliConfig, "clinicas");
-  cliDb = getFirestore(cliApp);
-  cliAuth = getAuth(cliApp);
-  // Sessão à parte só para criar o login da supervisora, sem derrubar a do desenvolvedor
-  cliAuthSec = getAuth(initializeApp(cliConfig, "clinicasSecundario"));
+  if(cliSb) return;
+  cliSb = window.supabase.createClient(CLI.url, CLI.chave, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storageKey: "painel.clinicas." + CLI_AMBIENTE } });
 }
+// Devolve o login só se for o desenvolvedor naquele banco (marca dev no login do Supabase)
 async function cliUsuario(){
   cliPreparar();
-  try{ if(cliAuth.authStateReady) await cliAuth.authStateReady(); }catch(e){}
-  return cliAuth.currentUser;
+  const { data } = await cliSb.auth.getSession();
+  const u = data && data.session ? data.session.user : null;
+  return u && u.app_metadata && u.app_metadata.dev === true ? u : null;
 }
-async function cliSair(){ cliPreparar(); cliNovo = null; await signOut(cliAuth); }
+async function cliToken(){ cliPreparar(); const { data } = await cliSb.auth.getSession(); return data && data.session ? data.session.access_token : ""; }
+async function cliSair(){ cliPreparar(); cliNovo = null; await cliSb.auth.signOut(); }
+// Executa uma leitura/gravação do Supabase e devolve os dados (ou lança o erro com a mensagem do banco)
+async function cliQ(pedido){ const { data, error } = await pedido; if(error) throw error; return data; }
+function cliMsgErro(e, padrao){
+  const m = (e && e.message) || "";
+  if(/Failed to fetch|NetworkError|Load failed/i.test(m)) return "Sem conexão. Confira a internet e tente de novo.";
+  if(/JWT|token|not authenticated|permission denied|row-level security/i.test(m)) return "O banco das clínicas recusou. Entre de novo como desenvolvedor.";
+  return m && m.length < 200 && !/^[A-Z0-9]{5}$/.test(m) ? m : padrao;
+}
 function linkDaClinica(codigo){ return URL_CLINICAS + "?c=" + encodeURIComponent(codigo); }
 function cliCodigoValido(c){ return /^[a-z0-9][a-z0-9-]{1,39}$/.test(String(c || "")) && !CLI_CODIGOS_RESERVADOS.includes(c); }
-function cliGerarSenha(){
-  // Senha provisória de 6 números, sorteada sem vício. A supervisora troca no primeiro acesso.
-  const a = new Uint32Array(1); do{ crypto.getRandomValues(a); }while(a[0] >= 4294000000);
-  return String(a[0] % 1000000).padStart(6, "0");
-}
 function cliCartaoAviso(texto, rotuloBotao, acao){
   const caixa = document.getElementById("cli-area");
   caixa.innerHTML = "";
@@ -3354,6 +3363,8 @@ function cliCartaoAviso(texto, rotuloBotao, acao){
     const b = document.createElement("button"); b.className = "btn btn-ghost"; b.textContent = rotuloBotao; b.onclick = acao; caixa.appendChild(b);
   }
 }
+const cliRotuloAmb = () => CLI_AMBIENTE === "producao" ? "" : " · " + CLI.nome;
+const cliFmtDH = iso => new Date(iso).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
 async function cliRenderizarArea(){
   const caixa = document.getElementById("cli-area");
   if(!caixa) return;
@@ -3361,23 +3372,31 @@ async function cliRenderizarArea(){
   let user = null;
   devContar("clinicas", "Carregando…");
   try{ user = await cliUsuario(); }catch(e){ devContar("clinicas", "Não foi possível contar"); cliCartaoAviso("Não foi possível abrir o banco das clínicas.", "Tentar de novo", cliRenderizarArea); return; }
-  if(!user){ devContar("clinicas", "Entre para ver as clínicas"); cliCartaoAviso("Entre no banco das clínicas para ver e cadastrar.", "Entrar no Atypical & Agendas", ()=> cliAbrirEntrar()); return; }
+  if(!user){ devContar("clinicas", "Entre para ver as clínicas" + cliRotuloAmb()); cliCartaoAviso("Entre no banco das clínicas (" + CLI.nome + ") para ver e cadastrar.", "Entrar no Atypical & Agendas", ()=> cliAbrirEntrar()); return; }
   try{
-    const snap = await getDocs(collection(cliDb, "Clinicas"));
-    const itens = await Promise.all(snap.docs.map(async d=>{
-      let usuarios = 0; const sups = [];
-      try{
-        const us = await getDocs(collection(cliDb, "Clinicas", d.id, "usuarios"));
-        usuarios = us.size;
-        us.forEach(u=>{ const v = u.data(); if(v.tipo === "supervisora" && v.nome) sups.push(String(v.nome).trim().split(/\s+/)[0]); });
-      }catch(e){ /* mostra a clínica mesmo sem a contagem */ }
-      const rec = d.data().recursos;
-      return { id: d.id, nome: (d.data().nome || d.id), usuarios, sups, recursos: rec && typeof rec === "object" ? rec : {} };
-    }));
+    // Três leituras para a lista inteira (antes: uma por clínica)
+    const [cls, us, hs] = await Promise.all([
+      cliQ(cliSb.from("clinicas").select("id,codigo,nome,importar_pacientes,modulo_ia")),
+      cliQ(cliSb.from("usuarios").select("clinica_id,nome,tipo")),
+      cliQ(cliSb.from("config_historico").select("clinica_id,alterado_em,antes,depois").eq("config", "recursos").order("alterado_em", { ascending: false }).limit(500))
+    ]);
+    const itens = cls.map(c=>{
+      const meus = us.filter(u => u.clinica_id === c.id);
+      const sups = meus.filter(u => u.tipo === "supervisora" && u.nome).map(u => String(u.nome).trim().split(/\s+/)[0]);
+      const mudou = campo => hs.find(h => h.clinica_id === c.id && (h.antes ? h.antes[campo] !== h.depois[campo] : false));
+      const ultIA = mudou("modulo_ia");
+      return { id: c.codigo, uuid: c.id, nome: c.nome || c.codigo, usuarios: meus.length, sups,
+        recursos: { importarPacientes: c.importar_pacientes === true, moduloIA: c.modulo_ia === true }, ultIA: ultIA ? ultIA.alterado_em : null };
+    });
     itens.sort((a,b)=> a.nome.localeCompare(b.nome, "pt-BR"));
-    devContar("clinicas", itens.length === 1 ? "1 clínica" : itens.length + " clínicas");
+    devContar("clinicas", (itens.length === 1 ? "1 clínica" : itens.length + " clínicas") + cliRotuloAmb());
     caixa.innerHTML = "";
-    if(!itens.length){ caixa.innerHTML = '<p class="dev-vazio">Nenhuma clínica cadastrada ainda.</p>'; return; }
+    if(CLI_AMBIENTE !== "producao"){
+      const tag = document.createElement("p"); tag.className = "dev-vazio";
+      tag.innerHTML = '<span class="cob-tag avencer">Homologação</span> Banco de testes das clínicas. O que for gravado aqui não vale para as clínicas.';
+      caixa.appendChild(tag);
+    }
+    if(!itens.length){ caixa.insertAdjacentHTML("beforeend", '<p class="dev-vazio">Nenhuma clínica cadastrada ainda.</p>'); return; }
     itens.forEach(it=>{
       const b = document.createElement("button");
       b.className = "dev-condo";
@@ -3387,61 +3406,35 @@ async function cliRenderizarArea(){
       tx[0].textContent = (it.usuarios === 1 ? "1 usuário" : `${it.usuarios} usuários`) + " · " + (it.sups.length ? "Supervisora: " + it.sups.join(", ") : "Sem supervisora");
       tx[1].textContent = "Código: " + it.id;
       b.onclick = ()=>{ window.open(linkDaClinica(it.id), "_blank", "noopener"); };
-      // Recursos da clinica ligados pelo desenvolvedor (v2026110004): importar pacientes por planilha
+      // Recursos da clinica ligados pelo desenvolvedor: importar pacientes por planilha
       const w = document.createElement("div"), rec = document.createElement("div"), on = it.recursos.importarPacientes === true;
       rec.className = "cli-rec"; rec.innerHTML = '<div class="tx">Importar pacientes por planilha<small></small></div><button type="button" class="sw" role="switch"></button>';
       rec.querySelector("small").textContent = on ? 'Mostra o botão "Importar planilha" em Pacientes' : "Desligado: o botão não aparece";
       const sw = rec.querySelector(".sw"); sw.classList.toggle("on", on); sw.setAttribute("aria-checked", on ? "true" : "false"); sw.setAttribute("aria-label", "Importar pacientes por planilha em " + it.nome);
       sw.onclick = async ()=>{
         sw.disabled = true;
-        try{ await updateDoc(doc(cliDb, "Clinicas", it.id), { recursos: { ...it.recursos, importarPacientes: !on } }); showToast(on ? "Importar planilha desligado." : "Importar planilha ligado."); cliRenderizarArea(); }
-        catch(e){ sw.disabled = false; showToast("Não foi possível salvar. Confira a internet e o login do desenvolvedor."); }
+        try{ await cliQ(cliSb.from("clinicas").update({ importar_pacientes: !on }).eq("id", it.uuid).select("id")); showToast(on ? "Importar planilha desligado." : "Importar planilha ligado."); cliRenderizarArea(); }
+        catch(e){ sw.disabled = false; showToast(cliMsgErro(e, "Não foi possível salvar. Confira a internet e o login do desenvolvedor.")); }
       };
-      // Modulo IA (v2026240001): libera o resumo por IA na clinica. Sem ele, o parametro "Permitir uso de IA" aparece sombreado la.
+      // Modulo IA: libera o resumo por IA na clinica (sempre com a Chave Atypical, guardada no Supabase).
+      // O banco grava o histórico da mudança sozinho. O contrato (Gestão → Contratos) também comanda este botão.
       const ia = it.recursos.moduloIA === true, rec2 = document.createElement("div");
-      const hist = Array.isArray(it.recursos.historico) ? it.recursos.historico : [];
-      const ult = hist.find(h => h && h.recurso === "moduloIA" && typeof h.em === "number");
       rec2.className = "cli-rec"; rec2.innerHTML = '<div class="tx">Módulo IA<small></small></div><button type="button" class="sw" role="switch"></button>';
-      rec2.querySelector("small").textContent = (ia ? "Liberado: a sócia pode ligar o resumo por IA em Parâmetros" : "Não liberado: o recurso aparece sombreado na clínica")
-        + (ult ? " · alterado em " + new Date(ult.em).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "");
+      rec2.querySelector("small").textContent = (ia ? "Liberado: a sócia pode ligar a Atypical AI em Parâmetros" : "Não liberado: o recurso aparece sombreado na clínica")
+        + (it.ultIA ? " · alterado em " + cliFmtDH(it.ultIA) : "");
       const sw2 = rec2.querySelector(".sw"); sw2.classList.toggle("on", ia); sw2.setAttribute("aria-checked", ia ? "true" : "false"); sw2.setAttribute("aria-label", "Módulo IA em " + it.nome);
       sw2.onclick = async ()=>{
         sw2.disabled = true;
-        const historico = [{ recurso: "moduloIA", valor: !ia, em: Date.now(), por: "Desenvolvedor" }].concat(hist).slice(0, 50);
-        try{ await updateDoc(doc(cliDb, "Clinicas", it.id), { recursos: { ...it.recursos, moduloIA: !ia, historico } }); showToast(ia ? "Módulo IA desligado." : "Módulo IA liberado."); cliRenderizarArea(); }
-        catch(e){ sw2.disabled = false; showToast("Não foi possível salvar. Confira a internet e o login do desenvolvedor."); }
+        try{ await cliQ(cliSb.from("clinicas").update({ modulo_ia: !ia }).eq("id", it.uuid).select("id")); showToast(ia ? "Módulo IA desligado." : "Módulo IA liberado."); cliRenderizarArea(); }
+        catch(e){ sw2.disabled = false; showToast(cliMsgErro(e, "Não foi possível salvar. Confira a internet e o login do desenvolvedor.")); }
       };
-      // Origem da chave ChatGPT (v2026240002): so com o Modulo IA liberado. "Chave da clinica" = cada profissional com a sua (como ja era);
-      // "Chave Atypical (propria)" = a chave do Anderson, guardada SO no servidor do app (Vercel -> ATYPICAL_OPENAI_KEY), nunca no banco.
+      // A escolha "Chave da clínica / Chave Atypical" saiu (Etapa 7b): a IA é sempre a da Atypical.
       w.appendChild(b); w.appendChild(rec); w.appendChild(rec2);
-      if(ia){
-        const orig = it.recursos.origemIA === "atypical" ? "atypical" : "clinica", rec3 = document.createElement("div");
-        const ultO = hist.find(h => h && h.recurso === "origemIA" && typeof h.em === "number");
-        rec3.className = "cli-rec origem"; rec3.innerHTML = '<div class="tx">Origem da chave ChatGPT<small></small></div><div class="cli-orig" role="radiogroup"></div>';
-        rec3.querySelector("small").textContent = (orig === "atypical" ? "Chave Atypical: a clínica não configura nada; a chave fica no servidor do app (Vercel → ATYPICAL_OPENAI_KEY)" : "Chave da clínica: a supervisora cola a chave de cada profissional no cadastro dela")
-          + (ultO ? " · alterado em " + new Date(ultO.em).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "");
-        const grupo = rec3.querySelector(".cli-orig"); grupo.setAttribute("aria-label", "Origem da chave ChatGPT em " + it.nome);
-        [["clinica", "Chave da clínica"], ["atypical", "Chave Atypical (própria)"]].forEach(([v, t])=>{
-          const o = document.createElement("button"); o.type = "button"; o.textContent = t; o.dataset.v = v; o.setAttribute("role", "radio");
-          o.classList.toggle("on", v === orig); o.setAttribute("aria-checked", v === orig ? "true" : "false");
-          o.onclick = async ()=>{
-            if(v === orig) return;
-            grupo.querySelectorAll("button").forEach(x => x.disabled = true);
-            const historico = [{ recurso: "origemIA", valor: v, em: Date.now(), por: "Desenvolvedor" }].concat(hist).slice(0, 50);
-            try{ await updateDoc(doc(cliDb, "Clinicas", it.id), { recursos: { ...it.recursos, origemIA: v, historico } }); showToast(v === "atypical" ? "Origem da chave: Chave Atypical." : "Origem da chave: Chave da clínica."); cliRenderizarArea(); }
-            catch(e){ grupo.querySelectorAll("button").forEach(x => x.disabled = false); showToast("Não foi possível salvar. Confira a internet e o login do desenvolvedor."); }
-          };
-          grupo.appendChild(o);
-        });
-        w.appendChild(rec3);
-      }
       caixa.appendChild(w);
     });
   }catch(e){
     devContar("clinicas", "Não foi possível contar");
-    // Regra recusou: a conta não foi reconhecida como desenvolvedor naquele banco (e-mail não confirmado, por exemplo)
-    if(e && e.code === "permission-denied") cliCartaoAviso("Sua conta não foi reconhecida como desenvolvedor no banco das clínicas.", "Entrar de novo", ()=> cliAbrirEntrar());
-    else cliCartaoAviso("Não foi possível carregar as clínicas.", "Tentar de novo", cliRenderizarArea);
+    cliCartaoAviso(cliMsgErro(e, "Não foi possível carregar as clínicas."), "Tentar de novo", cliRenderizarArea);
   }
 }
 function cliAbrirEntrar(){
@@ -3453,47 +3446,38 @@ function cliAbrirEntrar(){
 }
 window.cliEntrar = async function(){
   const senha = document.getElementById("cli-senha").value;
-  if(!senha){ showToast("Digite a senha do Atypical & Agendas."); return; }
+  if(!senha){ showToast("Digite a senha do Atypical & Agendas (" + CLI.nome + ")."); return; }
   const btn = document.getElementById("cli-btn-entrar");
   if(btn.disabled) return;
   btn.disabled = true; btn.textContent = "Entrando...";
   try{
     cliPreparar();
-    const cred = await signInWithEmailAndPassword(cliAuth, EMAIL_DESENVOLVEDOR, senha);
+    const { data, error } = await cliSb.auth.signInWithPassword({ email: EMAIL_DESENVOLVEDOR, password: senha });
     document.getElementById("cli-senha").value = "";
-    if(!cred.user.emailVerified){
-      // As regras das clínicas só reconhecem o desenvolvedor com o e-mail confirmado
-      document.getElementById("cli-verificar").style.display = "flex";
-      showToast("Falta confirmar o e-mail neste banco.");
+    if(error) throw error;
+    const u = data && data.user;
+    if(!(u && u.app_metadata && u.app_metadata.dev === true)){
+      await cliSb.auth.signOut();
+      showToast("Este login não é de desenvolvedor no banco das clínicas (" + CLI.nome + ").");
       return;
     }
     mostrarVistaDev("lista");
     await cliRenderizarArea();
   }catch(e){
-    const c = (e && e.code) || "";
+    const m = (e && e.message) || "";
     document.getElementById("cli-senha").value = "";
-    if(c === "auth/network-request-failed") showToast("Sem conexão. Confira a internet e tente de novo.");
-    else if(c === "auth/too-many-requests") showToast("Muitas tentativas. Aguarde alguns minutos.");
-    else showToast("Senha incorreta para o Atypical & Agendas.");
+    if(/Failed to fetch|NetworkError|Load failed/i.test(m)) showToast("Sem conexão. Confira a internet e tente de novo.");
+    else if(/rate limit|too many/i.test(m)) showToast("Muitas tentativas. Aguarde alguns minutos.");
+    else showToast("Senha incorreta para o Atypical & Agendas (" + CLI.nome + ").");
   }finally{
     btn.disabled = false; btn.textContent = "Entrar";
   }
 };
-window.cliEnviarConfirmacao = async function(){
-  const b = document.getElementById("cli-btn-verificar");
-  try{
-    if(!cliAuth || !cliAuth.currentUser){ showToast("Entre de novo para enviar a confirmação."); return; }
-    b.disabled = true;
-    await sendEmailVerification(cliAuth.currentUser);
-    await signOut(cliAuth);
-    showToast("E-mail enviado. Clique no link e entre de novo.");
-  }catch(e){
-    showToast("Não foi possível enviar agora. Tente de novo em alguns minutos.");
-  }finally{ b.disabled = false; }
-};
+// No Supabase o login de desenvolvedor já nasce confirmado: o botão antigo de confirmação não é mais usado.
+window.cliEnviarConfirmacao = async function(){ showToast("Não é preciso confirmar o e-mail neste banco. Entre com a senha."); };
 window.cliNova = async function(){
   const user = await cliUsuario().catch(()=> null);
-  if(!user || !user.emailVerified){ cliAbrirEntrar(); return; }
+  if(!user){ cliAbrirEntrar(); return; }
   ["cn-nome","cn-codigo","cn-sup","cn-email","cn-celular"].forEach(id=>{ document.getElementById(id).value = ""; });
   cliCodigoEditado = false; cliNovo = null;
   cliAtualizarPrevia();
@@ -3529,44 +3513,25 @@ window.cliCriar = async function(){
   const btn = document.getElementById("cn-btn-criar");
   if(btn.disabled) return;
   btn.disabled = true; btn.textContent = "Criando...";
-  let clinicaCriada = false, loginCriado = false;
   try{
     const dev = await cliUsuario();
     if(!dev){ cliAbrirEntrar(); return; }
-    const refClinica = doc(cliDb, "Clinicas", codigo);
-    // 1) O código não pode existir
-    const ja = await getDoc(refClinica);
-    if(ja.exists()){ showToast("Já existe uma clínica com este código. Escolha outro."); document.getElementById("cn-codigo").focus(); return; }
-    // 2) Clínica (vitrine: só nome e código)
-    await setDoc(refClinica, { nome, codigo, criadaEm: serverTimestamp() });
-    clinicaCriada = true;
-    // 3) Login da supervisora, na sessão à parte
-    const senhaInicial = cliGerarSenha();
-    const cred = await createUserWithEmailAndPassword(cliAuthSec, email, senhaInicial);
-    const novoUid = cred.user.uid;
-    loginCriado = true;
-    await signOut(cliAuthSec);
-    // 4) Ficha da supervisora dentro da clínica
-    await setDoc(doc(cliDb, "Clinicas", codigo, "usuarios", novoUid), {
-      nome: sup, email, celular, tipo: "supervisora", ativo: true, primeiroAcesso: true,
-      criadoPor: dev.uid, criadoEm: serverTimestamp()
-    });
-    cliNovo = { nome, codigo, sup, email, celular, senha: senhaInicial };
+    // Uma função do banco faz tudo junto (clínica + login + ficha da supervisora): ou sai tudo, ou nada.
+    // A senha inicial de 6 números é sorteada pelo banco e aparece só aqui, uma vez.
+    const senhaInicial = await cliQ(cliSb.rpc("painel_criar_clinica", { p_codigo: codigo, p_nome: nome,
+      p_supervisora: { nome: sup, email, celular } }));
+    cliNovo = { nome, codigo, sup, email, celular, senha: String(senhaInicial) };
     document.getElementById("cn-ok-nome").textContent = nome;
     document.getElementById("cn-ok-sup").textContent = sup;
     document.getElementById("cn-ok-email").textContent = email;
-    document.getElementById("cn-ok-senha").textContent = senhaInicial;
+    document.getElementById("cn-ok-senha").textContent = cliNovo.senha;
     document.getElementById("cn-ok-link").textContent = linkDaClinica(codigo);
     mostrarVistaDev("clipronto");
   }catch(e){
-    const c = (e && e.code) || "";
-    // Se a clínica foi gravada mas o login não saiu, desfaz a clínica para o código não ficar preso
-    if(clinicaCriada && !loginCriado){ try{ await deleteDoc(doc(cliDb, "Clinicas", codigo)); }catch(e2){ /* fica para excluir depois */ } }
-    if(c === "auth/email-already-in-use") showToast("Já existe um login com este e-mail. Use outro e-mail.");
-    else if(c === "auth/operation-not-allowed" || c === "auth/admin-restricted-operation") showToast("A criação de contas está desligada no Firebase das clínicas.");
-    else if(c === "permission-denied") showToast("O banco das clínicas recusou. Confira se o seu e-mail está confirmado.");
-    else if(loginCriado) showToast("O login foi criado, mas a ficha não foi gravada. Anote o e-mail e avise o suporte: " + (c || "erro"));
-    else showToast("Não foi possível criar: " + (c || (e && e.message) || "erro desconhecido"));
+    const m = cliMsgErro(e, "Não foi possível criar a clínica.");
+    showToast(m);
+    if(/código/i.test(m)) document.getElementById("cn-codigo").focus();
+    else if(/e-mail/i.test(m)) document.getElementById("cn-email").focus();
   }finally{
     btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> Criar clínica';
   }
@@ -3595,6 +3560,19 @@ window.cliFecharPronto = function(){ cliNovo = null; document.getElementById("cn
    O vínculo do modelo com a clínica fica para o menu Contratos (depois).
    ===================================================================== */
 const MC_APP = "atypical-agendas";
+// Supabase (Etapa 7c): a tabela modelos_comerciais usa os mesmos campos, com nomes do banco; a tela segue com os nomes antigos.
+function mcDoBanco(r){
+  return { id: r.id, nome: r.nome, app: r.app, ativo: r.ativo === true, tipo: r.tipo, duracaoDias: r.duracao_dias || 0,
+    vigenciaInicio: r.vigencia_inicio || "", vigenciaFim: r.vigencia_fim || "", baseMensal: Number(r.base_mensal) || 0,
+    adm: r.adm || {}, profissionais: r.profissionais || {}, ia: r.ia || {}, desconto: r.desconto || null, cortesiaMeses: r.cortesia_meses || 0,
+    observacoes: r.observacoes || "", criadoEm: r.criado_em, alteradoEm: r.atualizado_em };
+}
+function mcParaBanco(d){
+  return { nome: d.nome, app: d.app || MC_APP, ativo: d.ativo === true, tipo: d.tipo, duracao_dias: d.duracaoDias || 0,
+    vigencia_inicio: d.vigenciaInicio, vigencia_fim: d.vigenciaFim || null, base_mensal: d.baseMensal,
+    adm: d.adm, profissionais: d.profissionais, ia: d.ia, desconto: d.desconto || null, cortesia_meses: d.cortesiaMeses || 0,
+    observacoes: d.observacoes || null };
+}
 let mcItens = [], mcAtual = null, mcAlterado = false, mcFaixas = { adm: [], prof: [] };
 const mcReais = n => (Number(n) || 0).toLocaleString("pt-BR", { minimumFractionDigits:2, maximumFractionDigits:2 });
 const mcData = iso => /^\d{4}-\d{2}-\d{2}$/.test(iso || "") ? iso.slice(8,10) + "/" + iso.slice(5,7) + "/" + iso.slice(0,4) : "";
@@ -3696,11 +3674,9 @@ window.mcAbrirLista = async function(){
   try{ user = await cliUsuario(); }catch(e){ /* trata abaixo */ }
   if(!user){ cliCartaoAvisoEm(caixa, "Entre no banco das clínicas para ver os modelos comerciais.", "Entrar no Atypical & Agendas", ()=> cliAbrirEntrar()); return; }
   try{
-    const snap = await getDocs(collection(cliDb, "ModelosComerciais"));
-    mcItens = snap.docs.map(d=> Object.assign({ id: d.id }, d.data()));
+    mcItens = (await cliQ(cliSb.from("modelos_comerciais").select("*"))).map(mcDoBanco);
   }catch(e){
-    if(e && e.code === "permission-denied") cliCartaoAvisoEm(caixa, "O banco recusou a leitura. Publique as regras v38 no console do Firebase (projeto atypical-agendas) e tente de novo.", "Tentar de novo", mcAbrirLista);
-    else cliCartaoAvisoEm(caixa, "Não foi possível carregar os modelos.", "Tentar de novo", mcAbrirLista);
+    cliCartaoAvisoEm(caixa, cliMsgErro(e, "Não foi possível carregar os modelos."), "Tentar de novo", mcAbrirLista);
     return;
   }
   mcItens.sort((a,b)=> (b.ativo === true) - (a.ativo === true) || String(a.nome || "").localeCompare(String(b.nome || ""), "pt-BR"));
@@ -3748,7 +3724,7 @@ function mcAbrirForm(m){
   mcSegPor("mcf-ia-mod", ia.modalidade || "franquia");
   v("mcf-fr-qtd", fr.resumosMes || ""); v("mcf-fr-exc", r(fr.valorExcedente)); v("mcf-fr-valor", r(fr.valorMensal));
   mcSegPor("mcf-fr-esc", fr.escopo || "clinica"); mcSegPor("mcf-fr-est", fr.aoEstourar || "cobrar");
-  v("mcf-il-valor", r(il.valorProfissional)); mcSegPor("mcf-il-orig", il.origemChave || "clinica"); v("mcf-il-teto", il.tetoSeguranca || "");
+  v("mcf-il-valor", r(il.valorProfissional)); mcSegPor("mcf-il-orig", "atypical"); v("mcf-il-teto", il.tetoSeguranca || "");
   mcSegPor("mcf-tipo", (m && m.tipo === "piloto") ? "piloto" : "regular"); v("mcf-dias", m && m.duracaoDias ? m.duracaoDias : "");
   const dsc = (m && m.desconto) || null;
   mcSwPor("mcf-desc", !!dsc); mcSegPor("mcf-desc-tipo", dsc && dsc.tipo === "valor" ? "valor" : "percentual");
@@ -3799,7 +3775,7 @@ function mcMontar(){
       if(!isFinite(ex)) return mcErro("Informe o valor do excedente por resumo.", "mcf-fr-exc");
       ia.franquia = { valorMensal: vm, resumosMes: q, escopo: mcSegValor("mcf-fr-esc"), valorExcedente: ex, aoEstourar: mcSegValor("mcf-fr-est"), avisos: [80, 100] };
     }else{
-      const vl = lerReais(document.getElementById("mcf-il-valor").value), orig = mcSegValor("mcf-il-orig");
+      const vl = lerReais(document.getElementById("mcf-il-valor").value), orig = "atypical";
       if(!isFinite(vl)) return mcErro("Informe o valor por profissional com IA.", "mcf-il-valor");
       ia.ilimitado = { valorProfissional: vl, origemChave: orig };
       if(orig === "atypical"){
@@ -3840,19 +3816,18 @@ window.mcSalvar = async function(){
   const b = document.getElementById("mcf-btn");
   if(b.disabled) return;
   const dados = mcMontar(); if(!dados) return;
-  const agora = new Date().toISOString();
-  dados.alteradoEm = agora;
-  dados.criadoEm = (mcAtual && mcAtual.criadoEm) || agora;
   b.disabled = true; b.innerHTML = '<i class="ti ti-loader-2"></i> Salvando...';
   try{
     cliPreparar();
-    const ref = mcAtual ? doc(cliDb, "ModelosComerciais", mcAtual.id) : doc(collection(cliDb, "ModelosComerciais"));
-    await setDoc(ref, dados);
+    // Datas de criação e alteração são carimbadas pelo banco
+    const linha = mcParaBanco(dados);
+    if(mcAtual) await cliQ(cliSb.from("modelos_comerciais").update(linha).eq("id", mcAtual.id).select("id"));
+    else await cliQ(cliSb.from("modelos_comerciais").insert(linha).select("id"));
     mcAlterado = false;
     showToast(mcAtual ? "Modelo atualizado." : "Modelo comercial criado.");
     await mcAbrirLista();
   }catch(e){
-    showToast(e && e.code === "permission-denied" ? "O banco recusou. Publique as regras v38 e tente de novo." : "Não foi possível salvar. Confira a internet e tente de novo.");
+    showToast(cliMsgErro(e, "Não foi possível salvar. Confira a internet e tente de novo."));
   }finally{ b.disabled = false; b.innerHTML = '<i class="ti ti-check"></i> Salvar modelo'; }
 };
 
@@ -3864,6 +3839,26 @@ window.mcSalvar = async function(){
    Mudar o modelo depois não muda as clínicas já vinculadas: para levar a mudança, "Reaplicar modelo".
    ===================================================================== */
 let ctItens = [], ctModelos = [], ctAtual = null, ctModo = "novo", ctAlterado = false;
+// Supabase (Etapa 7c): contrato em clinica_contratos + histórico em clinica_contrato_historico; a tela segue com os nomes antigos.
+function ctDoBanco(k, hist){
+  if(!k) return null;
+  return { modeloId: k.modelo_id, modeloNome: k.modelo_nome, tipo: k.tipo, inicio: k.inicio, fim: k.fim || "", diaVencimento: k.dia_vencimento,
+    destinoId: k.destino_id || "", destinoNome: k.destino_nome || "", desconto: k.desconto || null, cortesiaMeses: k.cortesia_meses || 0,
+    admFaixa: k.adm_faixa, profFaixa: k.prof_faixa || 0, iaContratada: k.ia_contratada === true, previsto: k.previsto || null, condicoes: k.condicoes || null,
+    acordoEnviadoEm: k.acordo_enviado_em || "", acordoEnviadoPara: k.acordo_enviado_para || "", aceiteEm: k.aceite_em || "", aceiteObs: k.aceite_obs || "",
+    historico: (hist || []).map(h => ({ acao: h.acao, detalhe: h.detalhe, em: h.em, por: h.por_nome || "Desenvolvedor" })),
+    criadoEm: k.criado_em, alteradoEm: k.atualizado_em };
+}
+async function ctRecarregar(it){
+  const [k, h, c] = await Promise.all([
+    cliQ(cliSb.from("clinica_contratos").select("*").eq("clinica_id", it.uuid).maybeSingle()),
+    cliQ(cliSb.from("clinica_contrato_historico").select("acao,detalhe,em,por_nome").eq("clinica_id", it.uuid).order("em", { ascending: false }).limit(50)),
+    cliQ(cliSb.from("clinicas").select("modulo_ia,importar_pacientes").eq("id", it.uuid).maybeSingle())
+  ]);
+  it.contrato = ctDoBanco(k, h);
+  if(c) it.recursos = { importarPacientes: c.importar_pacientes === true, moduloIA: c.modulo_ia === true };
+  return it;
+}
 const ctDiaMs = 86400000;
 function ctSomarDias(iso, n){ const d = new Date(iso + "T12:00:00"); d.setTime(d.getTime() + n * ctDiaMs); return d.toISOString().slice(0, 10); }
 function ctFaixasAdm(m){ return ((m && m.adm && m.adm.faixas) || []).filter(f => f && f.de >= 1 && f.ate >= f.de); }
@@ -3944,19 +3939,20 @@ window.ctAbrirLista = async function(){
   try{ user = await cliUsuario(); }catch(e){ /* trata abaixo */ }
   if(!user){ cliCartaoAvisoEm(caixa, "Entre no banco das clínicas para ver os contratos.", "Entrar no Atypical & Agendas", ()=> cliAbrirEntrar()); return; }
   try{
-    const [sc, sm] = await Promise.all([getDocs(collection(cliDb, "Clinicas")), getDocs(collection(cliDb, "ModelosComerciais"))]);
-    ctModelos = sm.docs.map(d => Object.assign({ id: d.id }, d.data()));
+    // Quatro leituras para a lista inteira (antes: uma por clínica)
+    const [cls, ms, ks, hs] = await Promise.all([
+      cliQ(cliSb.from("clinicas").select("id,codigo,nome,importar_pacientes,modulo_ia")),
+      cliQ(cliSb.from("modelos_comerciais").select("*")),
+      cliQ(cliSb.from("clinica_contratos").select("*")),
+      cliQ(cliSb.from("clinica_contrato_historico").select("clinica_id,acao,detalhe,em,por_nome").order("em", { ascending: false }).limit(1000))
+    ]);
+    ctModelos = ms.map(mcDoBanco);
     mcItens = ctModelos.slice();
-    ctItens = await Promise.all(sc.docs.map(async d => {
-      let contrato = null;
-      try{ const x = await getDoc(doc(cliDb, "Clinicas", d.id, "privado", "contrato")); contrato = x.exists() ? x.data() : null; }
-      catch(e){ if(e && e.code === "permission-denied") throw e; }
-      const rec = d.data().recursos;
-      return { id: d.id, nome: d.data().nome || d.id, contrato, recursos: rec && typeof rec === "object" ? rec : {} };
-    }));
+    ctItens = cls.map(c => ({ id: c.codigo, uuid: c.id, nome: c.nome || c.codigo,
+      contrato: ctDoBanco(ks.find(k => k.clinica_id === c.id), hs.filter(h => h.clinica_id === c.id).slice(0, 50)),
+      recursos: { importarPacientes: c.importar_pacientes === true, moduloIA: c.modulo_ia === true } }));
   }catch(e){
-    if(e && e.code === "permission-denied") cliCartaoAvisoEm(caixa, "O banco recusou a leitura. Publique as regras v40 no console do Firebase (projeto atypical-agendas) e tente de novo.", "Tentar de novo", ctAbrirLista);
-    else cliCartaoAvisoEm(caixa, "Não foi possível carregar os contratos.", "Tentar de novo", ctAbrirLista);
+    cliCartaoAvisoEm(caixa, cliMsgErro(e, "Não foi possível carregar os contratos."), "Tentar de novo", ctAbrirLista);
     return;
   }
   ctItens.sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
@@ -4177,10 +4173,10 @@ let ctAdmAtivos = null, ctProfAtivos = null;
 async function ctContarAdm(it){
   ctAdmAtivos = null; ctProfAtivos = null; const el = document.getElementById("ctf-adm-uso"); el.textContent = "";
   try{
-    const us = await getDocs(collection(cliDb, "Clinicas", it.id, "usuarios"));
-    const lista = us.docs.map(d => d.data()).filter(u => u.ativo === true);
-    ctAdmAtivos = lista.filter(u => u.tipo === "supervisora" || u.tipo === "recepcionista").length;
-    ctProfAtivos = lista.filter(u => u.tipo === "profissional").length;
+    // Uma leitura só: o banco conta os ativos de cada grupo (mesma conta do limite)
+    const s = await cliQ(cliSb.rpc("situacao_limites", { p_clinica: it.uuid }));
+    ctAdmAtivos = Number(s.adm && s.adm.ativos) || 0;
+    ctProfAtivos = Number(s.profissionais && s.profissionais.ativos) || 0;
   }catch(e){ ctAdmAtivos = null; ctProfAtivos = null; }
   ctPrevia();
 }
@@ -4225,19 +4221,17 @@ window.ctSairDoForm = function(){
 };
 window.ctConfirmarSaida = function(){ fecharModal("modal-ct-sair"); ctAlterado = false; ctVoltarDoForm(); };
 function ctVoltarDoForm(){ if(ctAtual && ctAtual.contrato) ctAbrirClinica(ctAtual); else ctAbrirLista(); }
-async function ctGravar(it, contrato, m){
+// Grava pelo banco, num passo só: contrato + fotografia do modelo + limites + Módulo IA + histórico.
+// O banco é quem calcula os limites e escreve o histórico; depois a tela relê o contrato gravado.
+async function ctGravar(it, contrato, m, efetivar){
   cliPreparar();
-  const lote = writeBatch(cliDb);
-  lote.set(doc(cliDb, "Clinicas", it.id, "privado", "contrato"), contrato);
-  lote.set(doc(cliDb, "Clinicas", it.id, "privado", "limites"), ctLimites(m, contrato));
-  // O contrato comanda o Modulo IA da clinica (mesmo campo do botao da lista de clinicas)
-  const rec = it.recursos || {}, quer = contrato.iaContratada === true;
-  if((rec.moduloIA === true) !== quer){
-    const historico = [{ recurso: "moduloIA", valor: quer, em: Date.now(), por: "Desenvolvedor (contrato)" }].concat(Array.isArray(rec.historico) ? rec.historico : []).slice(0, 50);
-    lote.update(doc(cliDb, "Clinicas", it.id), { recursos: { ...rec, moduloIA: quer, historico } });
-    it.recursos = { ...rec, moduloIA: quer, historico };
-  }
-  await lote.commit();
+  await cliQ(cliSb.rpc("gravar_contrato_clinica", {
+    p_clinica: it.uuid, p_modelo: m.id, p_inicio: contrato.inicio, p_dia_vencimento: contrato.diaVencimento,
+    p_fim: contrato.tipo === "piloto" ? null : (contrato.fim || null), p_destino: contrato.tipo === "piloto" ? (contrato.destinoId || null) : null,
+    p_com_desconto: !!contrato.desconto, p_com_cortesia: (contrato.cortesiaMeses || 0) > 0,
+    p_adm_faixa: contrato.admFaixa, p_prof_faixa: contrato.profFaixa || 0, p_ia_contratada: contrato.iaContratada === true,
+    p_previsto: contrato.previsto || null, p_efetivar: efetivar === true }));
+  await ctRecarregar(it);
 }
 window.ctSalvar = async function(){
   const b = document.getElementById("ctf-btn");
@@ -4267,21 +4261,22 @@ window.ctSalvar = async function(){
   };
   b.disabled = true; b.innerHTML = '<i class="ti ti-loader-2"></i> Salvando...';
   try{
-    await ctGravar(ctAtual, contrato, f.m);
-    ctAlterado = false; ctAtual.contrato = contrato;
+    await ctGravar(ctAtual, contrato, f.m, ctModo === "efetivar");
+    ctAlterado = false;
     showToast(ctModo === "novo" ? "Contrato vinculado." : ctModo === "efetivar" ? "Contrato efetivado." : "Contrato alterado.");
     ctAbrirClinica(ctAtual);
   }catch(e){
-    showToast(e && e.code === "permission-denied" ? "O banco recusou. Publique as regras v40 e tente de novo." : "Não foi possível salvar. Confira a internet e tente de novo.");
+    showToast(cliMsgErro(e, "Não foi possível salvar. Confira a internet e tente de novo."));
   }finally{ b.disabled = false; b.innerHTML = '<i class="ti ti-check"></i> Salvar contrato'; }
 };
 
 /* ---- acordo comercial por e-mail (script de e-mail da souza.iatech, v8) e aceite ---- */
-const URL_CLI_EMAIL = "https://script.google.com/macros/s/AKfycbx7z9_UbUQT2IZP3XXJJJeiE1m17_kdl_PfsTOEw_ZlTun7M2mViHqg6js-EACIFCk3/exec";
+const URL_CLI_EMAIL = CLI.email;   // script de e-mail do ambiente (homologação manda tudo para a souza.iatech)
 let ctAcordoAlvo = null;
 async function ctPedirAcordo(it, previa){
   cliPreparar();
-  const token = await cliAuth.currentUser.getIdToken();
+  const token = await cliToken();
+  if(!token) throw new Error("Entre de novo no banco das clínicas para enviar o acordo.");
   if(!cobConfig.chavePix && !cobDisponivel){ try{ await cobCarregarTudo(); }catch(e){} }
   const r = await fetch(URL_CLI_EMAIL, { method: "POST", credentials: "omit", headers: { "Content-Type": "text/plain;charset=utf-8" },
     body: JSON.stringify({ acao: "acordo", token, clinica: it.id, previa: previa === true, pix: cobConfig.chavePix || "", recebedor: cobConfig.recebedor || "" }) });
@@ -4319,11 +4314,9 @@ window.ctEnviarAcordo = async function(){
   try{
     const d = await ctPedirAcordo(it, false);
     if(!d.ok) throw new Error(ctErroAcordo(d.erro));
-    const para = d.para.join(", ").slice(0, 300), agora = Date.now();
-    const contrato = Object.assign({}, it.contrato, { acordoEnviadoEm: d.em || new Date(agora).toISOString(), acordoEnviadoPara: para, aceiteEm: "", aceiteObs: "",
-      historico: [{ acao: "acordo-enviado", em: agora, por: "Desenvolvedor", detalhe: "Acordo comercial enviado por e-mail para " + para }].concat(it.contrato.historico || []).slice(0, 50) });
-    try{ await setDoc(doc(cliDb, "Clinicas", it.id, "privado", "contrato"), contrato); it.contrato = contrato; }
-    catch(e){ showToast("E-mail enviado, mas o registro do envio não foi gravado (publique as regras v43)."); }
+    const para = d.para.join(", ").slice(0, 300);
+    try{ await cliQ(cliSb.rpc("registrar_envio_acordo", { p_clinica: it.uuid, p_para: para })); await ctRecarregar(it); }
+    catch(e){ showToast("E-mail enviado, mas o registro do envio não foi gravado: " + cliMsgErro(e, "erro")); }
     fecharModal("modal-ct-acordo"); ctAcordoAlvo = null;
     showToast("Acordo enviado para " + para + ".");
     ctAbrirClinica(it);
@@ -4339,12 +4332,9 @@ window.ctSalvarAceite = async function(){
   const data = document.getElementById("cte-data").value, obs = document.getElementById("cte-obs").value.replace(/\s+/g, " ").trim().slice(0, 120);
   if(!/^\d{4}-\d{2}-\d{2}$/.test(data)) return mcErro("Informe a data do aceite.", "cte-data");
   if(data > hojeISO()) return mcErro("A data do aceite não pode ser no futuro.", "cte-data");
-  const agora = Date.now();
-  const contrato = Object.assign({}, it.contrato, { aceiteEm: data, aceiteObs: obs,
-    historico: [{ acao: "aceite", em: agora, por: "Desenvolvedor", detalhe: "Aceite registrado (" + mcData(data) + ")" + (obs ? ": " + obs : "") }].concat(it.contrato.historico || []).slice(0, 50) });
   b.disabled = true;
-  try{ await setDoc(doc(cliDb, "Clinicas", it.id, "privado", "contrato"), contrato); it.contrato = contrato; fecharModal("modal-ct-aceite"); showToast("Aceite registrado."); ctAbrirClinica(it); }
-  catch(e){ showToast(e && e.code === "permission-denied" ? "O banco recusou. Publique as regras v43 e tente de novo." : "Não foi possível salvar. Confira a internet e tente de novo."); }
+  try{ await cliQ(cliSb.rpc("registrar_aceite_contrato", { p_clinica: it.uuid, p_data: data, p_obs: obs || null })); await ctRecarregar(it); fecharModal("modal-ct-aceite"); showToast("Aceite registrado."); ctAbrirClinica(it); }
+  catch(e){ showToast(cliMsgErro(e, "Não foi possível salvar. Confira a internet e tente de novo.")); }
   finally{ b.disabled = false; }
 };
 
@@ -4373,10 +4363,10 @@ window.ctReaplicar = async function(){
   });
   btn.disabled = true;
   try{
-    await ctGravar(ctAtual, contrato, m);
-    ctAtual.contrato = contrato; fecharModal("modal-ct-reaplicar"); showToast("Modelo reaplicado."); ctAbrirClinica(ctAtual);
+    await ctGravar(ctAtual, contrato, m, false);
+    fecharModal("modal-ct-reaplicar"); showToast("Modelo reaplicado."); ctAbrirClinica(ctAtual);
   }catch(e){
-    showToast(e && e.code === "permission-denied" ? "O banco recusou. Publique as regras v40 e tente de novo." : "Não foi possível salvar. Confira a internet e tente de novo.");
+    showToast(cliMsgErro(e, "Não foi possível salvar. Confira a internet e tente de novo."));
   }finally{ btn.disabled = false; }
 };
 
