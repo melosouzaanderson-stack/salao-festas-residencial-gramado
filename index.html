@@ -694,7 +694,7 @@
   #tela-dev{ display:none; min-height:100vh; background:var(--bg); }
   .dev-wrap{ max-width:460px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; }
   .dev-top{ position:sticky; top:0; z-index:5; display:flex; align-items:center; gap:10px; padding:12px 16px; background:#fff; border-bottom:1px solid var(--line); }
-  .dev-top .av{ flex:none; width:38px; height:38px; border-radius:12px; background:linear-gradient(135deg,#1E293B,#0F172A); color:#fff; display:flex; align-items:center; justify-content:center; font-size:19px; }
+  .dev-top .av{ flex:none; width:38px; height:38px; border-radius:12px; background:linear-gradient(135deg,var(--azul1),var(--azul2)); color:#fff; display:flex; align-items:center; justify-content:center; font-size:19px; }
   .dev-top b{ font-family:'Fraunces', serif; font-size:17px; font-weight:600; color:var(--deep); }
   .dev-top .volta{ flex:none; width:44px; height:44px; margin-left:-8px; border:0; background:none; color:var(--accent-d); font-size:24px; display:flex; align-items:center; justify-content:center; cursor:pointer; }
   .dev-vista{ display:none; flex-direction:column; flex:1; }
@@ -944,6 +944,10 @@
   #dev-menu .dm-item.on{ color:#fff; background:rgba(255,255,255,.2); font-weight:600; }
   #dev-menu .dm-rodape{ display:contents; }
   #dev-menu .dm-item.dm-so-largo{ display:none; }
+  #dev-menu .dm-embreve{ opacity:.55; cursor:default; }
+  #dev-menu .dm-longo{ display:none; }
+  #dev-menu .dm-embreve em{ font-style:normal; font-size:11px; margin-left:auto; padding:1px 8px; border-radius:999px; background:rgba(255,255,255,.18); }
+  #dev-menu .dm-item span{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
   .dev-casca .dev-wrap{ width:100%; padding-bottom:76px; }
   @media (min-width:900px){
     .dev-casca{ flex-direction:row; }
@@ -958,6 +962,7 @@
     #dev-menu .dm-item:hover{ color:#fff; background:rgba(255,255,255,.12); }
     #dev-menu .dm-item.on{ background:rgba(255,255,255,.22); }
     #dev-menu .dm-item.dm-so-largo{ display:flex; }
+    #dev-menu .dm-longo{ display:inline; } #dev-menu .dm-curto{ display:none; }
     #dev-menu .dm-item.dm-so-cel{ display:none; }
     #dev-menu .dm-rodape{ display:flex; flex-direction:column; gap:2px; margin-top:auto; padding-top:10px; border-top:1px solid rgba(255,255,255,.22); }
     #dev-menu .dm-versao{ display:block; font-size:11px; color:rgba(255,255,255,.65); margin:6px 12px 0; }
@@ -1054,9 +1059,11 @@
   <nav id="dev-menu" aria-label="Menu do painel">
     <div class="dm-marca"><span class="av"><i class="ti ti-shield-lock"></i></span><b>Painel de gestão<small>by SOUZA IATECH</small></b></div>
     <button class="dm-item" data-m="inicio" onclick="devIr('inicio')"><i class="ti ti-home"></i><span>Início</span></button>
-    <p class="dm-grupo">Apps</p>
-    <button class="dm-item" data-m="festas" onclick="devIr('festas')"><i class="ti ti-confetti"></i><span>Festas</span></button>
-    <button class="dm-item" data-m="clientes" onclick="devIr('clientes')"><i class="ti ti-users-group"></i><span>Clientes</span></button>
+    <p class="dm-grupo">Apps e ambientes</p>
+    <button class="dm-item" data-m="atypical" onclick="devIr('atypical')"><i class="ti ti-stethoscope"></i><span class="dm-longo">Atypical &amp; Agendas</span><span class="dm-curto">Atypical</span></button>
+    <button class="dm-item" data-m="festas" onclick="devIr('festas')"><i class="ti ti-confetti"></i><span class="dm-longo">Agende &amp; Festas</span><span class="dm-curto">Festas</span></button>
+    <button class="dm-item dm-so-largo dm-embreve" disabled><i class="ti ti-scissors"></i><span>Barbearia</span><em>em breve</em></button>
+    <button class="dm-item dm-so-largo dm-embreve" disabled><i class="ti ti-massage"></i><span>Massagens</span><em>em breve</em></button>
     <p class="dm-grupo">Gestão</p>
     <button class="dm-item dm-so-cel" data-m="gestao" onclick="devIr('gestao')"><i class="ti ti-briefcase"></i><span>Gestão</span></button>
     <button class="dm-item dm-so-largo" data-m="mc" onclick="devIr('mc')"><i class="ti ti-receipt-2"></i><span>Modelos comerciais</span></button>
@@ -1075,7 +1082,7 @@
         <div id="dev-tipos" class="dev-bloco">
           <p class="dev-secao">Escolha o tipo de app</p>
           <button class="dev-condo" id="dev-tipo-festas" onclick="devEscolherTipo('festas')"><div class="ic"><i class="ti ti-confetti"></i></div><div class="txt"><p class="t1">Agende &amp; Festas</p><p class="t2">Salão de festas de condomínios</p><p class="t2 dev-conta" id="dev-conta-festas">Carregando…</p></div><div class="entrar">Abrir<i class="ti ti-chevron-right"></i></div></button>
-          <button class="dev-condo" id="dev-tipo-clinicas" onclick="devIr('clientes')"><div class="ic"><i class="ti ti-stethoscope"></i></div><div class="txt"><p class="t1">Atypical &amp; Agendas</p><p class="t2">Clínicas e agenda das profissionais</p><p class="t2 dev-conta" id="dev-conta-clinicas">Carregando…</p></div><div class="entrar">Abrir<i class="ti ti-chevron-right"></i></div></button>
+          <button class="dev-condo" id="dev-tipo-clinicas" onclick="devIr('atypical')"><div class="ic"><i class="ti ti-stethoscope"></i></div><div class="txt"><p class="t1">Atypical &amp; Agendas</p><p class="t2">Clínicas e agenda das profissionais</p><p class="t2 dev-conta" id="dev-conta-clinicas">Carregando…</p></div><div class="entrar">Abrir<i class="ti ti-chevron-right"></i></div></button>
           <div class="dev-condo dev-embreve"><div class="ic"><i class="ti ti-massage"></i></div><div class="txt"><p class="t1">Massagens</p><p class="t2">Ainda não ligado ao painel</p></div><span class="dev-etq">Em breve</span></div>
           <div class="dev-condo dev-embreve"><div class="ic"><i class="ti ti-scissors"></i></div><div class="txt"><p class="t1">Barbearia</p><p class="t2">Ainda não ligado ao painel</p></div><span class="dev-etq">Em breve</span></div>
         </div>
@@ -1154,7 +1161,7 @@
     </div>
 
     <div class="dev-vista" id="dev-view-clinova">
-      <div class="dev-top"><button class="volta" onclick="cliAbrirLista(true)" aria-label="Voltar"><i class="ti ti-arrow-left"></i></button><b>Novo cliente<span class="sub2">Atypical &amp; Agendas</span></b></div>
+      <div class="dev-top"><button class="volta" onclick="cliAbrirLista(true)" aria-label="Voltar"><i class="ti ti-arrow-left"></i></button><b>Novo ambiente<span class="sub2">Atypical &amp; Agendas</span></b></div>
       <div class="dev-corpo">
         <div class="field"><label>Tipo de cliente *</label>
           <div class="cob-seg" id="cn-tipo">
@@ -1183,7 +1190,7 @@
         <div class="field"><label for="cn-email">E-mail *</label><input type="email" id="cn-email" maxlength="120" autocomplete="off" autocapitalize="none" placeholder="É o login dela no app"></div>
         <div class="field"><label for="cn-celular">Celular com DDD (WhatsApp) *</label><input type="text" id="cn-celular" placeholder="(00) 00000-0000" inputmode="tel" autocomplete="off" oninput="mascararTelefoneZelador(this)"></div>
         <div class="dev-info"><i class="ti ti-key"></i><span>O banco gera uma senha inicial de 6 números só para ela. No primeiro acesso ela cria a própria senha.</span></div>
-        <div class="dev-rodape"><button class="btn btn-primary" id="cn-btn-criar" onclick="cliCriar()"><i class="ti ti-check"></i> Criar cliente</button></div>
+        <div class="dev-rodape"><button class="btn btn-primary" id="cn-btn-criar" onclick="cliCriar()"><i class="ti ti-check"></i> Criar ambiente</button></div>
       </div>
     </div>
 
@@ -1191,7 +1198,7 @@
       <div class="dev-top"><div class="av"><i class="ti ti-shield-lock"></i></div><b>Painel de gestão<span class="dev-marca">by SOUZA IATECH</span></b></div>
       <div class="dev-corpo">
         <div class="dev-ok"><i class="ti ti-check"></i></div>
-        <p class="dev-h" style="text-align:center;">Cliente criado!</p>
+        <p class="dev-h" style="text-align:center;">Ambiente criado!</p>
         <div class="card"><p class="dev-resumo"><span>Cliente nº:</span> <b id="cn-ok-num"></b><br><span id="cn-ok-rot-nome">Clínica:</span> <b id="cn-ok-nome"></b><br><span id="cn-ok-rot-resp">Supervisora:</span> <b id="cn-ok-sup"></b><br><span>E-mail:</span> <b id="cn-ok-email"></b><br><span>Senha inicial:</span> <b id="cn-ok-senha"></b></p>
           <div class="dev-previa" id="cn-ok-link"></div>
           <p class="dev-dica">A senha inicial aparece só agora. Ela troca no primeiro acesso.</p></div>
@@ -1511,11 +1518,11 @@
 
     <!-- ===== Clientes: página central em cartões (v2026280001, escopo claude/modulo-p-escopo-2026-10-28.md) ===== -->
     <div class="dev-vista" id="dev-view-clihome">
-      <div class="dev-top"><div class="av"><i class="ti ti-users-group"></i></div><b>Clientes<span class="sub2">Atypical &amp; Agendas</span></b></div>
+      <div class="dev-top"><button class="volta" onclick="cliAbrirLista(true)" aria-label="Voltar"><i class="ti ti-arrow-left"></i></button><b>Tipos, módulos e situações<span class="sub2">Atypical &amp; Agendas</span></b></div>
       <div class="dev-corpo">
         <div id="clih-aviso" class="dev-bloco"></div>
         <div class="cli-grade">
-          <button class="cli-cartao" onclick="cliAbrirLista()"><span class="ic2"><i class="ti ti-building-hospital"></i></span><b>Clientes</b><span>Lista, busca e novo cliente</span><em id="clih-conta"></em></button>
+          <button class="cli-cartao" onclick="cliAbrirLista()"><span class="ic2"><i class="ti ti-building-hospital"></i></span><b>Ambientes</b><span>Lista, busca e novo ambiente</span><em id="clih-conta"></em></button>
           <button class="cli-cartao" onclick="cliAbrirInfo('tipos')"><span class="ic2"><i class="ti ti-category"></i></span><b>Tipos de cliente</b><span>Clínica e Profissional</span></button>
           <button class="cli-cartao" onclick="cliAbrirInfo('modulos')"><span class="ic2"><i class="ti ti-puzzle"></i></span><b>Módulos</b><span>Módulo IA e Módulo P</span></button>
           <button class="cli-cartao" onclick="cliAbrirInfo('situacoes')"><span class="ic2"><i class="ti ti-traffic-lights"></i></span><b>Situações</b><span>Ativo, Piloto e Suspenso</span></button>
@@ -1524,9 +1531,9 @@
     </div>
 
     <div class="dev-vista" id="dev-view-clilista">
-      <div class="dev-top"><button class="volta" onclick="cliIrClientes()" aria-label="Voltar"><i class="ti ti-arrow-left"></i></button><b>Clientes<span class="sub2">Lista · Atypical &amp; Agendas</span></b></div>
+      <div class="dev-top"><div class="av"><i class="ti ti-stethoscope"></i></div><b>Atypical &amp; Agendas<span class="sub2">Ambientes</span></b></div>
       <div class="dev-corpo">
-        <div class="field" style="margin:0;"><input type="search" id="cll-busca" placeholder="Buscar por nome, código ou número" autocomplete="off" oninput="cliRenderLista()"></div>
+        <div class="field" style="margin:0;"><input type="search" id="cll-busca" placeholder="Buscar ambiente por nome, código ou número" autocomplete="off" oninput="cliRenderLista()"></div>
         <div class="cob-seg" id="cll-tipo">
           <button type="button" data-v="" onclick="cliFiltro('tipo','')">Todos</button>
           <button type="button" data-v="clinica" onclick="cliFiltro('tipo','clinica')">Clínica</button>
@@ -1539,7 +1546,10 @@
           <button type="button" data-v="suspenso" onclick="cliFiltro('sit','suspenso')">Suspenso</button>
         </div>
         <div id="cll-lista" class="dev-bloco"></div>
-        <div class="dev-rodape"><button class="btn btn-primary" onclick="cliNova()"><i class="ti ti-plus"></i> Novo cliente</button></div>
+        <div class="dev-rodape">
+          <button class="btn btn-primary" onclick="cliNova()"><i class="ti ti-plus"></i> Novo ambiente</button>
+          <button class="btn btn-ghost" onclick="cliIrClientes()"><i class="ti ti-info-circle"></i> Tipos, módulos e situações</button>
+        </div>
       </div>
     </div>
 
@@ -1549,7 +1559,7 @@
     </div>
 
     <div class="dev-vista" id="dev-view-cliinfo">
-      <div class="dev-top"><button class="volta" onclick="cliIrClientes()" aria-label="Voltar"><i class="ti ti-arrow-left"></i></button><b><span id="cli-info-titulo"></span><span class="sub2">Clientes · Atypical &amp; Agendas</span></b></div>
+      <div class="dev-top"><button class="volta" onclick="cliIrClientes()" aria-label="Voltar"><i class="ti ti-arrow-left"></i></button><b><span id="cli-info-titulo"></span><span class="sub2">Atypical &amp; Agendas</span></b></div>
       <div class="dev-corpo"><div id="cli-info-corpo" class="dev-bloco"></div></div>
     </div>
 
@@ -2528,7 +2538,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026280002";   // menu lateral + Clientes (Módulo P)
+const VERSAO_APP = "2026280003";   // menu lateral + Clientes (Módulo P)
 
 /* ===================================================================== */
 
@@ -3615,7 +3625,7 @@ window.cliEntrar = async function(){
     }
     cliClientes = null;
     cliRenderizarArea();
-    await cliIrClientes();
+    await cliAbrirLista();
   }catch(e){
     const m = (e && e.message) || "";
     document.getElementById("cli-senha").value = "";
@@ -3744,7 +3754,7 @@ const CLI_SIT = { ativo: "Ativo", piloto: "Piloto", suspenso: "Suspenso" };
 function devMarcarMenu(vista){
   let m = "inicio";
   if(["cob","cobform","p1","p2","p3","pronto","planos","plano"].includes(vista) || (vista === "lista" && devTipo === "festas")) m = "festas";
-  else if(vista.startsWith("cli")) m = "clientes";
+  else if(vista.startsWith("cli")) m = "atypical";
   else if(vista.startsWith("mc")) m = window.matchMedia("(min-width:900px)").matches ? "mc" : "gestao";
   else if(vista.startsWith("ct")) m = window.matchMedia("(min-width:900px)").matches ? "ct" : "gestao";
   else if(vista === "gestao") m = "gestao";
@@ -3753,7 +3763,7 @@ function devMarcarMenu(vista){
 window.devIr = function(dest){
   if(dest === "inicio"){ devEscolherTipo(null); mostrarVistaDev("lista"); }
   else if(dest === "festas"){ devEscolherTipo("festas"); mostrarVistaDev("lista"); }
-  else if(dest === "clientes") cliIrClientes();
+  else if(dest === "atypical" || dest === "clientes") cliAbrirLista();
   else if(dest === "gestao") mostrarVistaDev("gestao");
   else if(dest === "mc") mcAbrirLista();
   else if(dest === "ct") ctAbrirLista();
@@ -3806,11 +3816,11 @@ window.cliIrClientes = async function(){
   let user = null;
   try{ user = await cliUsuario(); }catch(e){ /* trata abaixo */ }
   if(!user){
-    const p = document.createElement("p"); p.className = "dev-vazio"; p.textContent = "Entre no banco das clínicas (" + CLI.nome + ") para ver e cadastrar clientes."; aviso.appendChild(p);
+    const p = document.createElement("p"); p.className = "dev-vazio"; p.textContent = "Entre no banco das clínicas (" + CLI.nome + ") para ver e criar ambientes."; aviso.appendChild(p);
     const b = document.createElement("button"); b.className = "btn btn-primary dev-largo"; b.innerHTML = '<i class="ti ti-login"></i> Entrar no Atypical &amp; Agendas'; b.onclick = cliAbrirEntrar; aviso.appendChild(b);
     return;
   }
-  try{ const l = await cliCarregarClientes(); conta.textContent = l.length === 1 ? "1 cliente" : l.length + " clientes"; }
+  try{ const l = await cliCarregarClientes(); conta.textContent = l.length === 1 ? "1 ambiente" : l.length + " ambientes"; }
   catch(e){ conta.textContent = ""; showToast(cliMsgErro(e, "Não foi possível carregar os clientes.")); }
 };
 window.cliAbrirLista = async function(semRecarregar){
@@ -3841,7 +3851,7 @@ window.cliRenderLista = function(){
     && (!q || it.nome.toLowerCase().includes(q) || it.codigo.includes(q) || String(it.numero) === q.replace(/\D/g, "")));
   caixa.innerHTML = "";
   cliAvisoAmbiente(caixa);
-  if(!itens.length){ caixa.insertAdjacentHTML("beforeend", '<p class="dev-vazio">Nenhum cliente com estes filtros.</p>'); return; }
+  if(!itens.length){ caixa.insertAdjacentHTML("beforeend", '<p class="dev-vazio">Nenhum ambiente com estes filtros.</p>'); return; }
   itens.forEach(it => {
     const b = document.createElement("button"); b.className = "dev-condo";
     b.innerHTML = '<div class="ic"><i class="ti"></i></div><div class="txt"><p class="t1"></p><p class="t2"></p></div><div class="entrar">Abrir<i class="ti ti-chevron-right"></i></div>';
