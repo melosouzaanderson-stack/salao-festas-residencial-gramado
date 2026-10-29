@@ -968,6 +968,22 @@
     #dev-menu .dm-versao{ display:block; font-size:11px; color:rgba(255,255,255,.65); margin:6px 12px 0; }
     .dev-casca .dev-wrap{ max-width:760px; margin:0 auto; padding-bottom:0; }
   }
+  .fin-mes{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .fin-mes b{ font-size:18px; text-transform:capitalize; }
+  .fin-mes .btn{ width:48px; padding:10px 0; flex:none; }
+  .fin-kpis{ display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:10px; }
+  .fin-kpi{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:12px 14px; }
+  .fin-kpi span{ display:block; font-size:13px; color:var(--muted); } .fin-kpi b{ display:block; font-size:20px; margin-top:2px; }
+  .fin-kpi.verde b{ color:var(--green-ink); } .fin-kpi.verm b{ color:var(--red-ink); } .fin-kpi.destaque{ background:#EEF4FD; border-color:#C7D7F2; }
+  .fin-valor{ font-weight:700; white-space:nowrap; }
+  .fin-check{ display:flex; align-items:center; gap:10px; font-size:15px; margin:4px 0 14px; }
+  .fin-check input{ width:20px; height:20px; }
+  .fin-rec{ display:flex; flex-direction:column; gap:6px; border-top:1px dashed var(--line); padding-top:10px; margin-top:6px; }
+  .fin-rec-it{ display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; font-size:14px; }
+  .fin-rec-it .btn{ width:auto; padding:6px 10px; font-size:13px; }
+  .fin-cat{ display:flex; align-items:center; gap:8px; background:#fff; border:1px solid var(--line); border-radius:12px; padding:8px 10px; }
+  .fin-cat input{ flex:1; min-width:0; border:0; font:inherit; font-size:15px; background:none; }
+  .fin-cat .btn{ width:auto; padding:6px 10px; font-size:13px; }
   .cli-grade{ display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:12px; }
   .cli-cartao{ text-align:left; background:#fff; border:1px solid var(--line); border-radius:16px; padding:14px; font-family:inherit; color:var(--deep); cursor:pointer; display:flex; flex-direction:column; gap:4px; min-height:132px; }
   .cli-cartao:hover{ border-color:#94A3B8; } .cli-cartao:active{ transform:scale(.98); }
@@ -1068,6 +1084,7 @@
     <button class="dm-item dm-so-cel" data-m="gestao" onclick="devIr('gestao')"><i class="ti ti-briefcase"></i><span>Gestão</span></button>
     <button class="dm-item dm-so-largo" data-m="mc" onclick="devIr('mc')"><i class="ti ti-receipt-2"></i><span>Modelos comerciais</span></button>
     <button class="dm-item dm-so-largo" data-m="ct" onclick="devIr('ct')"><i class="ti ti-file-certificate"></i><span>Contratos</span></button>
+    <button class="dm-item dm-so-largo" data-m="fin" onclick="devIr('fin')"><i class="ti ti-cash"></i><span>Financeiro</span></button>
     <div class="dm-rodape">
       <button class="dm-item dm-so-largo" onclick="fazerLogout()"><i class="ti ti-logout"></i><span>Sair</span></button>
       <p class="dm-versao" id="dm-versao"></p>
@@ -1568,7 +1585,21 @@
       <div class="dev-corpo">
         <button class="dev-condo" onclick="mcAbrirLista()"><div class="ic"><i class="ti ti-receipt-2"></i></div><div class="txt"><p class="t1">Modelos comerciais</p><p class="t2">Base, usuários ADM, profissionais e Módulo IA</p></div><div class="entrar">Abrir<i class="ti ti-chevron-right"></i></div></button>
         <button class="dev-condo" onclick="ctAbrirLista()"><div class="ic"><i class="ti ti-file-certificate"></i></div><div class="txt"><p class="t1">Contratos</p><p class="t2">Vínculo do modelo comercial com cada cliente</p></div><div class="entrar">Abrir<i class="ti ti-chevron-right"></i></div></button>
+        <button class="dev-condo" onclick="finAbrir()"><div class="ic"><i class="ti ti-cash"></i></div><div class="txt"><p class="t1">Financeiro</p><p class="t2">Mensalidades dos clientes, despesas e resultado do mês</p></div><div class="entrar">Abrir<i class="ti ti-chevron-right"></i></div></button>
         <div class="dev-rodape"><button class="btn btn-ghost" onclick="fazerLogout()"><i class="ti ti-logout"></i> Sair</button></div>
+      </div>
+    </div>
+
+    <div class="dev-vista" id="dev-view-fin">
+      <div class="dev-top"><div class="av"><i class="ti ti-cash"></i></div><b>Financeiro<span class="sub2">Gestão · Souza IA Tech</span></b></div>
+      <div class="dev-corpo">
+        <div class="cob-seg" id="fin-aba">
+          <button type="button" data-v="receber" onclick="finAba('receber')">Receber</button>
+          <button type="button" data-v="despesas" onclick="finAba('despesas')">Despesas</button>
+          <button type="button" data-v="resumo" onclick="finAba('resumo')">Resumo</button>
+        </div>
+        <div class="fin-mes"><button type="button" class="btn btn-ghost" onclick="finMudarMes(-1)" aria-label="Mês anterior"><i class="ti ti-chevron-left"></i></button><b id="fin-mes-txt"></b><button type="button" class="btn btn-ghost" onclick="finMudarMes(1)" aria-label="Próximo mês"><i class="ti ti-chevron-right"></i></button></div>
+        <div id="fin-corpo" class="dev-bloco"></div>
       </div>
     </div>
 
@@ -2433,6 +2464,64 @@
     <button class="btn btn-ghost btn-linha" onclick="fecharModal('modal-ct-aceite')">Cancelar</button>
   </div>
 </div>
+<div class="modal-wrap" id="modal-fin-mens" data-fixo="1" style="z-index:72;">
+  <div class="modal">
+    <h3 id="fmm-tit">Mensalidade</h3>
+    <p class="sub" id="fmm-sub" style="margin:-6px 0 12px;font-size:15px;"></p>
+    <div id="fmm-corpo"></div>
+    <div id="fmm-acoes"></div>
+    <button class="btn btn-ghost btn-linha" onclick="fecharModal('modal-fin-mens')">Fechar</button>
+  </div>
+</div>
+<div class="modal-wrap" id="modal-fin-baixa" data-fixo="1" style="z-index:73;">
+  <div class="modal">
+    <h3>Dar baixa</h3>
+    <p class="sub" id="fb-sub" style="margin:-6px 0 12px;font-size:15px;"></p>
+    <div class="field"><label for="fb-data">Data do recebimento *</label><input type="date" id="fb-data"></div>
+    <div class="field"><label for="fb-valor">Valor recebido (R$) *</label><input type="text" id="fb-valor" inputmode="decimal" autocomplete="off"></div>
+    <div class="field"><label>Forma *</label><div class="cob-seg" id="fb-forma">
+      <button type="button" data-v="pix" onclick="finForma('pix')">Pix</button>
+      <button type="button" data-v="boleto" onclick="finForma('boleto')">Boleto</button>
+      <button type="button" data-v="transferencia" onclick="finForma('transferencia')">Transf.</button>
+      <button type="button" data-v="outro" onclick="finForma('outro')">Outro</button></div></div>
+    <div class="field"><label for="fb-obs">Observação</label><input type="text" id="fb-obs" maxlength="200" autocomplete="off"></div>
+    <label class="fin-check"><input type="checkbox" id="fb-recibo" checked> Enviar recibo por e-mail ao cliente</label>
+    <button class="btn btn-primary btn-linha" id="fb-btn" onclick="finSalvarBaixa()"><i class="ti ti-check"></i> Confirmar baixa</button>
+    <button class="btn btn-ghost btn-linha" onclick="fecharModal('modal-fin-baixa')">Cancelar</button>
+  </div>
+</div>
+<div class="modal-wrap" id="modal-fin-valor" data-fixo="1" style="z-index:73;">
+  <div class="modal">
+    <h3>Ajustar valor</h3>
+    <p class="sub" id="fv-sub" style="margin:-6px 0 12px;font-size:15px;"></p>
+    <div class="field"><label for="fv-valor">Valor da mensalidade (R$) *</label><input type="text" id="fv-valor" inputmode="decimal" autocomplete="off"></div>
+    <div class="field"><label for="fv-obs">Motivo</label><input type="text" id="fv-obs" maxlength="200" autocomplete="off" placeholder="Ex.: 9 profissionais ativas no mês"></div>
+    <button class="btn btn-primary btn-linha" id="fv-btn" onclick="finSalvarValor()"><i class="ti ti-check"></i> Salvar valor</button>
+    <button class="btn btn-ghost btn-linha" onclick="fecharModal('modal-fin-valor')">Cancelar</button>
+  </div>
+</div>
+<div class="modal-wrap" id="modal-fin-desp" data-fixo="1" style="z-index:72;">
+  <div class="modal">
+    <h3 id="fd-tit">Nova despesa</h3>
+    <p class="sub" style="margin:-6px 0 12px;font-size:15px;">Despesa já paga.</p>
+    <div class="field"><label for="fd-data">Data do pagamento *</label><input type="date" id="fd-data"></div>
+    <div class="field"><label for="fd-valor">Valor (R$) *</label><input type="text" id="fd-valor" inputmode="decimal" autocomplete="off"></div>
+    <div class="field"><label for="fd-cat">Categoria *</label><select id="fd-cat"></select></div>
+    <div class="field"><label for="fd-obs">Observação</label><input type="text" id="fd-obs" maxlength="200" autocomplete="off" placeholder="Ex.: plano Pro de outubro"></div>
+    <button class="btn btn-primary btn-linha" id="fd-btn" onclick="finSalvarDespesa()"><i class="ti ti-check"></i> Salvar despesa</button>
+    <button class="btn btn-ghost btn-linha" id="fd-excluir" style="display:none;color:var(--red-ink);" onclick="finExcluirDespesa()"><i class="ti ti-trash"></i> Excluir despesa</button>
+    <button class="btn btn-ghost btn-linha" onclick="fecharModal('modal-fin-desp')">Cancelar</button>
+  </div>
+</div>
+<div class="modal-wrap" id="modal-fin-cats" data-fixo="1" style="z-index:72;">
+  <div class="modal">
+    <h3>Categorias de despesa</h3>
+    <div id="fc-lista" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;"></div>
+    <div class="field"><label for="fc-nova">Nova categoria</label><input type="text" id="fc-nova" maxlength="40" autocomplete="off" placeholder="Ex.: Google Workspace"></div>
+    <button class="btn btn-primary btn-linha" id="fc-btn" onclick="finNovaCategoria()"><i class="ti ti-plus"></i> Adicionar</button>
+    <button class="btn btn-ghost btn-linha" onclick="fecharModal('modal-fin-cats')">Fechar</button>
+  </div>
+</div>
 <div class="modal-wrap" id="modal-ct-reaplicar" data-fixo="1" style="z-index:72;">
   <div class="modal">
     <h3>Reaplicar o modelo?</h3>
@@ -2538,7 +2627,7 @@ const EMAILJS_PUBLIC_KEY  = "PvKWTDB521UOqFeHX";
 const EMAILJS_SERVICE_ID  = "service_k2qfuuk";
 const EMAILJS_TEMPLATE_ID = "template_pmlppjg";
 
-const VERSAO_APP = "2026280003";   // menu lateral + Clientes (Módulo P)
+const VERSAO_APP = "2026290001";   // Gestão → Financeiro (receber, despesas, resumo)
 
 /* ===================================================================== */
 
@@ -3272,7 +3361,7 @@ window.devEscolherTipo = function(t){
 function devContar(qual, texto){ const e = document.getElementById("dev-conta-" + qual); if(e) e.textContent = texto; }
 function mostrarVistaDev(vista){
   if(vista === "lista") devRenderTipo();
-  ["lista","p1","p2","p3","pronto","cob","cobform","planos","plano","clientrar","clinova","clipronto","mclista","mcform","ctlista","ctclinica","ctform","clihome","clilista","clidet","cliinfo","gestao"].forEach(n=>{
+  ["lista","p1","p2","p3","pronto","cob","cobform","planos","plano","clientrar","clinova","clipronto","mclista","mcform","ctlista","ctclinica","ctform","clihome","clilista","clidet","cliinfo","gestao","fin"].forEach(n=>{
     document.getElementById("dev-view-" + n).style.display = (n === vista) ? "flex" : "none";
   });
   devMarcarMenu(vista);
@@ -3757,6 +3846,7 @@ function devMarcarMenu(vista){
   else if(vista.startsWith("cli")) m = "atypical";
   else if(vista.startsWith("mc")) m = window.matchMedia("(min-width:900px)").matches ? "mc" : "gestao";
   else if(vista.startsWith("ct")) m = window.matchMedia("(min-width:900px)").matches ? "ct" : "gestao";
+  else if(vista === "fin") m = window.matchMedia("(min-width:900px)").matches ? "fin" : "gestao";
   else if(vista === "gestao") m = "gestao";
   document.querySelectorAll("#dev-menu .dm-item[data-m]").forEach(b => b.classList.toggle("on", b.dataset.m === m));
 }
@@ -3767,6 +3857,7 @@ window.devIr = function(dest){
   else if(dest === "gestao") mostrarVistaDev("gestao");
   else if(dest === "mc") mcAbrirLista();
   else if(dest === "ct") ctAbrirLista();
+  else if(dest === "fin") finAbrir();
 };
 function cliSeg(id, valor){ document.querySelectorAll("#" + id + " button").forEach(b => b.classList.toggle("on", b.dataset.v === valor)); }
 window.cliEscolherTipoNovo = function(t){
@@ -4767,6 +4858,271 @@ window.ctSalvarAceite = async function(){
   b.disabled = true;
   try{ await cliQ(cliSb.rpc("registrar_aceite_contrato", { p_clinica: it.uuid, p_data: data, p_obs: obs || null })); await ctRecarregar(it); fecharModal("modal-ct-aceite"); showToast("Aceite registrado."); ctAbrirClinica(it); }
   catch(e){ showToast(cliMsgErro(e, "Não foi possível salvar. Confira a internet e tente de novo.")); }
+  finally{ b.disabled = false; }
+};
+
+
+/* =====================================================================
+   Gestão → Financeiro (v2026290001): mensalidades dos clientes (nascem do contrato, mês a mês),
+   baixa com recibo por e-mail, despesas rápidas com categorias e resumo do mês.
+   Banco: painel_mensalidades, painel_recebimentos, painel_despesas, painel_despesa_categorias (só o desenvolvedor).
+   Leituras: 5 na primeira abertura da sessão; depois só o que mudou.
+   ===================================================================== */
+const FIN_FORMAS = { pix: "Pix", boleto: "Boleto", transferencia: "Transferência", outro: "Outro" };
+let finDados = null, finAbaAtual = "receber", finMes = hojeISO().slice(0, 7), finGerou = false, finMensAtual = null, finFormaEsc = "pix", finDespAtual = null;
+const finR = n => "R$ " + mcReais(n);
+function finNum(txt){ const t = String(txt || "").replace(/[R$\s]/g, ""); const v = Number(t.includes(",") ? t.replace(/\./g, "").replace(",", ".") : t); return isFinite(v) ? Math.round(v * 100) / 100 : NaN; }
+function finMesTxt(ym){ const [a, m] = ym.split("-").map(Number); return new Date(a, m - 1, 15).toLocaleDateString("pt-BR", { month: "long", year: "numeric" }); }
+function finSituacao(x, hoje){
+  if(x.cortesia && Number(x.valor) === 0) return { t: "Cortesia", c: "neutra" };
+  const saldo = Number(x.valor) - Number(x.recebido);
+  if(saldo <= 0) return { t: "Paga", c: "ok" };
+  if(x.vencimento < hoje) return { t: Number(x.recebido) > 0 ? "Parcial · atrasada" : "Atrasada", c: "atraso" };
+  if(Number(x.recebido) > 0) return { t: "Parcial", c: "avencer" };
+  return { t: "Aberta", c: "avencer" };
+}
+async function finCarregar(qual){
+  const pedidos = {
+    clientes: () => cliQ(cliSb.from("clinicas").select("id,codigo,nome")),
+    mens: () => cliQ(cliSb.from("painel_mensalidades").select("*")),
+    recs: () => cliQ(cliSb.from("painel_recebimentos").select("*").order("data", { ascending: false })),
+    desp: () => cliQ(cliSb.from("painel_despesas").select("*").order("data", { ascending: false })),
+    cats: () => cliQ(cliSb.from("painel_despesa_categorias").select("*").order("ordem").order("nome"))
+  };
+  const lista = qual || Object.keys(pedidos);
+  const res = await Promise.all(lista.map(k => pedidos[k]()));
+  finDados = finDados || {};
+  lista.forEach((k, i) => { finDados[k] = res[i]; });
+}
+window.finAbrir = async function(){
+  mostrarVistaDev("fin");
+  const caixa = document.getElementById("fin-corpo");
+  cliSeg("fin-aba", finAbaAtual); document.getElementById("fin-mes-txt").textContent = finMesTxt(finMes);
+  if(finDados){ finDesenhar(); return; }
+  caixa.innerHTML = '<p class="dev-vazio">Carregando…</p>';
+  let user = null;
+  try{ user = await cliUsuario(); }catch(e){ /* trata abaixo */ }
+  if(!user){ cliCartaoAvisoEm(caixa, "Entre no banco das clínicas para ver o financeiro.", "Entrar no Atypical & Agendas", ()=> cliAbrirEntrar()); return; }
+  try{
+    // Mensalidades nascem do contrato, mês a mês (o banco não duplica)
+    if(!finGerou){ await cliQ(cliSb.rpc("painel_gerar_mensalidades")); finGerou = true; }
+    await finCarregar();
+  }catch(e){ finDados = null; cliCartaoAvisoEm(caixa, cliMsgErro(e, "Não foi possível carregar o financeiro."), "Tentar de novo", finAbrir); return; }
+  finDesenhar();
+};
+window.finAba = function(a){ finAbaAtual = a; cliSeg("fin-aba", a); finDesenhar(); };
+window.finMudarMes = function(d){
+  const [a, m] = finMes.split("-").map(Number), dt = new Date(a, m - 1 + d, 1);
+  finMes = dt.getFullYear() + "-" + String(dt.getMonth() + 1).padStart(2, "0");
+  document.getElementById("fin-mes-txt").textContent = finMesTxt(finMes); finDesenhar();
+};
+function finNomeCliente(id){ const c = (finDados.clientes || []).find(x => x.id === id); return c ? (c.nome || c.codigo) : "Cliente"; }
+function finNomeCat(id){ const c = (finDados.cats || []).find(x => x.id === id); return c ? c.nome : "Sem categoria"; }
+function finItem(titulo, tag, linha, valor, acao){
+  const b = document.createElement("button"); b.type = "button"; b.className = "mc-item";
+  const cab = document.createElement("div"); cab.className = "cab";
+  const n = document.createElement("p"); n.className = "n"; n.textContent = titulo; cab.appendChild(n);
+  if(valor){ const v = document.createElement("span"); v.className = "fin-valor"; v.textContent = valor; cab.appendChild(v); }
+  b.appendChild(cab);
+  const l = document.createElement("p"); l.className = "l"; l.textContent = linha; b.appendChild(l);
+  if(tag){ const t = document.createElement("span"); t.className = "cob-tag " + tag.c; t.textContent = tag.t; t.style.alignSelf = "flex-start"; b.appendChild(t); }
+  b.onclick = acao; return b;
+}
+function finKpi(rotulo, valor, classe){ const d = document.createElement("div"); d.className = "fin-kpi " + (classe || ""); const s = document.createElement("span"); s.textContent = rotulo; const b = document.createElement("b"); b.textContent = valor; d.appendChild(s); d.appendChild(b); return d; }
+function finSecao(t){ const p = document.createElement("p"); p.className = "dev-secao"; p.textContent = t; return p; }
+function finContas(){
+  const hoje = hojeISO(), ini = finMes + "-01", fim = finMes + "-31";
+  const mens = finDados.mens || [], recs = finDados.recs || [], desp = finDados.desp || [];
+  const doMes = mens.filter(x => x.vencimento >= ini && x.vencimento <= fim);
+  const recebido = recs.filter(r => r.data >= ini && r.data <= fim).reduce((t, r) => t + Number(r.valor), 0);
+  const aReceber = doMes.reduce((t, x) => t + Math.max(0, Number(x.valor) - Number(x.recebido)), 0);
+  const atraso = mens.filter(x => x.vencimento < hoje).reduce((t, x) => t + Math.max(0, Number(x.valor) - Number(x.recebido)), 0);
+  const despMes = desp.filter(d => d.data >= ini && d.data <= fim);
+  const despesas = despMes.reduce((t, d) => t + Number(d.valor), 0);
+  return { hoje, ini, fim, doMes, recebido, aReceber, atraso, despMes, despesas, resultado: recebido - despesas };
+}
+function finDesenhar(){
+  const caixa = document.getElementById("fin-corpo"); if(!finDados) return;
+  caixa.innerHTML = ""; const k = finContas();
+  if(finAbaAtual === "receber"){
+    const kp = document.createElement("div"); kp.className = "fin-kpis";
+    kp.appendChild(finKpi("Recebido no mês", finR(k.recebido), "verde")); kp.appendChild(finKpi("A receber no mês", finR(k.aReceber)));
+    kp.appendChild(finKpi("Em atraso (total)", finR(k.atraso), k.atraso > 0 ? "verm" : "")); caixa.appendChild(kp);
+    const atrasadasAntes = (finDados.mens || []).filter(x => x.vencimento < k.ini && Number(x.valor) > Number(x.recebido));
+    if(atrasadasAntes.length){
+      caixa.appendChild(finSecao("Em atraso de meses anteriores"));
+      atrasadasAntes.sort((a, b) => a.vencimento.localeCompare(b.vencimento)).forEach(x => caixa.appendChild(finItemMens(x, k.hoje)));
+    }
+    caixa.appendChild(finSecao("Vencimentos de " + finMesTxt(finMes)));
+    if(!k.doMes.length){ const p = document.createElement("p"); p.className = "dev-vazio"; p.textContent = "Nenhuma mensalidade neste mês. Elas nascem sozinhas dos contratos em Gestão → Contratos."; caixa.appendChild(p); }
+    k.doMes.sort((a, b) => a.vencimento.localeCompare(b.vencimento) || finNomeCliente(a.clinica_id).localeCompare(finNomeCliente(b.clinica_id), "pt-BR")).forEach(x => caixa.appendChild(finItemMens(x, k.hoje)));
+  }else if(finAbaAtual === "despesas"){
+    const kp = document.createElement("div"); kp.className = "fin-kpis"; kp.appendChild(finKpi("Despesas do mês", finR(k.despesas), k.despesas > 0 ? "verm" : "")); caixa.appendChild(kp);
+    const bt = document.createElement("button"); bt.className = "btn btn-primary dev-largo"; bt.innerHTML = '<i class="ti ti-plus"></i> Nova despesa'; bt.onclick = () => finAbrirDespesa(null); caixa.appendChild(bt);
+    caixa.appendChild(finSecao("Despesas de " + finMesTxt(finMes)));
+    if(!k.despMes.length){ const p = document.createElement("p"); p.className = "dev-vazio"; p.textContent = "Nenhuma despesa lançada neste mês."; caixa.appendChild(p); }
+    k.despMes.forEach(d => caixa.appendChild(finItem(finNomeCat(d.categoria_id), null, mcData(d.data) + (d.obs ? " · " + d.obs : ""), finR(d.valor), () => finAbrirDespesa(d))));
+    const bc = document.createElement("button"); bc.className = "btn btn-ghost dev-largo"; bc.innerHTML = '<i class="ti ti-tags"></i> Categorias'; bc.onclick = finAbrirCats; caixa.appendChild(bc);
+  }else{
+    const kp = document.createElement("div"); kp.className = "fin-kpis";
+    kp.appendChild(finKpi("Recebido", finR(k.recebido), "verde")); kp.appendChild(finKpi("A receber", finR(k.aReceber)));
+    kp.appendChild(finKpi("Em atraso (total)", finR(k.atraso), k.atraso > 0 ? "verm" : "")); kp.appendChild(finKpi("Despesas", finR(k.despesas)));
+    kp.appendChild(finKpi("Resultado (recebido − despesas)", finR(k.resultado), "destaque " + (k.resultado < 0 ? "verm" : "verde"))); caixa.appendChild(kp);
+    if(k.despMes.length){
+      caixa.appendChild(finSecao("Despesas por categoria"));
+      const por = {}; k.despMes.forEach(d => { por[d.categoria_id] = (por[d.categoria_id] || 0) + Number(d.valor); });
+      Object.entries(por).sort((a, b) => b[1] - a[1]).forEach(([id, v]) => { const d = document.createElement("div"); d.className = "fin-cat"; const n = document.createElement("span"); n.style.flex = "1"; n.textContent = finNomeCat(id); const b = document.createElement("b"); b.textContent = finR(v); d.appendChild(n); d.appendChild(b); caixa.appendChild(d); });
+    }
+  }
+}
+function finItemMens(x, hoje){
+  const st = finSituacao(x, hoje), saldo = Number(x.valor) - Number(x.recebido);
+  const linha = "Vence " + mcData(x.vencimento) + (Number(x.recebido) > 0 && saldo > 0 ? " · recebido " + finR(x.recebido) + " · falta " + finR(saldo) : "");
+  return finItem(finNomeCliente(x.clinica_id), st, linha, finR(x.valor), () => finAbrirMens(x));
+}
+window.finAbrirMens = function(x){
+  finMensAtual = x; const hoje = hojeISO(), st = finSituacao(x, hoje), saldo = Math.max(0, Number(x.valor) - Number(x.recebido));
+  document.getElementById("fmm-tit").textContent = finNomeCliente(x.clinica_id);
+  document.getElementById("fmm-sub").textContent = "Mensalidade de " + finMesTxt(x.competencia.slice(0, 7)) + " · vence " + mcData(x.vencimento);
+  const c = document.getElementById("fmm-corpo"); c.innerHTML = "";
+  const kp = document.createElement("div"); kp.className = "fin-kpis";
+  kp.appendChild(finKpi("Valor", finR(x.valor))); kp.appendChild(finKpi("Recebido", finR(x.recebido), "verde")); kp.appendChild(finKpi("Saldo", finR(saldo), saldo > 0 && x.vencimento < hoje ? "verm" : ""));
+  c.appendChild(kp);
+  const tag = document.createElement("span"); tag.className = "cob-tag " + st.c; tag.textContent = st.t; c.appendChild(tag);
+  if(x.obs){ const o = document.createElement("p"); o.className = "dev-dica"; o.textContent = "Obs.: " + x.obs; c.appendChild(o); }
+  if(x.valor_previsto !== null && Number(x.valor_previsto) !== Number(x.valor) && !x.cortesia){ const o = document.createElement("p"); o.className = "dev-dica"; o.textContent = "Valor previsto no contrato: " + finR(x.valor_previsto) + "."; c.appendChild(o); }
+  const recs = (finDados.recs || []).filter(r => r.mensalidade_id === x.id);
+  if(recs.length){
+    const box = document.createElement("div"); box.className = "fin-rec";
+    recs.forEach(r => {
+      const it = document.createElement("div"); it.className = "fin-rec-it";
+      const t = document.createElement("span"); t.textContent = mcData(r.data) + " · " + finR(r.valor) + " · " + (FIN_FORMAS[r.forma] || r.forma) + (r.recibo_enviado_em ? " · recibo enviado" : ""); t.style.flex = "1"; it.appendChild(t);
+      const bR = document.createElement("button"); bR.className = "btn btn-ghost"; bR.innerHTML = '<i class="ti ti-mail"></i> ' + (r.recibo_enviado_em ? "Reenviar recibo" : "Enviar recibo"); bR.onclick = () => finEnviarRecibo(r.id, bR); it.appendChild(bR);
+      const bE = document.createElement("button"); bE.className = "btn btn-ghost"; bE.innerHTML = '<i class="ti ti-arrow-back-up"></i> Estornar'; bE.onclick = () => finEstornar(r, bE); it.appendChild(bE);
+      box.appendChild(it);
+    });
+    c.appendChild(box);
+  }
+  const a = document.getElementById("fmm-acoes"); a.innerHTML = "";
+  if(saldo > 0){ const b = document.createElement("button"); b.className = "btn btn-primary btn-linha"; b.innerHTML = '<i class="ti ti-cash"></i> Dar baixa'; b.onclick = finAbrirBaixa; a.appendChild(b); }
+  const v = document.createElement("button"); v.className = "btn btn-ghost btn-linha"; v.innerHTML = '<i class="ti ti-edit"></i> Ajustar valor'; v.onclick = finAbrirValor; a.appendChild(v);
+  abrirModal("modal-fin-mens");
+};
+window.finForma = function(f){ finFormaEsc = f; cliSeg("fb-forma", f); };
+function finAbrirBaixa(){
+  const x = finMensAtual; if(!x) return; const saldo = Math.max(0, Number(x.valor) - Number(x.recebido));
+  document.getElementById("fb-sub").textContent = finNomeCliente(x.clinica_id) + " · saldo " + finR(saldo);
+  document.getElementById("fb-data").value = hojeISO(); document.getElementById("fb-valor").value = mcReais(saldo); document.getElementById("fb-obs").value = "";
+  document.getElementById("fb-recibo").checked = true; finForma("pix"); abrirModal("modal-fin-baixa");
+}
+async function finRecarregarReceber(){ await finCarregar(["mens", "recs"]); if(finMensAtual) finMensAtual = finDados.mens.find(m => m.id === finMensAtual.id) || null; finDesenhar(); }
+window.finSalvarBaixa = async function(){
+  const x = finMensAtual, b = document.getElementById("fb-btn"); if(!x || b.disabled) return;
+  const data = document.getElementById("fb-data").value, valor = finNum(document.getElementById("fb-valor").value), obs = document.getElementById("fb-obs").value.replace(/\s+/g, " ").trim().slice(0, 200);
+  const saldo = Math.round((Number(x.valor) - Number(x.recebido)) * 100) / 100;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(data)) return mcErro("Informe a data do recebimento.", "fb-data");
+  if(data > hojeISO()) return mcErro("A data do recebimento não pode ser no futuro.", "fb-data");
+  if(!(valor > 0)) return mcErro("Informe o valor recebido.", "fb-valor");
+  if(valor > saldo) return mcErro("O valor passa do saldo em aberto (" + finR(saldo) + ").", "fb-valor");
+  const recibo = document.getElementById("fb-recibo").checked;
+  b.disabled = true;
+  try{
+    const id = await cliQ(cliSb.rpc("painel_dar_baixa", { p_mensalidade: x.id, p_data: data, p_valor: valor, p_forma: finFormaEsc, p_obs: obs || null }));
+    fecharModal("modal-fin-baixa");
+    await finRecarregarReceber(); if(finMensAtual) finAbrirMens(finMensAtual);
+    showToast(valor < saldo ? "Baixa parcial registrada." : "Baixa registrada.");
+    if(recibo && id) await finEnviarRecibo(id, null);
+  }catch(e){ showToast(cliMsgErro(e, "Não foi possível dar a baixa. Confira a internet e tente de novo.")); }
+  finally{ b.disabled = false; }
+};
+async function finEnviarRecibo(id, botao){
+  if(botao) botao.disabled = true;
+  try{
+    const token = await cliToken(); if(!token) throw new Error("Entre de novo no banco das clínicas para enviar o recibo.");
+    const r = await fetch(URL_CLI_EMAIL, { method: "POST", credentials: "omit", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ acao: "recibo-painel", token, recebimento: id }) });
+    const t = await r.text(); let d = null; try{ d = JSON.parse(t); }catch(e){ d = null; }
+    if(!d) throw new Error("O recibo por e-mail ainda não está publicado no script de e-mail (versão 10). A baixa ficou gravada.");
+    if(!d.ok) throw new Error({ "nao-autorizado": "O script não reconheceu o seu login de desenvolvedor. Entre de novo.", "sem-destinatario": "O cliente não tem supervisora (ou dona) ativa com e-mail.", "limite": "Muitos recibos nas últimas horas. Tente mais tarde." }[d.erro] || ("Recibo não enviado: " + d.erro));
+    const para = (d.para || []).join(", ").slice(0, 300);
+    try{ await cliQ(cliSb.rpc("painel_marcar_recibo", { p_recebimento: id, p_para: para })); await finRecarregarReceber(); if(finMensAtual && document.getElementById("modal-fin-mens").classList.contains("show")) finAbrirMens(finMensAtual); }catch(e){ /* o e-mail saiu; só a marcação falhou */ }
+    showToast("Recibo enviado para " + para + ".");
+  }catch(e){ showToast(e.message || "Não foi possível enviar o recibo."); }
+  finally{ if(botao) botao.disabled = false; }
+}
+async function finEstornar(r, botao){
+  if(!confirm("Estornar o recebimento de " + finR(r.valor) + " em " + mcData(r.data) + "? O valor volta para o saldo em aberto.")) return;
+  botao.disabled = true;
+  try{ await cliQ(cliSb.rpc("painel_estornar_recebimento", { p_id: r.id })); await finRecarregarReceber(); if(finMensAtual) finAbrirMens(finMensAtual); showToast("Recebimento estornado."); }
+  catch(e){ showToast(cliMsgErro(e, "Não foi possível estornar.")); botao.disabled = false; }
+}
+function finAbrirValor(){
+  const x = finMensAtual; if(!x) return;
+  document.getElementById("fv-sub").textContent = finNomeCliente(x.clinica_id) + (Number(x.recebido) > 0 ? " · já recebido " + finR(x.recebido) : "");
+  document.getElementById("fv-valor").value = mcReais(x.valor); document.getElementById("fv-obs").value = x.obs || ""; abrirModal("modal-fin-valor");
+}
+window.finSalvarValor = async function(){
+  const x = finMensAtual, b = document.getElementById("fv-btn"); if(!x || b.disabled) return;
+  const valor = finNum(document.getElementById("fv-valor").value), obs = document.getElementById("fv-obs").value.replace(/\s+/g, " ").trim().slice(0, 200);
+  if(!(valor >= 0)) return mcErro("Informe o valor.", "fv-valor");
+  if(valor < Number(x.recebido)) return mcErro("O valor não pode ser menor que o já recebido (" + finR(x.recebido) + ").", "fv-valor");
+  b.disabled = true;
+  try{ await cliQ(cliSb.rpc("painel_alterar_mensalidade", { p_id: x.id, p_valor: valor, p_obs: obs || null })); fecharModal("modal-fin-valor"); await finRecarregarReceber(); if(finMensAtual) finAbrirMens(finMensAtual); showToast("Valor ajustado."); }
+  catch(e){ showToast(cliMsgErro(e, "Não foi possível salvar.")); }
+  finally{ b.disabled = false; }
+};
+function finOpcoesCats(atual){
+  const s = document.getElementById("fd-cat"); s.innerHTML = "";
+  (finDados.cats || []).filter(c => c.ativa || c.id === atual).forEach(c => { const o = document.createElement("option"); o.value = c.id; o.textContent = c.nome + (c.ativa ? "" : " (inativa)"); s.appendChild(o); });
+  if(atual) s.value = atual;
+}
+window.finAbrirDespesa = function(d){
+  finDespAtual = d; document.getElementById("fd-tit").textContent = d ? "Editar despesa" : "Nova despesa";
+  const hoje = hojeISO(); document.getElementById("fd-data").value = d ? d.data : (finMes === hoje.slice(0, 7) ? hoje : (finMes + "-01" <= hoje ? finMes + "-01" : hoje));
+  document.getElementById("fd-valor").value = d ? mcReais(d.valor) : ""; document.getElementById("fd-obs").value = d ? (d.obs || "") : "";
+  finOpcoesCats(d ? d.categoria_id : null); document.getElementById("fd-excluir").style.display = d ? "block" : "none";
+  abrirModal("modal-fin-desp");
+};
+window.finSalvarDespesa = async function(){
+  const b = document.getElementById("fd-btn"); if(b.disabled) return;
+  const data = document.getElementById("fd-data").value, valor = finNum(document.getElementById("fd-valor").value), cat = document.getElementById("fd-cat").value, obs = document.getElementById("fd-obs").value.replace(/\s+/g, " ").trim().slice(0, 200);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(data)) return mcErro("Informe a data do pagamento.", "fd-data");
+  if(data > hojeISO()) return mcErro("Despesa rápida é a já paga: a data não pode ser no futuro.", "fd-data");
+  if(!(valor > 0)) return mcErro("Informe o valor.", "fd-valor");
+  if(!cat) return mcErro("Escolha a categoria.", "fd-cat");
+  b.disabled = true;
+  try{
+    const linha = { data, valor, categoria_id: cat, obs: obs || null };
+    if(finDespAtual) await cliQ(cliSb.from("painel_despesas").update(Object.assign(linha, { atualizado_em: new Date().toISOString() })).eq("id", finDespAtual.id).select("id"));
+    else await cliQ(cliSb.from("painel_despesas").insert(linha).select("id"));
+    fecharModal("modal-fin-desp"); await finCarregar(["desp"]); finDesenhar(); showToast(finDespAtual ? "Despesa alterada." : "Despesa lançada.");
+  }catch(e){ showToast(cliMsgErro(e, "Não foi possível salvar a despesa.")); }
+  finally{ b.disabled = false; }
+};
+window.finExcluirDespesa = async function(){
+  const d = finDespAtual; if(!d || !confirm("Excluir a despesa de " + finR(d.valor) + " (" + finNomeCat(d.categoria_id) + ")?")) return;
+  try{ await cliQ(cliSb.from("painel_despesas").delete().eq("id", d.id)); fecharModal("modal-fin-desp"); await finCarregar(["desp"]); finDesenhar(); showToast("Despesa excluída."); }
+  catch(e){ showToast(cliMsgErro(e, "Não foi possível excluir.")); }
+};
+function finAbrirCats(){
+  const l = document.getElementById("fc-lista"); l.innerHTML = "";
+  (finDados.cats || []).forEach(c => {
+    const d = document.createElement("div"); d.className = "fin-cat";
+    const i = document.createElement("input"); i.value = c.nome; i.maxLength = 40; i.setAttribute("aria-label", "Nome da categoria");
+    const sv = document.createElement("button"); sv.className = "btn btn-ghost"; sv.textContent = "Salvar";
+    sv.onclick = async () => { const n = i.value.replace(/\s+/g, " ").trim(); if(n.length < 2){ showToast("O nome precisa de 2 letras ou mais."); return; } try{ await cliQ(cliSb.from("painel_despesa_categorias").update({ nome: n }).eq("id", c.id).select("id")); await finCarregar(["cats"]); finAbrirCats(); finDesenhar(); showToast("Categoria salva."); }catch(e){ showToast(cliMsgErro(e, "Não foi possível salvar (nome repetido?).")); } };
+    const at = document.createElement("button"); at.className = "btn btn-ghost"; at.textContent = c.ativa ? "Desativar" : "Ativar";
+    at.onclick = async () => { try{ await cliQ(cliSb.from("painel_despesa_categorias").update({ ativa: !c.ativa }).eq("id", c.id).select("id")); await finCarregar(["cats"]); finAbrirCats(); }catch(e){ showToast(cliMsgErro(e, "Não foi possível salvar.")); } };
+    if(!c.ativa) d.style.opacity = ".6";
+    d.appendChild(i); d.appendChild(sv); d.appendChild(at); l.appendChild(d);
+  });
+  document.getElementById("fc-nova").value = ""; abrirModal("modal-fin-cats");
+}
+window.finNovaCategoria = async function(){
+  const b = document.getElementById("fc-btn"), n = document.getElementById("fc-nova").value.replace(/\s+/g, " ").trim(); if(b.disabled) return;
+  if(n.length < 2) return mcErro("Escreva o nome da categoria.", "fc-nova");
+  b.disabled = true;
+  try{ await cliQ(cliSb.from("painel_despesa_categorias").insert({ nome: n, ordem: 50 }).select("id")); await finCarregar(["cats"]); finAbrirCats(); showToast("Categoria criada."); }
+  catch(e){ showToast(cliMsgErro(e, "Não foi possível criar (nome repetido?).")); }
   finally{ b.disabled = false; }
 };
 
